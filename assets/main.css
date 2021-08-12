@@ -1,7 +1,7 @@
 @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;800;900&display=swap");
 @import "https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.3/css/fontawesome.min.css";
 html, body {
-  background-color: #F7F8FB;
+  background-color: #FFF;
   border: 0;
   margin: 0;
 }
@@ -12,6 +12,15 @@ body {
 
 h1, h2, h3, h4, h5, h6 {
   font-weight: bold;
+}
+
+.mt-10 {
+  margin-top: 10rem;
+}
+
+.bg-light {
+  background-color: #222 !important;
+  color: #FFF !important;
 }
 
 .form-window {
@@ -33,6 +42,15 @@ h1, h2, h3, h4, h5, h6 {
   background-color: #f4f4f4;
   color: #222;
   border-color: #dbdbdb;
+}
+
+.dashboard {
+  width: 100%;
+  height: 400px;
+  float: left;
+}
+.dashboard-mini {
+  height: 250px;
 }
 
 /*# sourceMappingURL=main.css.map */
