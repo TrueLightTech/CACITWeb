@@ -23,9 +23,18 @@ export default {
     script: [
       {
         src: "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.5.0/chart.min.js"
+      },
+      {src: "/bootstrap/bootstrap.bundle.min.js", type: "text/javascript"},
+      {
+        src:"https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"
+      },{
+      src: "https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.min.js"
       }
     ]
   },
+//
+// <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js" integrity="sha384-IQsoLXl5PILFhosVNubq5LC7Qb9DXgDA9i+tQ8Zj3iwWAwPtgFTxbJ8NT4GN1R8p" crossorigin="anonymous"></script>
+//   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.min.js" integrity="sha384-cVKIPhGWiC2Al4u+LWgxfKTRIcfu0JTxR+EQDz/bgldoEyl4H0zUF0QKbrJ0EcQF" crossorigin="anonymous"></script>
 
   // Global CSS: https://go.nuxtjs.dev/config-css
   css: [
@@ -82,13 +91,24 @@ export default {
         endpoints: {
           login: {url: '/auth/login', method: 'post'},
           logout: {url: '/auth/logout', method: 'post'},
-          user: {url: '/api/auth/user', method: 'get'}
+          user: {url: '/useraccounts/me', method: 'get'}
         },
-        token:{
+        token: {
           type: 'Basic',
           global: true
         }
       },
+      customRegisterStrategy: {
+        scheme: '~/schemes/customRegisterScheme',
+        endpoints: {
+          login: {url: '/auth/register', method: 'post'},
+          logout: {url: '/auth/logout', method: 'post'}
+        },
+        token: {
+          type: 'Basic',
+          global: true
+        }
+      }
     }
   }
 }

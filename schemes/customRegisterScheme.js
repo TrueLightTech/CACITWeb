@@ -1,6 +1,6 @@
 import {LocalScheme} from '~auth/runtime'
 
-export default class CustomScheme extends LocalScheme {
+export default class CustomRegisterScheme extends LocalScheme {
   // Override `fetchUser` method of `local` scheme
   async fetchUser(endpoint) {
 

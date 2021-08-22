@@ -5,11 +5,11 @@
         <div class="form-window card p-4 border-0 rounded-0 pt-5">
           <div class="card-body">
             <ul class="list-unstyled">
-              <li>
-                <h3>LOG IN</h3>
-              </li>
               <li class="mb-4">
-                <h5>[CACI Taifa]</h5>
+                <h3>CACI Taifa</h3>
+              </li>
+              <li>
+                <h5>LOG IN</h5>
               </li>
               <li>
                 <div class="mb-3">
@@ -64,39 +64,34 @@
       }
     },
     mounted() {
-      // this.$auth.loginWith('customStrategy', { /* ... */}).then(re => {
-      //   console.log(re)
-      // })
-      // console.log(this.$auth.loginWith('customStrategy', { /* ... */ }))
     },
     methods: {
       signInUser() {
-        // const requestData = {
-        //   phoneNumber: this.phoneNumber,
-        //   countryCode: "GH",
-        //   passCode: this.passCode
-        // }
-        // const config = {}
-        // this.$axios.post('auth/login', requestData).then(response => {
-        //   console.log(response)
-        //   this.$router.push({path: `/admin/dashboard`})
-        //
-        // }).catch(error => {
-        // })
+        this.$auth.loginWith('customStrategy', {data: this.login}).then(response => {
 
-        this.$auth.loginWith('customStrategy', {data: this.login}).then(re => {
-          console.log(re)
+          this.$axios.$get('/useraccounts/me', {
+            headers: {
+              Authorization: 'Bearer ' + response.data.data.token
+            }
+          }).then(response => {
+            const customUser = {
+              ...response.data,
+              fullName: response.data.name,
+              roles: ['user']
+            }
+
+            this.$auth.$storage.setUniversal("user", customUser)
+
+            this.$auth.setUser(customUser)
+            this.$router.push({path: `/admin/dashboard`})
+            this.$toast.success('Successfully authenticated')
+
+          }).catch(e => {
+          })
+
         }).catch(error => {
-          console.log(error.response)
+          this.$toast.error(error.response.data.message)
         })
-      },
-      async userLogin() {
-        try {
-          let response = await this.$auth.loginWith('local', {data: this.login})
-          console.log(response)
-        } catch (err) {
-          console.log(err)
-        }
       }
     }
   }

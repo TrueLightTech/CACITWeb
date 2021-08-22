@@ -1,13 +1,10 @@
 <template>
-  <div>
-    <LazyHeader/>
-    <Nuxt/>
-  </div>
+
 </template>
 
 <script>
     export default {
-        name: "default"
+        name: "tithe"
     }
 </script>
 
