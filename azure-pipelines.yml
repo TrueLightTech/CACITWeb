@@ -1,0 +1,36 @@
+# Node.js with Vue
+# Build a Node.js project that uses Vue.
+# Add steps that analyze code, save build artifacts, deploy, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/javascript
+
+trigger:
+  branches:
+    include:
+    - refs/heads/dev
+resources:
+  repositories:
+  - repository: self
+    type: git
+    ref: refs/heads/dev
+jobs:
+- job: Job_1
+  displayName: Agent job 1
+  pool:
+    vmImage: vs2017-win2016
+  steps:
+  - checkout: self
+  - task: Npm@1
+    displayName: npm install
+    inputs:
+      verbose: false
+  - task: Npm@1
+    displayName: npm generate
+    inputs:
+      command: custom
+      verbose: false
+      customCommand: run generate
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish Artifact: CACI'
+    inputs:
+      PathtoPublish: dist
+      ArtifactName: CACI
