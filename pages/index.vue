@@ -5,5 +5,15 @@
 </template>
 
 <script>
-  export default {}
+  export default {
+    mounted() {
+      this.redirect()
+    },
+    methods: {
+      redirect() {
+        // redirects to login
+        this.$router.push({path: `/login`})
+      }
+    }
+  }
 </script>
