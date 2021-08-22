@@ -2,6 +2,7 @@
   <div class="container">
     <div class="row justify-content-center mt-10">
       <div class="col-sm-10 col-md-10 col-lg-10 col-xl-6">
+        <h6>Hi, {{user.name}}</h6>
         <div class="row">
           <div class="col-md-4 my-2">
             <div class="card">
@@ -46,29 +47,14 @@
             </div>
           </div>
           <div class="col-md-12">
-            <div class="dashboard-mini mt-4 rounded-3">
-              <h3>Stats</h3>
-              <ul class="list-group">
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                  Tuesday Borns Offering
-                  <span class="badge bg-primary rounded-pill">14</span>
+            <div
+              class="d-flex justify-content-center align-middle align-self-center align-content-center align-items-center mt-5">
+              <ul class="list-unstyled  justify-content-center text-center">
+                <li class="my-2">
+                  <img src="~assets/imgs/empty_state.svg" :style="{width: '340px'}"
+                       class="img-fluid  align-self-center align-middle"/>
                 </li>
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                  A second list item
-                  <span class="badge bg-primary rounded-pill">2</span>
-                </li>
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                  Sunday Offering
-                  <span class="badge bg-primary rounded-pill">1</span>
-                </li>
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                  Tithe (July)
-                  <span class="badge bg-primary rounded-pill">1</span>
-                </li>
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                  Harvest
-                  <span class="badge bg-primary rounded-pill">1</span>
-                </li>
+                <li class="mt-4"><h4>Nothing Found Here</h4></li>
               </ul>
             </div>
           </div>
@@ -89,7 +75,9 @@
     name: "dashboard",
     components: {AdminHeader},
     data() {
-      return {}
+      return {
+        user: JSON.parse(window.localStorage.getItem('auth.user'))
+      }
     },
     mounted() {
     }

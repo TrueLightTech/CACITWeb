@@ -27,8 +27,13 @@
                 </div>
               </li>
               <li class="my-4">
-                <button @click="signInUser()" type="button" class="btn btn-primary btn-lg px-4 py-2 w-100">
+                <button v-if="!isLoading" @click="signInUser()" type="button"
+                        class="btn btn-primary btn-lg px-4 py-2 w-100">
                   <h6 class="p-0 m-0">LOG IN</h6>
+                </button>
+                <button v-else class="btn btn-primary btn-lg px-4 py-2 w-100" type="button" disabled>
+                  <h6 class="p-0 m-0"><span class="spinner-border spinner-border-sm" role="status"
+                                            aria-hidden="true"></span> LOADING ...</h6>
                 </button>
               </li>
               <li class="mt-2">
@@ -54,6 +59,7 @@
     name: "login",
     data() {
       return {
+        isLoading: false,
         phoneNumber: "",
         passCode: '',
         login: {
@@ -67,11 +73,12 @@
     },
     methods: {
       signInUser() {
-        this.$auth.loginWith('customStrategy', {data: this.login}).then(response => {
+        this.isLoading = true
+        this.$auth.loginWith('customStrategy', {data: this.login}).then(resp => {
 
           this.$axios.$get('/useraccounts/me', {
             headers: {
-              Authorization: 'Bearer ' + response.data.data.token
+              Authorization: 'Bearer ' + resp.data.data.token
             }
           }).then(response => {
             const customUser = {
@@ -80,17 +87,21 @@
               roles: ['user']
             }
 
-            this.$auth.$storage.setUniversal("user", customUser)
+            this.isLoading = false
 
+            this.$auth.$storage.setUniversal("user", customUser)
+            this.$auth.$storage.setUniversal("token", resp.data.data.token)
             this.$auth.setUser(customUser)
             this.$router.push({path: `/admin/dashboard`})
-            this.$toast.success('Successfully authenticated')
+            this.$toast.success('Successfully authenticated', {duration: 3000})
 
           }).catch(e => {
+            this.isLoading = false
           })
 
         }).catch(error => {
-          this.$toast.error(error.response.data.message)
+          this.$toast.error(error.response.data.message, {duration: 3000})
+          this.isLoading = false
         })
       }
     }

@@ -84,8 +84,13 @@
                 </select>
               </li>
               <li class="mt-4">
-                <button type="button" class="btn btn-primary btn-lg px-4 py-2 w-100" @click="signUp()">
+                <button v-if="!isLoading" type="button" class="btn btn-primary btn-lg px-4 py-2 w-100"
+                        @click="signUp()">
                   <h6 class="p-0 m-0">REGISTER NOW</h6>
+                </button>
+                <button v-else class="btn btn-primary btn-lg px-4 py-2 w-100" type="button" disabled>
+                  <h6 class="p-0 m-0"><span class="spinner-border spinner-border-sm" role="status"
+                                            aria-hidden="true"></span> LOADING ...</h6>
                 </button>
               </li>
               <li class="mt-2">
@@ -114,6 +119,7 @@
     name: "register",
     data() {
       return {
+        isLoading: false,
         register: {
           name: "",
           emailAddress: "",
@@ -131,11 +137,12 @@
     },
     methods: {
       signUp() {
-        this.$auth.loginWith('customRegisterStrategy', {data: this.register}).then(response => {
+        this.isLoading = true
+        this.$auth.loginWith('customRegisterStrategy', {data: this.register}).then(resp => {
 
           this.$axios.$get('/useraccounts/me', {
             headers: {
-              Authorization: 'Bearer ' + response.data.data.token
+              Authorization: 'Bearer ' + resp.data.data.token
             }
           }).then(response => {
             const customUser = {
@@ -143,17 +150,21 @@
               fullName: response.data.name,
               roles: ['user']
             }
-
+            this.isLoading = false
             this.$auth.setUser(customUser)
             this.$auth.$storage.setUniversal("user", customUser)
+            this.$auth.$storage.setUniversal("token", resp.data.data.token)
+
             this.$router.push({path: `/admin/dashboard`})
-            this.$toast.success('Successfully authenticated')
+            this.$toast.success('Successfully authenticated', {duration: 3000})
 
           }).catch(e => {
+            this.isLoading = false
           })
 
         }).catch(error => {
-          this.$toast.error(error.response.data.message)
+          this.isLoading = false
+          this.$toast.error(error.response.data.message, {duration: 3000})
         })
       }
     }

@@ -43,4 +43,8 @@ export default class CustomScheme extends LocalScheme {
     //   this.$auth.callOnError(error, {method: 'fetchUser'})
     // })
   }
+
+  async logout() {
+    localStorage.clear()
+  }
 }
