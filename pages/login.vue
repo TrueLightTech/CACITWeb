@@ -37,8 +37,8 @@
                 </button>
               </li>
               <li class="mt-2">
-                <small>You dont have an account, create on
-                  <NuxtLink to="/register" class="bg-active">here</NuxtLink>
+                <small>You dont have an account, create one
+                  <NuxtLink to="/register" class="bg-active active-bold">here</NuxtLink>
                 </small>
               </li>
             </ul>

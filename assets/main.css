@@ -68,4 +68,9 @@ a:hover {
   padding: 100px 0;
 }
 
+.active-bold {
+  color: #146efd;
+  font-weight: bold;
+}
+
 /*# sourceMappingURL=main.css.map */

@@ -27,20 +27,27 @@
               </li>
               <li>
                 <div class="mb-3 mt-2">
-                  <label for="exampleFormControlInput1" class="form-label">Pass Code</label>
+                  <label for="exampleFormControlInput1" class="form-label">Password</label>
                   <input type="password" class="form-control" id="exampleFormControlInput1"
                          placeholder="" v-model="register.passCode">
                 </div>
               </li>
               <li>
                 <div class="mb-3 mt-2">
-                  <label for="exampleFormControlInput1" class="form-label">Email address</label>
-                  <input type="text" class="form-control" id="exampleFormControlInput1"
-                         placeholder="" v-model="register.emailAddress">
+                  <label for="exampleFormControlInput1" class="form-label">Confirm Password</label>
+                  <input type="password" class="form-control" id="exampleFormControlInput1"
+                         placeholder="" v-model="register.passCode">
                 </div>
               </li>
               <li>
                 <div class="mb-3 mt-2">
+                  <label for="exampleFormControlInput1" class="form-label">Email address (Optional)</label>
+                  <input type="email" class="form-control" id="exampleFormControlInput1"
+                         placeholder="" v-model="register.emailAddress">
+                </div>
+              </li>
+              <li>
+                <div class="mb-3 mt-2 d-none">
                   <label for="exampleFormControlInput1" class="form-label">Church Id</label>
                   <input type="text" class="form-control" id="exampleFormControlInput1"
                          placeholder="" v-model="register.churchId">
@@ -55,19 +62,21 @@
               </li>
               <li>
                 <div class="mb-3">
-                  <div class="">
-                    <input type="date" class="form-control w-100" v-model="register.dataOfBirth">
+                  <label for="dob">Date of Birth</label>
+                  <div class="mt-2">
+                    <input id="dob" type="date" class="form-control w-100" v-model="register.dataOfBirth">
                   </div>
                 </div>
               </li>
               <li class="my-3">
-                <select class="form-select" aria-label="Default select example" v-model="register.gender">
-                  <option selected>Gender</option>
-                  <option value="Male">Male</option>
+                <label for="gender">Gender</label>
+                <select id="gender" class="form-select mt-2" aria-label="Default select example"
+                        v-model="register.gender">
+                  <option selected value="Male">Male</option>
                   <option value="Female">Female</option>
                 </select>
               </li>
-              <li class="my-3">
+              <li class="my-3 d-none">
                 <select class="form-select" aria-label="Default select example">
                   <option selected>Church Group</option>
                   <option value="1">One</option>
@@ -75,7 +84,7 @@
                   <option value="3">Three</option>
                 </select>
               </li>
-              <li class="my-3">
+              <li class="my-3 d-none">
                 <select class="form-select" aria-label="Default select example">
                   <option selected>Church Family</option>
                   <option value="1">One</option>
@@ -94,8 +103,8 @@
                 </button>
               </li>
               <li class="mt-2">
-                <small>You have an account, login here
-                  <NuxtLink to="/login" class="bg-active">here</NuxtLink>
+                <small>You have an account, login
+                  <NuxtLink to="/login" class="bg-active active-bold">here</NuxtLink>
                 </small>
               </li>
             </ul>
