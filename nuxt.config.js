@@ -7,7 +7,7 @@ export default {
 
   // Global page headers: https://go.nuxtjs.dev/config-head
   head: {
-    title: 'CACI Church APP',
+    title: 'CACI - Taifa APP',
     htmlAttrs: {
       lang: 'en'
     },
@@ -76,7 +76,7 @@ export default {
   },
   publicRuntimeConfig: {
     axios: {
-      browserBaseURL: "http://134.209.216.111:8090/api/"
+      browserBaseURL: "http://137.184.74.38:8090/api/"
     }
   },
   // Build Configuration: https://go.nuxtjs.dev/config-build
