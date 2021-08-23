@@ -36,7 +36,7 @@
                 <div class="mb-3 mt-2">
                   <label for="exampleFormControlInput1" class="form-label">Confirm Password</label>
                   <input type="password" class="form-control" id="exampleFormControlInput1"
-                         placeholder="" v-model="register.passCode">
+                         placeholder="" v-model="register.confirmPassCode">
                 </div>
               </li>
               <li>
@@ -135,6 +135,7 @@
           countryCode: "GH",
           phoneNumber: "",
           passCode: "",
+          confirmPassCode: '',
           churchId: "",
           dataOfBirth: "1990-08-20",
           gender: "",
@@ -147,34 +148,36 @@
     methods: {
       signUp() {
         this.isLoading = true
-        this.$auth.loginWith('customRegisterStrategy', {data: this.register}).then(resp => {
+        if (this.register.passCode === this.register.confirmPassCode) {
+          this.$auth.loginWith('customRegisterStrategy', {data: this.register}).then(resp => {
 
-          this.$axios.$get('/useraccounts/me', {
-            headers: {
-              Authorization: 'Bearer ' + resp.data.data.token
-            }
-          }).then(response => {
-            const customUser = {
-              ...response.data,
-              fullName: response.data.name,
-              roles: ['user']
-            }
+            this.$axios.$get('/useraccounts/me', {
+              headers: {
+                Authorization: 'Bearer ' + resp.data.data.token
+              }
+            }).then(response => {
+              const customUser = {
+                ...response.data,
+                fullName: response.data.name,
+                roles: ['user']
+              }
+              this.isLoading = false
+              this.$auth.setUser(customUser)
+              this.$auth.$storage.setUniversal("user", customUser)
+              this.$auth.$storage.setUniversal("token", resp.data.data.token)
+
+              this.$router.push({path: `/admin/dashboard`})
+              this.$toast.success('Successfully authenticated', {duration: 3000})
+
+            }).catch(e => {
+              this.isLoading = false
+            })
+
+          }).catch(error => {
             this.isLoading = false
-            this.$auth.setUser(customUser)
-            this.$auth.$storage.setUniversal("user", customUser)
-            this.$auth.$storage.setUniversal("token", resp.data.data.token)
-
-            this.$router.push({path: `/admin/dashboard`})
-            this.$toast.success('Successfully authenticated', {duration: 3000})
-
-          }).catch(e => {
-            this.isLoading = false
+            this.$toast.error(error.response.data.message, {duration: 3000})
           })
-
-        }).catch(error => {
-          this.isLoading = false
-          this.$toast.error(error.response.data.message, {duration: 3000})
-        })
+        }
       }
     }
   }
