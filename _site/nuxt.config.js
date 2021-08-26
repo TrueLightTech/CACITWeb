@@ -76,7 +76,7 @@ export default {
   },
   publicRuntimeConfig: {
     axios: {
-      browserBaseURL: "https://api.cacitaifa.com/api/"
+      browserBaseURL: "http://137.184.74.38:8090/api/"
     }
   },
   // Build Configuration: https://go.nuxtjs.dev/config-build
