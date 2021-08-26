@@ -14,7 +14,7 @@
               <li>
                 <div class="mb-3">
                   <label for="exampleFormControlInput1" class="form-label">Phone number</label>
-                  <input type="text" v-model="login.phoneNumber" class="form-control" id="exampleFormControlInput1"
+                  <input type="text" v-model="login.phoneNumber" class="form-control form-control-lg" id="exampleFormControlInput1"
                          placeholder="">
                 </div>
               </li>
@@ -22,12 +22,12 @@
               <li>
                 <div class="mb-3">
                   <label for="exampleFormControlInput1" class="form-label">Password</label>
-                  <input v-model="login.passCode" type="password" class="form-control" id="exampleFormControlInput1"
+                  <input v-model="login.passCode" type="password" class="form-control form-control-lg" id="exampleFormControlInput1"
                          placeholder="">
                 </div>
               </li>
               <li class="my-4">
-                <button v-if="!isLoading" @click="signInUser()" type="button"
+                <button v-if="!isLoading" @click="loginUser()" type="button"
                         class="btn btn-primary btn-lg px-4 py-2 w-100">
                   <h6 class="p-0 m-0">LOG IN</h6>
                 </button>
@@ -72,38 +72,19 @@
     mounted() {
     },
     methods: {
-      signInUser() {
+      async loginUser() {
         this.isLoading = true
-        this.$auth.loginWith('customStrategy', {data: this.login}).then(resp => {
-
-          this.$axios.$get('/useraccounts/me', {
-            headers: {
-              Authorization: 'Bearer ' + resp.data.data.token
-            }
-          }).then(response => {
-            const customUser = {
-              ...response.data,
-              fullName: response.data.name,
-              roles: ['user']
-            }
-
-            this.isLoading = false
-
-            this.$auth.$storage.setUniversal("user", customUser)
-            this.$auth.$storage.setUniversal("token", resp.data.data.token)
-            this.$auth.setUser(customUser)
-            this.$router.push({path: `/admin/dashboard`})
-            this.$toast.success('Successfully authenticated', {duration: 3000})
-
-          }).catch(e => {
-            this.isLoading = false
+        try {
+          await this.$auth.loginWith('local', {
+            data: this.login
           })
 
-        }).catch(error => {
-          this.$toast.error(error.response.data.message, {duration: 3000})
+          this.$router.push('/admin/dashboard')
+        } catch (e) {
           this.isLoading = false
-        })
-      }
+          this.error = e.response.data.message
+        }
+      },
     }
   }
 </script>

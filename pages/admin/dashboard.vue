@@ -2,7 +2,7 @@
   <div class="container">
     <div class="row justify-content-center mt-10">
       <div class="col-sm-10 col-md-10 col-lg-10 col-xl-6">
-        <h6>Hi, {{user.name}}</h6>
+        <h6>Hi,{{loggedInUser.data.name}}</h6>
         <div class="row">
           <div class="col-md-4 my-2">
             <div class="card">
@@ -68,12 +68,15 @@
 
 <script>
 
-
+  import {mapGetters} from 'vuex'
   import AdminHeader from "../../components/AdminHeader";
 
   export default {
     name: "dashboard",
     components: {AdminHeader},
+    computed: {
+      ...mapGetters(['isAuthenticated', 'loggedInUser'])
+    },
     data() {
       return {
         user: JSON.parse(window.localStorage.getItem('auth.user'))

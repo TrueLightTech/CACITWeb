@@ -1,5 +1,5 @@
 <template>
-  <div v-if="isLoggedIn()">
+  <div v-if="isAuthenticated">
     <nav class="navbar fixed-top navbar-light bg-light">
       <div class="container d-flex justify-content-between">
         <NuxtLink class="navbar-brand" to="/admin/dashboard"><h6>CACI Church APP</h6></NuxtLink>
@@ -37,7 +37,8 @@
             <NuxtLink to="/admin/account" data-bs-dismiss="offcanvas" aria-label="Close"><h4>Account</h4></NuxtLink>
           </li>
           <li class="my-5">
-            <h4 :style="{'cursor':'pointer'}" @click="logout()" data-bs-dismiss="offcanvas" aria-label="Close">Logout</h4>
+            <h4 :style="{'cursor':'pointer'}" @click="logout()" data-bs-dismiss="offcanvas" aria-label="Close">
+              Logout</h4>
           </li>
         </ul>
       </div>
@@ -46,15 +47,21 @@
 </template>
 
 <script>
+  import {mapGetters} from 'vuex'
+
   export default {
     name: "AdminHeader",
+    computed: {
+      ...mapGetters(['isAuthenticated', 'loggedInUser'])
+    },
     methods: {
       isLoggedIn() {
         return !(this.$route.fullPath.includes("login") || this.$route.fullPath.includes("register"))
       },
       async logout() {
+        // await this.$auth.logout();
+        // this.$router.push({path: `/login`})
         await this.$auth.logout();
-        this.$router.push({path: `/login`})
       }
     }
   }

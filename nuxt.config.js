@@ -82,7 +82,7 @@ export default {
   // Build Configuration: https://go.nuxtjs.dev/config-build
   build: {},
   router: {
-    // middleware: ['auth']
+    middleware: ['auth']
   },
   auth: {
     redirect: {
@@ -90,27 +90,17 @@ export default {
       logout: '/login',
     },
     strategies: {
-      customStrategy: {
-        scheme: '~/schemes/customScheme',
-        endpoints: {
-          login: {url: '/auth/login', method: 'post'},
-          logout: {url: '/auth/logout', method: 'post'},
-          user: {url: '/useraccounts/me', method: 'get'}
-        },
+      local: {
         token: {
-          type: 'Basic',
-          global: true
-        }
-      },
-      customRegisterStrategy: {
-        scheme: '~/schemes/customRegisterScheme',
-        endpoints: {
-          login: {url: '/auth/register', method: 'post'},
-          logout: {url: '/auth/logout', method: 'post'}
+          property: 'data.token'
         },
-        token: {
-          type: 'Basic',
-          global: true
+        user: {
+          property: false
+        },
+        endpoints: {
+          login: {url: 'auth/login', method: 'post'},
+          user: {url: 'useraccounts/me', method: 'get'},
+          logout: false
         }
       }
     }

@@ -81,11 +81,19 @@ a {
   }
 }
 
+label {
+  color: #999999;
+}
+
+.form-control {
+  font-size: medium;
+}
+
 .main-wrapper {
   padding: 100px 0;
 }
 
-.active-bold{
+.active-bold {
   color: $mainColor;
   font-weight: bold;
 }
