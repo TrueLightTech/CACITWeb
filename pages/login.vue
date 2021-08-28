@@ -37,9 +37,12 @@
                   <h6 class="p-0 m-0"><span class="spinner-border spinner-border-sm" role="status"
                                             aria-hidden="true"></span> LOADING ...</h6>
                 </button>
+                <small class="my-2 d-block">
+                  <NuxtLink to="/forgotpassword" class="bg-active active-bold">Forgot password?</NuxtLink>
+                </small>
               </li>
               <li class="mt-2">
-                <small>You dont have an account, create one
+                <small>Need an account, create one
                   <NuxtLink to="/register" class="bg-active active-bold">here</NuxtLink>
                 </small>
               </li>

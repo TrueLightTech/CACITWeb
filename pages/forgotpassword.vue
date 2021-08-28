@@ -20,29 +20,17 @@
                 </div>
               </li>
 
-              <li>
-                <div class="mb-3">
-                  <label for="exampleFormControlInput1" class="form-label">Password</label>
-                  <input v-model="login.passCode" type="password" class="form-control form-control-lg"
-                         id="exampleFormControlInput1"
-                         placeholder="">
-                </div>
-              </li>
               <li class="my-4">
-                <button v-if="!isLoading" @click="loginUser()" type="button"
+                <button v-if="!isLoading" type="button"
                         :class="activateButton()">
-                  <h6 class="p-0 m-0">LOG IN</h6>
+                  <h6 class="p-0 m-0">Reset Password</h6>
                 </button>
                 <button v-else class="btn btn-primary btn-lg px-4 py-2 w-100" type="button" disabled>
                   <h6 class="p-0 m-0"><span class="spinner-border spinner-border-sm" role="status"
                                             aria-hidden="true"></span> LOADING ...</h6>
                 </button>
               </li>
-              <li class="mt-2">
-                <small>You dont have an account, create one
-                  <NuxtLink to="/register" class="bg-active active-bold">here</NuxtLink>
-                </small>
-              </li>
+
             </ul>
           </div>
         </div>

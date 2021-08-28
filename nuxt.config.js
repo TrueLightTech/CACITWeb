@@ -102,6 +102,7 @@ export default {
     redirect: {
       login: '/login',
       logout: '/login',
+      home: '/admin/dashboard'
     },
     strategies: {
       local: {

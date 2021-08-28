@@ -104,7 +104,7 @@
                   </button>
                 </li>
                 <li class="mt-2">
-                  <small>You have an account, login
+                  <small>Already have an account?, login
                     <NuxtLink to="/login" class="bg-active active-bold">here</NuxtLink>
                   </small>
                 </li>
