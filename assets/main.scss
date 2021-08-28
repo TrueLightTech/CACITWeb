@@ -98,4 +98,17 @@ label {
   font-weight: bold;
 }
 
+.profile-header {
+  border: 5px solid $mainColor;
+  width: 100%;
+  float: left;
+  margin-bottom: 20px;
+  background-color: #f6f6f6;
+}
+
+.offcanvas-body {
+  padding: 0;
+  padding-top: 1rem;
+}
+
 

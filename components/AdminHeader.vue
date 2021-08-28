@@ -5,7 +5,7 @@
         <NuxtLink class="navbar-brand" to="/admin/dashboard"><h6>CACI Church APP</h6></NuxtLink>
         <div class="d-flex justify-content-center align-content-center align-middle">
 
-          <img src="~assets/imgs/menu.svg" :style="{width:'25px', height:'25px'}" class="img-fluid"
+          <img src="~assets/imgs/menu.svg" :style="{width:'25px', height:'25px', cursor:'pointer'}" class="img-fluid"
                data-bs-toggle="offcanvas"
                data-bs-target="#offcanvasWithBackdrop" aria-controls="offcanvasWithBackdrop"/>
         </div>
@@ -15,10 +15,22 @@
     <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasWithBackdrop"
          aria-labelledby="offcanvasWithBackdropLabel">
       <div class="offcanvas-header">
-        <h5 class="offcanvas-title" id="offcanvasWithBackdropLabel">Menu</h5>
         <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
       </div>
       <div class="offcanvas-body text-center">
+        <div class="profile-header border-bottom-0 border-top-0 py-4">
+          <div class="row">
+            <div class="col-4">
+              <img src="~assets/imgs/user.svg" class="img-fluid w-50">
+            </div>
+            <div class="col-8 text-start">
+              <ul class="list-unstyled">
+                <li><h6>{{loggedInUser.data.name}}</h6></li>
+                <li><p>Church Worker</p></li>
+              </ul>
+            </div>
+          </div>
+        </div>
         <ul class="list-unstyled">
           <li class="my-5">
             <NuxtLink to="/admin/dashboard" data-bs-dismiss="offcanvas" aria-label="Close"><h4>Home</h4></NuxtLink>

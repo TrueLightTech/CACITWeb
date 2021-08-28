@@ -154,7 +154,7 @@
           try {
             this.isLoading = true
             this.update.dateOfBirth = this.update.dataOfBirth.split('T')[0]
-            await this.$axios.put('useraccounts/me', this.update, {
+            let user = await this.$axios.put('useraccounts/me', this.update, {
               headers: {
                 Authorization: 'Bearer ' + window.localStorage.getItem('auth._token.local')
               }
