@@ -2,7 +2,7 @@
   <div class="container-fluid">
     <div class="row justify-content-center">
       <div class="col-11 col-lg-4 col-xl-3 col-md-8 col-sm-10 g-0">
-        <div class="form-window card p-4 border-0 rounded-0 pt-5">
+        <div class="form-window card p-4 border-0 rounded-0 pt-5 overflow-auto">
           <div class="card-body">
             <form>
               <ul class="list-unstyled">
@@ -15,7 +15,7 @@
                 <li class="mt-4">
                   <div class="mb-3">
                     <label for="exampleFormControlInput1" class="form-label">Full name</label>
-                    <input type="email" class="form-control form-control-lg" id="exampleFormControlInput1"
+                    <input type="text" class="form-control form-control-lg" id="exampleFormControlInput1"
                            placeholder="" v-model="register.name">
                   </div>
                 </li>
@@ -38,6 +38,7 @@
                     <label for="exampleFormControlInput1" class="form-label">Confirm Password</label>
                     <input type="password" class="form-control form-control-lg" id="exampleFormControlInput1"
                            placeholder="" v-model="register.confirmPassCode">
+                    <small class="text-danger" v-if="passwordsMatch()">Passwords do not match</small>
                   </div>
                 </li>
                 <li>
@@ -93,7 +94,7 @@
                   </select>
                 </li>
                 <li class="mt-4">
-                  <button v-if="!isLoading" type="button" class="btn btn-primary btn-lg px-4 py-2 w-100"
+                  <button v-if="!isLoading" type="button" :class="activateButton()"
                           @click="signUp()">
                     <h6 class="p-0 m-0">REGISTER NOW</h6>
                   </button>
@@ -153,12 +154,29 @@
       this.getChurchGroups()
     },
     methods: {
+      isInputFieldsValid() {
+        const isValid = (currentValue) => currentValue.length !== 0;
+        const inputArray = [this.register.name, this.register.phoneNumber, this.register.passCode,
+          this.register.gender, this.register.churchGroupId,
+          this.register.churchFamilyId];
+        return inputArray.every(isValid)
+      },
+      activateButton() {
+        if (this.isInputFieldsValid()) {
+          return "btn btn-primary btn-lg px-4 py-2 w-100"
+        } else {
+          return "btn btn-primary btn-lg px-4 py-2 w-100 disabled"
+        }
+      },
       getChurchGroups() {
         this.$axios.get('churchgroups').then(response => {
           this.churchGroups = response.data.data
         }).catch(error => {
 
         })
+      },
+      passwordsMatch() {
+        return this.register.passCode !== this.register.confirmPassCode;
       },
       getChurchFamilies() {
         this.$axios.get('churchfamilies').then(response => {
@@ -167,21 +185,27 @@
         })
       },
       async signUp() {
-        try {
-          this.isLoading = true
-          await this.$axios.post('auth/register', this.register)
+        if (this.isInputFieldsValid()) {
+          try {
+            if (!this.passwordsMatch()) {
+              this.isLoading = true
+              await this.$axios.post('auth/register', this.register)
 
-          await this.$auth.loginWith('local', {
-            data: {
-              phoneNumber: this.register.phoneNumber,
-              countryCode: this.register.countryCode,
-              passCode: this.register.passCode
-            },
-          })
-          this.$router.push('/admin/dashboard')
-        } catch (e) {
-          this.isLoading = false
-          this.$toast.error(e.response.data.message, {duration: 3000})
+              await this.$auth.loginWith('local', {
+                data: {
+                  phoneNumber: this.register.phoneNumber,
+                  countryCode: this.register.countryCode,
+                  passCode: this.register.passCode
+                },
+              })
+              this.$router.push('/admin/dashboard')
+            } else {
+              this.$toast.info("Passwords do not match, check again!")
+            }
+          } catch (e) {
+            this.isLoading = false
+            this.$toast.error(e.response.data.message, {duration: 3000})
+          }
         }
       }
     }

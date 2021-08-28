@@ -58,6 +58,20 @@ export default {
     '@nuxtjs/toast',
     '@nuxtjs/auth-next'
   ],
+  toast: {
+    position: 'top-right',
+    duration: 5000,
+    theme: "outline",
+    register: [ // Register custom toasts
+      {
+        name: 'my-error',
+        message: 'Oops...Something went wrong',
+        options: {
+          type: 'error'
+        }
+      }
+    ]
+  },
 
   axios: {
     // retry: {retries: 5},

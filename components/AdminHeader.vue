@@ -59,9 +59,8 @@
         return !(this.$route.fullPath.includes("login") || this.$route.fullPath.includes("register"))
       },
       async logout() {
-        // await this.$auth.logout();
-        // this.$router.push({path: `/login`})
         await this.$auth.logout();
+        this.$toast.success("Logged out")
       }
     }
   }

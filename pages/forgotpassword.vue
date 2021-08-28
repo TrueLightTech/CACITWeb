@@ -3,13 +3,13 @@
     <div class="row justify-content-center">
       <div class="col-11 col-lg-4 col-xl-3 col-md-8 col-sm-10 g-0">
         <div class="form-window card p-4 border-0 rounded-0 pt-5">
-          <div class="card-body overflow-auto">
+          <div class="card-body">
             <ul class="list-unstyled">
               <li class="mb-4">
                 <h3>CACI Taifa</h3>
               </li>
               <li>
-                <h5>LOG IN</h5>
+                <h5>Forgot Password</h5>
               </li>
               <li>
                 <div class="mb-3">
@@ -58,7 +58,8 @@
 
 <script>
   export default {
-    name: "login",
+    auth: false,
+    name: "forgotpassword",
     data() {
       return {
         isLoading: false,
@@ -93,11 +94,10 @@
             await this.$auth.loginWith('local', {
               data: this.login
             })
-            this.$toast.success('Successfully authenticated', {duration: 3000, fitToScreen: true})
+
             this.$router.push('/admin/dashboard')
           } catch (e) {
             this.isLoading = false
-            this.$toast.error(e.response.data.message, {duration: 3000, fitToScreen: true})
             this.error = e.response.data.message
           }
         }
@@ -107,7 +107,5 @@
 </script>
 
 <style scoped>
-  body {
-    background-color: #7F828B;
-  }
+
 </style>
