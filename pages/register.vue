@@ -12,6 +12,15 @@
                 <li>
                   <h5>Register</h5>
                 </li>
+                <li class="my-4">
+                  <div class="d-flex justify-content-center">
+                    <img :src="register.profilePicture" class="img-fluid w-25 rounded-circle">
+                  </div>
+                </li>
+                <li>
+                  <input type="file" accept="image/*" class="custom-file-input"
+                         aria-describedby="inputGroupFileAddon01" @change="imageUploaded($event)">
+                </li>
                 <li class="mt-4">
                   <div class="mb-3">
                     <label for="exampleFormControlInput1" class="form-label">Full name</label>
@@ -152,13 +161,32 @@
     mounted() {
       this.getChurchFamilies()
       this.getChurchGroups()
+
+      this.register.profilePicture = require(`~/assets/imgs/user.svg`)
     },
     methods: {
+      imageToBase64: function (img) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          this.image = e.target.result;
+          this.register.profilePicture = e.target.result;
+        }
+        reader.readAsDataURL(img);
+      },
+      imageUploaded: function (e) {
+        const selectedImage = e.target.files[0]
+
+        var re = /(\.jpg|\.jpeg|\.bmp|\.gif|\.png)$/i;
+        if (!re.exec(selectedImage.name)) {
+          alert("File extension not supported!");
+        } else {
+          this.imageToBase64(selectedImage)
+        }
+      },
       isInputFieldsValid() {
         const isValid = (currentValue) => currentValue.length !== 0;
         const inputArray = [this.register.name, this.register.phoneNumber, this.register.passCode,
-          this.register.gender, this.register.churchGroupId,
-          this.register.churchFamilyId];
+          this.register.gender, this.register.profilePicture];
         return inputArray.every(isValid)
       },
       activateButton() {

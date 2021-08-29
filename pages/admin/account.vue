@@ -4,11 +4,15 @@
       <div class="row justify-content-center">
         <div class="col-10 col-lg-5 col-xl-4 col-md-6 col-sm-8 g-0">
           <div class="d-flex justify-content-center">
-            <img src="~assets/imgs/user.svg" class="img-fluid w-25">
+            <img :src="update.profilePicture" class="img-fluid w-25 rounded-circle">
           </div>
           <div class="form-window card p-4 pt-0 border-0 rounded-0">
             <div class="card-body">
               <ul class="list-unstyled">
+                <li>
+                  <input type="file" accept="image/*" class="custom-file-input"
+                         aria-describedby="inputGroupFileAddon01" @change="imageUploaded($event)">
+                </li>
                 <li class="mt-4">
                   <div class="mb-3">
                     <label for="exampleFormControlInput1" class="form-label">Full name</label>
@@ -91,12 +95,14 @@
 
 <script>
   import {mapGetters} from 'vuex'
+  import {profileImageBaseUrl} from "../../resources/constants";
 
   export default {
     name: "account",
     mounted() {
       this.update = Object.assign(this.update, this.loggedInUser.data)
       this.update.dataOfBirth = this.update.dataOfBirth.split('T')[0]
+      this.update.profilePicture = this.getProfileImage(this.update.profilePicture)
       this.getChurchGroups()
       this.getChurchFamilies()
     },
@@ -107,6 +113,7 @@
       return {
         isLoading: false,
         churchGroups: [],
+        image: '',
         churchFamilies: [],
         update: {
           name: "",
@@ -122,6 +129,24 @@
       }
     },
     methods: {
+      imageToBase64: function (img) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          this.image = e.target.result;
+          this.update.profilePicture = e.target.result;
+        }
+        reader.readAsDataURL(img);
+      },
+      imageUploaded: function (e) {
+        const selectedImage = e.target.files[0]
+
+        var re = /(\.jpg|\.jpeg|\.bmp|\.gif|\.png)$/i;
+        if (!re.exec(selectedImage.name)) {
+          alert("File extension not supported!");
+        } else {
+          this.imageToBase64(selectedImage)
+        }
+      },
       isInputFieldsValid() {
         const isValid = (currentValue) => currentValue.length !== 0;
         const inputArray = [this.update.name, this.update.phoneNumber,
@@ -142,6 +167,12 @@
         }).catch(error => {
 
         })
+      },
+      getProfileImage(image) {
+        if (image) {
+          return `${profileImageBaseUrl}/${image}`
+        }
+        return require(`~/assets/imgs/user.svg`)
       },
       getChurchFamilies() {
         this.$axios.get('churchfamilies').then(response => {

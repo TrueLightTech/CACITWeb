@@ -21,7 +21,7 @@
         <div class="profile-header border-bottom-0 border-top-0 py-4">
           <div class="row">
             <div class="col-4">
-              <img src="~assets/imgs/user.svg" class="img-fluid w-50">
+              <img :src="getProfileImage(loggedInUser.data.profilePicture)" class="img-fluid w-50 rounded-circle">
             </div>
             <div class="col-8 text-start">
               <ul class="list-unstyled">
@@ -60,6 +60,7 @@
 
 <script>
   import {mapGetters} from 'vuex'
+  import {profileImageBaseUrl} from "../resources/constants";
 
   export default {
     name: "AdminHeader",
@@ -69,6 +70,12 @@
     methods: {
       isLoggedIn() {
         return !(this.$route.fullPath.includes("login") || this.$route.fullPath.includes("register"))
+      },
+      getProfileImage(image) {
+        if (image) {
+          return `${profileImageBaseUrl}/${image}`
+        }
+        return "~assets/imgs/user.svg"
       },
       async logout() {
         await this.$auth.logout();
