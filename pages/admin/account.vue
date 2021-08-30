@@ -150,8 +150,7 @@
       isInputFieldsValid() {
         const isValid = (currentValue) => currentValue.length !== 0;
         const inputArray = [this.update.name, this.update.phoneNumber,
-          this.update.gender, this.update.churchGroupId,
-          this.update.churchFamilyId];
+          this.update.gender];
         return inputArray.every(isValid)
       },
       activateButton() {
