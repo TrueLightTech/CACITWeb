@@ -1,5 +1,6 @@
 @import url("https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;700&display=swap");
-@import "https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.3/css/fontawesome.min.css";
+@import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css");
+
 html, body {
   background-color: #FFF;
   border: 0;
@@ -72,6 +73,7 @@ a {
   text-decoration: none;
   color: #222;
 }
+
 a:hover {
   color: #146efd;
 }
@@ -88,6 +90,7 @@ a:hover {
   float: left;
   background-color: #e7e7e7;
 }
+
 .dashboard-mini {
   height: 250px;
 }

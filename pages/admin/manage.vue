@@ -1,22 +1,154 @@
 <template>
-  <div
-    class="d-flex justify-content-center align-middle align-self-center align-content-center align-items-center mt-10">
-    <ul class="list-unstyled  justify-content-center text-center">
-      <li class="my-2">
-        <img src="~assets/imgs/empty_state.svg" :style="{width: '340px'}"
-             class="img-fluid  align-self-center align-middle"/>
-      </li>
-      <li class="mt-4"><h4>Nothing Found Here</h4></li>
-    </ul>
+
+  <!--  </div>-->
+  <div class="container">
+    <div class="row justify-content-center mt-10">
+      <div class="col-md-8 text-left d-flex justify-content-between mb-5">
+        <h3>Members</h3>
+        <NuxtLink to="/admin/members/new">
+          <button type="button" class="btn btn-primary"><i class="fas fa-plus-circle"></i> Add Member</button>
+        </NuxtLink>
+      </div>
+    </div>
+
+    <div class="row justify-content-center">
+      <div class="col-md-8">
+        <div v-if="!isLoading">
+          <table class="table table-hover table-responsive">
+            <caption>List of members</caption>
+            <thead>
+            <tr>
+              <th scope="col">#</th>
+              <th scope="col">Profile</th>
+              <th scope="col">Name</th>
+              <th scope="col">Family</th>
+              <th class="text-end" scope="col">Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr v-for="(member,index) in members.results" :key="index">
+              <th scope="row">{{index+1}}</th>
+              <td>
+                <img :src="getProfileImage(member.profilePicture)" class="img-fluid profileImage rounded-circle">
+              </td>
+              <td>
+                <NuxtLink :to="'members/'+member.phoneNumber">
+                  {{member.name}}
+                </NuxtLink>
+              </td>
+              <td>Moses</td>
+              <td class="text-end">
+                <!-- Example single danger button -->
+                <div class="btn-group">
+                  <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown"
+                          aria-expanded="false">
+                    Action
+                  </button>
+                  <ul class="dropdown-menu">
+                    <li>
+                      <NuxtLink class="dropdown-item" :to="'members/'+member.phoneNumber">Assign role</NuxtLink>
+                    </li>
+                    <li>
+                      <NuxtLink class="dropdown-item" :to="'members/'+member.phoneNumber+'/tithe'">Record Tithe
+                      </NuxtLink>
+                    </li>
+                    <li>
+                      <NuxtLink class="dropdown-item" :to="'members/'+member.phoneNumber">Update User</NuxtLink>
+                    </li>
+                    <li>
+                      <a class="dropdown-item text-danger" to="#" data-bs-toggle="modal"
+                         @click="checkUserToDelete(member.phoneNumber)"
+                         data-bs-target="#warningModal">Delete User
+                      </a>
+                    </li>
+                  </ul>
+                </div>
+              </td>
+            </tr>
+
+            </tbody>
+          </table>
+          <nav aria-label="Page navigation example">
+            <ul class="pagination justify-content-end">
+              <li class="page-item disabled">
+                <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Previous</a>
+              </li>
+              <li class="page-item"><a class="page-link" href="#">1</a></li>
+              <li class="page-item"><a class="page-link" href="#">2</a></li>
+              <li class="page-item"><a class="page-link" href="#">3</a></li>
+              <li class="page-item">
+                <a class="page-link" href="#">Next</a>
+              </li>
+            </ul>
+          </nav>
+        </div>
+        <page-loader v-else></page-loader>
+        <warning-modal v-bind:title="'Are you sure?'" :message="'You are about to delete this users details.'"
+                       @onclick="modalState($event)"></warning-modal>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
-    export default {
-        name: "manage"
+  import {MemberList} from "../../network/Member";
+  import {profileImageBaseUrl} from "../../resources/constants";
+  import PageLoader from "../../components/PageLoader";
+
+  export default {
+    name: "manage",
+    components: {PageLoader},
+    data() {
+      return {
+        isLoading: false,
+        toDeleteId: '',
+        members: MemberList
+      }
+    },
+    beforeMount() {
+      this.fetchMembers()
+    },
+    methods: {
+      fetchMembers() {
+        this.isLoading = true
+        this.$axios.get('churchmembers').then(response => {
+          this.members = Object.assign(MemberList, response.data.data)
+          this.isLoading = false
+        }).catch(error => {
+          this.isLoading = false
+          console.log(error)
+        })
+      },
+      deleteMember(id) {
+        this.$axios.delete(`churchmembers/${id}`).then(response => {
+          console.log(response.data)
+          this.fetchMembers()
+          this.$toast.info("User successfully deleted.")
+        }).catch(error => {
+          console.log(error)
+        })
+      },
+      getProfileImage(image) {
+        if (image) {
+          return `${profileImageBaseUrl}/${image}`
+        }
+        return require(`~/assets/imgs/user.svg`)
+      },
+      modalState(data) {
+        if (data.toString().toLowerCase() === 'positive') {
+          this.deleteMember(this.toDeleteId)
+        }
+      },
+      checkUserToDelete(id) {
+        this.toDeleteId = id
+      }
     }
+  }
 </script>
 
 <style scoped>
-
+  .profileImage {
+    width: 50px;
+    height: 50px;
+  }
 </style>
