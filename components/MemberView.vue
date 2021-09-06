@@ -246,7 +246,7 @@
           this.$toast.success("Successfully updated")
           this.isLoading = false
 
-          this.$route.push({path: `admin/manage`})
+          this.$router.push('/admin/manage')
         }).catch(error => {
           this.$toast.success(error.response.data.message)
           this.isLoading = false

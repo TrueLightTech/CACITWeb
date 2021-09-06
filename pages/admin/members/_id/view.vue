@@ -108,11 +108,10 @@
       },
       deleteMember(id) {
         this.$axios.delete(`churchmembers/${id}`).then(response => {
-          console.log(response.data)
-          this.fetchMembers()
           this.$toast.info("User successfully deleted.")
+          this.$router.push('/admin/manage')
+
         }).catch(error => {
-          console.log(error)
         })
       },
       checkUserToDelete(id) {
