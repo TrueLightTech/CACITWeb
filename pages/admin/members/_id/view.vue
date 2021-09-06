@@ -26,7 +26,9 @@
                         <NuxtLink :to="'/admin/members/'+member.phoneNumber">
                           <button type="button" class="btn btn-secondary">Assign Roles</button>
                         </NuxtLink>
-                        <button type="button" class="btn btn-danger">Delete</button>
+                        <button type="button" data-bs-target="#warningModal" data-bs-toggle="modal"
+                                class="btn btn-danger">Delete
+                        </button>
                       </div>
                     </li>
                   </ul>
@@ -50,7 +52,8 @@
       </div>
       <page-loader v-else></page-loader>
     </div>
-
+    <warning-modal v-bind:title="'Are you sure?'" :message="'You are about to delete this users details.'"
+                   @onclick="modalState($event)"></warning-modal>
   </div>
 </template>
 
@@ -65,6 +68,7 @@
     data() {
       return {
         pageRefresh: false,
+        toDeleteId: '',
         member: {
           id: "",
           name: "",
@@ -101,6 +105,23 @@
           return `${profileImageBaseUrl}/${image}`
         }
         return require(`~/assets/imgs/user.svg`)
+      },
+      deleteMember(id) {
+        this.$axios.delete(`churchmembers/${id}`).then(response => {
+          console.log(response.data)
+          this.fetchMembers()
+          this.$toast.info("User successfully deleted.")
+        }).catch(error => {
+          console.log(error)
+        })
+      },
+      checkUserToDelete(id) {
+        this.toDeleteId = id
+      },
+      modalState(data) {
+        if (data.toString().toLowerCase() === 'positive') {
+          this.deleteMember(this.$route.params.id)
+        }
       }
     }
   }

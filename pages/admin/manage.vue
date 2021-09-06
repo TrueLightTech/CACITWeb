@@ -15,7 +15,8 @@
       <div class="col-md-8">
         <div v-if="!isLoading">
           <table class="table table-hover table-responsive">
-            <caption>List of members</caption>
+            <caption>List of members <span class="badge rounded-pill bg-primary">{{totalCount}}</span>
+            </caption>
             <thead>
             <tr>
               <th scope="col">#</th>
@@ -72,14 +73,14 @@
           </table>
           <nav aria-label="Page navigation example">
             <ul class="pagination justify-content-end">
-              <li class="page-item disabled">
-                <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Previous</a>
-              </li>
-              <li class="page-item"><a class="page-link" href="#">1</a></li>
-              <li class="page-item"><a class="page-link" href="#">2</a></li>
-              <li class="page-item"><a class="page-link" href="#">3</a></li>
               <li class="page-item">
-                <a class="page-link" href="#">Next</a>
+                <a @click="fetchMembers(currentPage - 1)" class="page-link" href="#" tabindex="-1" aria-disabled="true">Previous</a>
+              </li>
+              <li v-for="index in numberOfPages" :key="index" class="page-item">
+                <a @click="fetchMembers(index)" class="page-link" href="#">{{index}}</a>
+              </li>
+              <li class="page-item">
+                <a @click="fetchMembers(currentPage+1)" class="page-link" href="#">Next</a>
               </li>
             </ul>
           </nav>
@@ -102,6 +103,9 @@
     components: {PageLoader},
     data() {
       return {
+        numberOfPages: 0,
+        currentPage: 0,
+        totalCount: 0,
         isLoading: false,
         toDeleteId: '',
         members: MemberList
@@ -111,10 +115,14 @@
       this.fetchMembers()
     },
     methods: {
-      fetchMembers() {
+      fetchMembers(page = 1, pageSize = 10) {
+        this.currentPage = page
         this.isLoading = true
-        this.$axios.get('churchmembers').then(response => {
+        this.$axios.get(`churchmembers?Page=${page}&PageSize=${pageSize}`).then(response => {
           this.members = Object.assign(MemberList, response.data.data)
+          this.numberOfPages = this.members.totalPages
+          this.totalCount = this.members.totalCount
+
           this.isLoading = false
         }).catch(error => {
           this.isLoading = false
