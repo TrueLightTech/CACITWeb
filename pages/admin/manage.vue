@@ -29,14 +29,16 @@
             <tr v-for="(member,index) in members.results" :key="index">
               <th scope="row">{{index+1}}</th>
               <td>
-                <img :src="getProfileImage(member.profilePicture)" class="img-fluid profileImage rounded-circle">
+                <NuxtLink :to="'members/'+member.phoneNumber+'/view'">
+                  <img :src="getProfileImage(member.profilePicture)" class="img-fluid profileImage rounded-circle">
+                </NuxtLink>
               </td>
               <td>
-                <NuxtLink :to="'members/'+member.phoneNumber">
+                <NuxtLink :to="'members/'+member.phoneNumber+'/view'">
                   {{member.name}}
                 </NuxtLink>
               </td>
-              <td>Moses</td>
+              <td>{{member.churchGroupId}}</td>
               <td class="text-end">
                 <!-- Example single danger button -->
                 <div class="btn-group">

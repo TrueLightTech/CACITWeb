@@ -147,7 +147,7 @@
           emailAddress: "",
           phoneNumber: "",
           churchId: "",
-          passCode: '',
+          passCode: '1234',
           countryCode: 'GH',
           dataOfBirth: "1990-08-20",
           gender: "",
@@ -285,6 +285,7 @@
           if (this.isAccount === true || this.isAccount === false) {
             try {
               this.isLoading = true
+              delete this.update.passCode
               this.update.dateOfBirth = this.update.dataOfBirth.split('T')[0]
               let user = await this.$axios.put(`${url}`, this.update, {
                 headers: {

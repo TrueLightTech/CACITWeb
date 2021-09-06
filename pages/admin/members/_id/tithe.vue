@@ -53,7 +53,7 @@
     name: "tithe",
     data() {
       return {
-        weeks: [1, 2, 3, 4],
+        weeks: [1, 2, 3, 4, 5],
         months: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
         years: ["2019", "2020", "2021", "2022", "2023", "2024"]
       }

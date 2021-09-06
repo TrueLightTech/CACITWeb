@@ -6,7 +6,6 @@
   export default {
     name: "_member",
     beforeMount() {
-      console.log(this.$route.params.member)
       this.getId()
     },
     data() {
