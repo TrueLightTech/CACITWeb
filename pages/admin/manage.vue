@@ -3,8 +3,16 @@
   <!--  </div>-->
   <div class="container">
     <div class="row justify-content-center mt-10">
-      <div class="col-md-8 text-left d-flex justify-content-between mb-5">
-        <h3>Members</h3>
+      <div class="col-md-8 text-left d-flex justify-content-between mb-3">
+
+
+        <ul class="list-unstyled">
+          <li>
+            <h3>Members</h3>
+          </li>
+        </ul>
+
+
         <NuxtLink to="/admin/members/new">
           <button type="button" class="btn btn-primary"><i class="fas fa-plus-circle"></i> Add Member</button>
         </NuxtLink>
@@ -14,6 +22,16 @@
     <div class="row justify-content-center">
       <div class="col-md-8">
         <div v-if="!isLoading">
+          <div class="input-group text-end float-end w-25 mb-3">
+            <span class="input-group-text" id="basic-addon1" style="background-color: #f8f8f8;">
+              <i class="fa fa-search" style="color:#cdcdcd;"></i>
+            </span>
+            <input type="text" v-model="searchQuery" @keyup="searchByName()" class="form-control"
+                   placeholder="Search Member"
+                   aria-label="Username"
+                   aria-describedby="basic-addon1">
+
+          </div>
           <table class="table table-hover table-responsive">
             <caption>List of members <span class="badge rounded-pill bg-primary">{{totalCount}}</span>
             </caption>
@@ -106,6 +124,7 @@
         numberOfPages: 0,
         currentPage: 0,
         totalCount: 0,
+        searchQuery: '',
         isLoading: false,
         toDeleteId: '',
         members: MemberList
@@ -115,6 +134,17 @@
       this.fetchMembers()
     },
     methods: {
+      searchByName() {
+        // this.isLoading = true
+        this.$axios.get(`churchmembers?Name=${this.searchQuery}`).then(response => {
+          this.members = Object.assign(MemberList, response.data.data)
+          this.numberOfPages = this.members.totalPages
+          this.totalCount = this.members.totalCount
+
+        }).catch(error => {
+          // this.isLoading = false
+        })
+      },
       fetchMembers(page = 1, pageSize = 10) {
         this.currentPage = page
         this.isLoading = true
@@ -126,7 +156,6 @@
           this.isLoading = false
         }).catch(error => {
           this.isLoading = false
-          console.log(error)
         })
       },
       deleteMember(id) {
