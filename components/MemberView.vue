@@ -119,7 +119,6 @@
       } else if (this.isAccount === false) {
         this.getMember(this.id)
       } else if (this.isAccount === null) {
-        this.update = ChurchMember
         this.update.profilePicture = this.getProfileImage('')
       }
 
@@ -139,7 +138,20 @@
         image: '',
         churchFamilies: [],
         roles: [],
-        update: ChurchMember
+        update: {
+          id: "",
+          name: "",
+          emailAddress: "",
+          phoneNumber: "",
+          churchId: "",
+          passCode: '1234',
+          countryCode: 'GH',
+          dataOfBirth: "1990-08-20",
+          gender: "",
+          profilePicture: "",
+          churchFamilyId: "",
+          churchGroupId: ""
+        }
       }
     },
     methods: {
