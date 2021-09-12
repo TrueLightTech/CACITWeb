@@ -15,6 +15,7 @@ export const ChurchMember = {
   dataOfBirth: "2021-08-30T18:48:14.85",
   emailAddress: "kweku.ayepah@gmail.com",
   gender: "Male",
+  churchFamilyName: "",
   name: "Kweku Ayepah",
   phoneNumber: "233554021947",
   profilePicture: "",

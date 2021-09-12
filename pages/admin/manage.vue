@@ -57,7 +57,7 @@
                   {{member.name}}
                 </NuxtLink>
               </td>
-              <td>{{member.churchGroupId}}</td>
+              <td>{{member.churchFamilyName}}</td>
               <td class="text-end">
                 <!-- Example single danger button -->
                 <div class="btn-group">
