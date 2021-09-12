@@ -78,13 +78,8 @@
 
                 <li class="my-3">
                   <label class="mb-2">Role</label>
-                  <select class="form-select form-control-lg" disabled>
-                    <option
-                      :value="role.id"
-                      :selected="update.roleId === role.id"
-                      v-for="role in roles">{{role.name}}
-                    </option>
-                  </select>
+                  <input type="text" class="form-control form-control-lg" id="exampleFormControlInput1"
+                         :placeholder="getCurrentRole(update.roleId)" disabled>
                 </li>
 
                 <li class="mt-4">
@@ -116,13 +111,15 @@
     name: "MemberView",
     props: ['isAccount', 'id'],
     mounted() {
-      if (this.isAccount) {
+
+      if (this.isAccount === true) {
         this.update = Object.assign(this.update, this.loggedInUser.data)
         this.update.dataOfBirth = this.update.dataOfBirth.split('T')[0]
         this.update.profilePicture = this.getProfileImage(this.update.profilePicture)
-      } else if (!this.isAccount) {
+      } else if (this.isAccount === false) {
         this.getMember(this.id)
-      } else {
+      } else if (this.isAccount === null) {
+        this.update = ChurchMember
         this.update.profilePicture = this.getProfileImage('')
       }
 
@@ -229,6 +226,7 @@
       createMember() {
         this.isLoading = true
 
+        this.update.passCode = "1234"
         this.$axios.post('churchmembers', this.update).then(response => {
           // this.churchFamilies = response.data.data
           this.$toast.success("Successfully updated")
@@ -239,6 +237,14 @@
           this.$toast.success(error.response.data.message)
           this.isLoading = false
         })
+      },
+      getCurrentRole(currentRoleId) {
+        let role = this.roles.filter(role => role.id === currentRoleId)
+
+        if (role.length === 0) {
+          return "N/A"
+        }
+        return role[0].name
       },
       async updateUser() {
         if (this.isInputFieldsValid()) {

@@ -1,5 +1,5 @@
 <template>
-  <member-view v-bind:is-account="null" v-bind:id="565"></member-view>
+  <member-view v-bind:is-account="null" v-bind:id="455"></member-view>
 </template>
 
 <script>
