@@ -26,7 +26,7 @@
             <div class="col-8 text-start">
               <ul class="list-unstyled">
                 <li><h6>{{loggedInUser.data.name}}</h6></li>
-                <li><p>Church Worker</p></li>
+                <li><p>{{getCurrentRole(loggedInUser.data.roleId)}}</p></li>
               </ul>
             </div>
           </div>
@@ -67,6 +67,14 @@
     computed: {
       ...mapGetters(['isAuthenticated', 'loggedInUser'])
     },
+    data() {
+      return {
+        roles: []
+      }
+    },
+    mounted() {
+      this.getRoles()
+    },
     methods: {
       isLoggedIn() {
         return !(this.$route.fullPath.includes("login") || this.$route.fullPath.includes("register"))
@@ -80,6 +88,20 @@
       async logout() {
         await this.$auth.logout();
         this.$toast.success("Logged out")
+      },
+      getRoles() {
+        this.$axios.get('roles').then(response => {
+          this.roles = response.data.data
+        }).catch(error => {
+        })
+      },
+      getCurrentRole(currentRoleId) {
+        let role = this.roles.filter(role => role.id === currentRoleId)
+
+        if (role.length === 0) {
+          return "N/A"
+        }
+        return role[0].name
       }
     }
   }

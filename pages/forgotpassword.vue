@@ -19,9 +19,25 @@
                          placeholder="">
                 </div>
               </li>
+              <li>
+                <div class="mb-3 mt-2">
+                  <label for="exampleFormControlInput1" class="form-label">Password</label>
+                  <input type="password" class="form-control form-control-lg" id="exampleFormControlInput1"
+                         placeholder="" v-model="login.password">
+                </div>
+              </li>
+              <li>
+                <div class="mb-3 mt-2">
+                  <label for="exampleFormControlInput1" class="form-label">Confirm Password</label>
+                  <input type="password" class="form-control form-control-lg" id="exampleFormControlInput1"
+                         placeholder="" v-model="login.confirmPassCode">
+                  <small class="text-danger" v-if="passwordsMatch()">Passwords do not match</small>
+                </div>
+              </li>
 
               <li class="my-4">
                 <button v-if="!isLoading" type="button"
+                        @click="resetPassword()"
                         :class="activateButton()">
                   <h6 class="p-0 m-0">Reset Password</h6>
                 </button>
@@ -55,7 +71,8 @@
         passCode: '',
         login: {
           phoneNumber: '',
-          passCode: '',
+          password: '',
+          confirmPassCode: '',
           countryCode: "GH",
         }
       }
@@ -65,7 +82,7 @@
     methods: {
       isInputFieldsValid() {
         const isValid = (currentValue) => currentValue.length !== 0;
-        const inputArray = [this.login.phoneNumber, this.login.passCode];
+        const inputArray = [this.login.phoneNumber, this.login.password];
         return inputArray.every(isValid)
       },
       activateButton() {
@@ -75,20 +92,27 @@
           return "btn btn-primary btn-lg px-4 py-2 w-100 disabled"
         }
       },
-      async loginUser() {
+      passwordsMatch() {
+        return this.login.password !== this.login.confirmPassCode;
+      },
+      async resetPassword() {
         if (this.isInputFieldsValid()) {
-          this.isLoading = true
           try {
-            await this.$auth.loginWith('local', {
-              data: this.login
-            })
+            if (!this.passwordsMatch()) {
+              this.isLoading = true
+              await this.$axios.post('auth/passwordreset', this.login)
+              this.$toast.success("Password Successfully Updated !!")
 
-            this.$router.push('/admin/dashboard')
+              this.$router.push('/login')
+            } else {
+              this.$toast.info("Passwords do not match, check again!")
+            }
           } catch (e) {
             this.isLoading = false
-            this.error = e.response.data.message
+            this.$toast.error(e.response.data.message, {duration: 3000})
           }
         }
+
       },
     }
   }
