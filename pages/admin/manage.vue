@@ -77,7 +77,7 @@
                       <NuxtLink class="dropdown-item" :to="'members/'+member.phoneNumber">Update User</NuxtLink>
                     </li>
                     <li>
-                      <a class="dropdown-item text-danger" to="#" data-bs-toggle="modal"
+                      <a class="dropdown-item text-danger" style="cursor: pointer;" data-bs-toggle="modal"
                          @click="checkUserToDelete(member.phoneNumber)"
                          data-bs-target="#warningModal">Delete User
                       </a>
