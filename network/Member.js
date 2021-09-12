@@ -19,6 +19,6 @@ export const ChurchMember = {
   name: "Kweku Ayepah",
   phoneNumber: "233554021947",
   profilePicture: "",
-  roleId: null,
+  roleId: "9",
   updatedAt: null
 }

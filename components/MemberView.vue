@@ -77,12 +77,12 @@
                 </li>
 
                 <li class="my-3">
-                  <label class="mb-2">Roles</label>
-                  <select v-model="roleId" class="form-select form-control-lg"
-                          aria-label="Default select example"
-                          @change="assignRole(update.id,roleId)">
-                    <option :value="role.id"
-                            v-for="role in roles" value="1">{{role.name}}
+                  <label class="mb-2">Role</label>
+                  <select class="form-select form-control-lg" disabled>
+                    <option
+                      :value="role.id"
+                      :selected="update.roleId === role.id"
+                      v-for="role in roles">{{role.name}}
                     </option>
                   </select>
                 </li>
@@ -110,6 +110,7 @@
 <script>
   import {mapGetters} from 'vuex'
   import {profileImageBaseUrl} from "../resources/constants";
+  import {ChurchMember} from "../network/Member";
 
   export default {
     name: "MemberView",
@@ -141,20 +142,7 @@
         image: '',
         churchFamilies: [],
         roles: [],
-        update: {
-          id: "",
-          name: "",
-          emailAddress: "",
-          phoneNumber: "",
-          churchId: "",
-          passCode: '1234',
-          countryCode: 'GH',
-          dataOfBirth: "1990-08-20",
-          gender: "",
-          profilePicture: "",
-          churchFamilyId: "",
-          churchGroupId: ""
-        }
+        update: ChurchMember
       }
     },
     methods: {
@@ -251,26 +239,6 @@
           this.$toast.success(error.response.data.message)
           this.isLoading = false
         })
-      },
-      async assignRole(userId, roleId) {
-
-        const requestData = {
-          userId: userId,
-          roleId: roleId
-        }
-        try {
-          this.isLoading = true
-          let user = await this.$axios.post(`roles/assign`, requestData, {
-            headers: {
-              Authorization: 'Bearer ' + window.localStorage.getItem('auth._token.local')
-            }
-          })
-          this.$toast.success("Successfully updated")
-          this.isLoading = false
-        } catch (e) {
-          this.$toast.error(e.response.data.message, {fitToScreen: true})
-          this.isLoading = false
-        }
       },
       async updateUser() {
         if (this.isInputFieldsValid()) {

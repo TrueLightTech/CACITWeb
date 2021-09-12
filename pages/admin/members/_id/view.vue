@@ -12,7 +12,7 @@
                 <li><h5 class="my-1">{{member.name}}</h5></li>
                 <li><p class="my-1">{{member.phoneNumber}}</p></li>
                 <li><p class="my-1">{{member.gender}}</p></li>
-                <li><p class="my-2">{{member.churchFamilyId}}</p></li>
+                <li><p class="my-2">{{member.churchFamilyName}}</p></li>
                 <li>
                   <ul class="list-item mx-0 px-0">
                     <li class="list-unstyled mx-0">
@@ -23,8 +23,8 @@
                         <NuxtLink :to="'/admin/members/'+member.phoneNumber+'/tithe'">
                           <button type="button" class="btn btn-outline-primary">Record Tithe</button>
                         </NuxtLink>
-                        <NuxtLink :to="'/admin/members/'+member.phoneNumber">
-                          <button type="button" class="btn btn-secondary">Assign Roles</button>
+                        <NuxtLink :to="'/admin/members/'+member.phoneNumber+'/role'">
+                          <button type="button" class="btn btn-secondary">Assign Role</button>
                         </NuxtLink>
                         <button type="button" data-bs-target="#warningModal" data-bs-toggle="modal"
                                 class="btn btn-danger">Delete
@@ -59,6 +59,7 @@
 
 <script>
   import {profileImageBaseUrl} from "../../../../resources/constants";
+  import {ChurchMember} from "../../../../network/Member";
 
   export default {
     name: "view",
@@ -69,20 +70,7 @@
       return {
         pageRefresh: false,
         toDeleteId: '',
-        member: {
-          id: "",
-          name: "",
-          emailAddress: "",
-          phoneNumber: "",
-          churchId: "",
-          passCode: '',
-          countryCode: 'GH',
-          dataOfBirth: "1990-08-20",
-          gender: "",
-          profilePicture: "",
-          churchFamilyId: "",
-          churchGroupId: ""
-        }
+        member: ChurchMember
       }
     },
     methods: {

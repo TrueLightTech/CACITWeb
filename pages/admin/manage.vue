@@ -67,7 +67,7 @@
                   </button>
                   <ul class="dropdown-menu">
                     <li>
-                      <NuxtLink class="dropdown-item" :to="'members/'+member.phoneNumber">Assign role</NuxtLink>
+                      <NuxtLink class="dropdown-item" :to="'members/'+member.phoneNumber+'/role'">Assign role</NuxtLink>
                     </li>
                     <li>
                       <NuxtLink class="dropdown-item" :to="'members/'+member.phoneNumber+'/tithe'">Record Tithe
