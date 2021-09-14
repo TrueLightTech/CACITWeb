@@ -22,7 +22,7 @@
     <div class="row justify-content-center">
       <div class="col-md-8">
         <div v-if="!isLoading">
-          <div class="input-group text-end float-end w-25 mb-3">
+          <div class="input-group text-end float-end w-50 mb-3">
             <span class="input-group-text" id="basic-addon1" style="background-color: #f8f8f8;">
               <i class="fa fa-search" style="color:#cdcdcd;"></i>
             </span>
@@ -66,7 +66,7 @@
                     Action
                   </button>
                   <ul class="dropdown-menu">
-                    <li>
+                    <li v-if="loggedInUser.data.roleId === '1'">
                       <NuxtLink class="dropdown-item" :to="'members/'+member.phoneNumber+'/role'">Assign role</NuxtLink>
                     </li>
                     <li>
@@ -76,7 +76,7 @@
                     <li>
                       <NuxtLink class="dropdown-item" :to="'members/'+member.phoneNumber">Update User</NuxtLink>
                     </li>
-                    <li>
+                    <li v-if="loggedInUser.data.roleId === '1'">
                       <a class="dropdown-item text-danger" style="cursor: pointer;" data-bs-toggle="modal"
                          @click="checkUserToDelete(member.phoneNumber)"
                          data-bs-target="#warningModal">Delete User
@@ -112,6 +112,8 @@
 </template>
 
 <script>
+  import {mapGetters} from 'vuex'
+
   import {MemberList} from "../../network/Member";
   import {profileImageBaseUrl} from "../../resources/constants";
   import PageLoader from "../../components/PageLoader";
@@ -148,7 +150,16 @@
       fetchMembers(page = 1, pageSize = 10) {
         this.currentPage = page
         this.isLoading = true
-        this.$axios.get(`churchmembers?Page=${page}&PageSize=${pageSize}`).then(response => {
+
+        let familyId = this.loggedInUser.data.churchFamilyId
+
+        let filterByFamilyId = ''
+        if (this.loggedInUser.data.roleId === '2') {
+          filterByFamilyId = `&FamilyId=${familyId}`
+        }
+
+
+        this.$axios.get(`churchmembers?Page=${page}&PageSize=${pageSize}${filterByFamilyId}`).then(response => {
           this.members = Object.assign(MemberList, response.data.data)
           this.numberOfPages = this.members.totalPages
           this.totalCount = this.members.totalCount
@@ -181,6 +192,9 @@
       checkUserToDelete(id) {
         this.toDeleteId = id
       }
+    },
+    computed: {
+      ...mapGetters(['isAuthenticated', 'loggedInUser'])
     }
   }
 </script>
