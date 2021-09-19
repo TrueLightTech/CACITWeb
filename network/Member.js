@@ -22,3 +22,4 @@ export const ChurchMember = {
   roleId: null,
   updatedAt: null
 }
+
