@@ -4,14 +4,16 @@
       <div v-if="!pageRefresh" class="col-md-8">
         <div class="card py-4">
           <div class="row justify-content-center">
-            <div class="col-md-4 text-center">
-              <img :src="getProfileImage(this.member.profilePicture)" class="img-fluid w-50 rounded-circle">
+            <div class="col-md-4 d-flex text-center align-content-center justify-content-center">
+              <img style="height: 150px; width: 150px;" :src="getProfileImage(this.member.profilePicture)"
+                   class="img-fluid align-content-center justify-content-center align-self-center profileImage rounded-circle">
             </div>
             <div class="col-md-8">
               <ul class="list-unstyled">
                 <li><h5 class="my-1">{{member.name}}</h5></li>
                 <li><p class="my-1">{{member.phoneNumber}}</p></li>
                 <li><p class="my-1">{{member.gender}}</p></li>
+                <li><p class="my-2">{{member.dataOfBirth}}</p></li>
                 <li><p class="my-2">{{member.churchFamilyName}}</p></li>
                 <li>
                   <ul class="list-item mx-0 px-0">
@@ -23,10 +25,12 @@
                         <NuxtLink :to="'/admin/members/'+member.phoneNumber+'/tithe'">
                           <button type="button" class="btn btn-outline-primary">Record Tithe</button>
                         </NuxtLink>
-                        <NuxtLink :to="'/admin/members/'+member.phoneNumber+'/role'">
+                        <NuxtLink :to="'/admin/members/'+member.phoneNumber+'/role'"
+                                  v-if="loggedInUser.data.roleId === '1'">
                           <button type="button" class="btn btn-secondary">Assign Role</button>
                         </NuxtLink>
-                        <button type="button" data-bs-target="#warningModal" data-bs-toggle="modal"
+                        <button v-if="loggedInUser.data.roleId === '1'" type="button" data-bs-target="#warningModal"
+                                data-bs-toggle="modal"
                                 class="btn btn-danger">Delete
                         </button>
                       </div>
@@ -42,7 +46,7 @@
 
         </div>
 
-        <ul class="list-group my-4">
+        <ul class="list-group my-4 d-none">
           <li class="list-group-item disabled" aria-disabled="true">A disabled item</li>
           <li class="list-group-item">A second item</li>
           <li class="list-group-item">A third item</li>
@@ -60,6 +64,8 @@
 <script>
   import {profileImageBaseUrl} from "../../../../resources/constants";
   import {ChurchMember} from "../../../../network/Member";
+  import {mapGetters} from 'vuex';
+
 
   export default {
     name: "view",
@@ -72,6 +78,9 @@
         toDeleteId: '',
         member: ChurchMember
       }
+    },
+    computed: {
+      ...mapGetters(['isAuthenticated', 'loggedInUser'])
     },
     methods: {
       getMember(id) {

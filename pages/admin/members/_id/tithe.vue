@@ -4,7 +4,7 @@
       <div class="row justify-content-center">
         <div class="col text-center">
           <ul class="list-unstyled">
-            <li><h2 class="py-2">Record Tithe ({{year}}) </h2></li>
+            <li><h2 class="py-2">Record Tithe ( {{months[month]}} {{year}}) </h2></li>
             <li><h5>({{user.name}})</h5></li>
             <li>
             </li>
@@ -22,7 +22,7 @@
                     Month
                   </button>
                   <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                    <li @click="setMonth(month)" v-for="(month,index) in months" :key="index"><a
+                    <li @click="setMonth(index)" v-for="(month,index) in months" :key="index"><a
                       class="dropdown-item" href="#">
                       {{month}}
                     </a></li>
@@ -81,6 +81,9 @@
 <script>
   import {ChurchMember} from "../../../../network/Member";
 
+  const date = new Date();
+
+
   export default {
     name: "tithe",
     data() {
@@ -88,8 +91,8 @@
         week: 1,
         pageRefresh: false,
         user: ChurchMember,
-        month: 10,
-        year: "2021",
+        month: date.getMonth(),
+        year: date.getFullYear(),
         weeks: ["1", "2", "3", "4", "5", "Total"],
         months: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
       }
@@ -103,10 +106,11 @@
         this.year = yr
       },
       setMonth(mth) {
+        this.month = mth;
       },
       generateArrayOfYears() {
         let max = new Date().getFullYear()
-        let min = max - 9
+        let min = max - 12
         let years = []
 
         for (let i = max; i >= min; i--) {
