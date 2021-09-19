@@ -22,8 +22,8 @@
         <div v-if="!isLoading">
 
           <div class="row justify-content-start my-3">
-            <div class="col-md-4">
-              <div v-for="(announcement,index) in announcements.results" :key="index" class="card">
+            <div v-for="(announcement,index) in announcements.results" :key="index" class="col-md-4">
+              <div class="card h-100">
                 <img :src="getAnnouncementImage(announcements.image)"
                      class="card-img-top d-flex align-self-center justify-content-center w-50" alt="...">
                 <div class="card-body">
