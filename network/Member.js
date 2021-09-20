@@ -23,3 +23,12 @@ export const ChurchMember = {
   updatedAt: null
 }
 
+export const Tithe = {
+  titheId: null,
+  week1: 0,
+  week2: 0,
+  week3: 0,
+  week4: 0,
+  week5: 0
+}
+

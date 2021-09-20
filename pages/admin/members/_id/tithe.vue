@@ -4,13 +4,12 @@
       <div class="row justify-content-center">
         <div class="col text-center">
           <ul class="list-unstyled">
-            <li><h2 class="py-2">Record Tithe ( {{months[month]}} {{year}}) </h2></li>
+            <li><h2 class="py-2">Record Tithe ( {{month}} {{year}}) </h2></li>
             <li><h5>({{user.name}})</h5></li>
             <li>
             </li>
           </ul>
         </div>
-
 
         <div class="row justify-content-center my-4">
           <div class="col-md-6">
@@ -64,10 +63,15 @@
             <tbody>
             <tr class="text-center" v-for="i in weeks">
               <th scope="row"><h2>{{i}}</h2></th>
-              <td><h2>5,000</h2></td>
+              <td><h2>{{tithe['week'+i]}}</h2></td>
               <td>
-                <button class="btn btn-success"><i class="fa fa-plus-circle"></i> Record</button>
+                <button @click="weekSelected(i)" class="btn btn-success"><i class="fa fa-plus-circle"></i> Record
+                </button>
               </td>
+            </tr>
+            <tr scope="row" class="text-center">
+              <th scope="row"><h2>Total</h2></th>
+              <td colspan="2"><h2>{{getTotal()}}</h2></td>
             </tr>
             </tbody>
           </table>
@@ -79,9 +83,10 @@
 </template>
 
 <script>
-  import {ChurchMember} from "../../../../network/Member";
+  import {ChurchMember, Tithe} from "../../../../network/Member";
 
   const date = new Date();
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sept", "Oct", "Nov", "Dec"]
 
 
   export default {
@@ -91,10 +96,12 @@
         week: 1,
         pageRefresh: false,
         user: ChurchMember,
-        month: date.getMonth(),
+        tithe: Tithe,
+        totalAmount: 0,
+        month: months[date.getMonth()],
         year: date.getFullYear(),
-        weeks: ["1", "2", "3", "4", "5", "Total"],
-        months: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+        weeks: [1, 2, 3, 4, 5],
+        months: months,
       }
     },
     beforeMount() {
@@ -102,11 +109,16 @@
       this.getMember(id)
     },
     methods: {
+      weekSelected(i) {
+        this.week = i
+      },
       setYear(yr) {
         this.year = yr
+        this.getTithe(this.user.id)
       },
       setMonth(mth) {
-        this.month = mth;
+        this.month = this.months[mth];
+        this.getTithe(this.user.id)
       },
       generateArrayOfYears() {
         let max = new Date().getFullYear()
@@ -124,10 +136,22 @@
           this.user = Object.assign(this.user, response.data.data)
           this.user.dataOfBirth = this.user.dataOfBirth.split('T')[0]
 
+          this.getTithe(this.user.id)
+        }).catch(error => {
+          this.pageRefresh = false
+        })
+      },
+      getTithe(id) {
+        this.pageRefresh = true
+        this.$axios.get(`tithes/${id}/?Month=${this.month}&Year=${this.year}`).then(response => {
+          this.tithe = Object.assign(this.tithe, response.data.data)[this.month]
           this.pageRefresh = false
         }).catch(error => {
           this.pageRefresh = false
         })
+      },
+      getTotal() {
+        return [this.tithe.week1, this.tithe.week2, this.tithe.week3, this.tithe.week4, this.tithe.week5].reduce((a, b) => a + b, 0)
       }
     }
   }
