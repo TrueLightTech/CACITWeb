@@ -11,7 +11,7 @@
         </ul>
 
 
-        <NuxtLink to="/admin/announcements/new">
+        <NuxtLink v-if="loggedInUser.data.roleId === '1'" to="/admin/announcements/new">
           <button type="button" class="btn btn-primary"><i class="fas fa-plus-circle"></i> Add Announcement</button>
         </NuxtLink>
       </div>
@@ -30,8 +30,8 @@
                 <div class="card-body">
                   <h6 class="card-title">{{announcement.title}}</h6>
                   <small>{{$moment(announcement.createdAt).format('Do MMMM, YYYY')}}</small>
-                  <p class="mt-2 card-text">
-                    {{announcement.announcementSummaryMessage}}
+                  <p class="mt-2 card-text text-muted">
+                    {{truncateMessage(announcement.body)}}
                   </p>
                   <NuxtLink :to="'/admin/announcements/'+announcement.id" class="btn btn-sm btn-outline-primary">View
                   </NuxtLink>
@@ -80,7 +80,8 @@
 
   import {profileImageBaseUrl} from "../../../resources/constants";
   import {AnnouncementList} from "../../../network/Announcement";
-  import moment from "../../../.nuxt/moment";
+  import {mapGetters} from 'vuex'
+
 
   export default {
     name: "index",
@@ -93,6 +94,9 @@
         isLoading: false,
         announcements: AnnouncementList
       }
+    },
+    computed: {
+      ...mapGetters(['isAuthenticated', 'loggedInUser'])
     },
     beforeMount() {
       this.fetchAnnouncement()
@@ -112,12 +116,17 @@
           this.isLoading = false
         })
       },
-
+      truncateMessage(message) {
+        if (message.length >= 80) {
+          return message.toString().substring(0, 80) + " ..."
+        }
+        return message
+      },
       getAnnouncementImage(image) {
         if (image) {
           return `${profileImageBaseUrl}/${image}`
         }
-        return require(`~/assets/imgs/no_photo.svg`)
+        return require(`~/assets/imgs/no_image.png`)
       }
     }
   }

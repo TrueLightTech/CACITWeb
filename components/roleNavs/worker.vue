@@ -4,6 +4,10 @@
       <NuxtLink to="/admin/dashboard" data-bs-dismiss="offcanvas" aria-label="Close"><h4>Home</h4></NuxtLink>
     </li>
     <li class="my-5">
+      <NuxtLink to="/admin/announcements" data-bs-dismiss="offcanvas" aria-label="Close"><h4>Announcements</h4>
+      </NuxtLink>
+    </li>
+    <li class="my-5">
       <NuxtLink to="/admin/tithe" data-bs-dismiss="offcanvas" aria-label="Close"><h4>Tithe</h4></NuxtLink>
     </li>
     <li class="my-5">
