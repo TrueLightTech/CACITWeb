@@ -32,7 +32,7 @@
                 <div class="mb-3">
                   <label for="exampleFormControlTextarea1" class="form-label">Message</label>
                   <textarea v-model="announcement.body" class="form-control" id="exampleFormControlTextarea1"
-                            rows="3"></textarea>
+                            rows="5"></textarea>
                 </div>
               </div>
             </div>

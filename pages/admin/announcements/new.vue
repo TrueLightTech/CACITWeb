@@ -29,7 +29,7 @@
                 </div>
                 <div class="mb-3">
                   <label for="exampleFormControlTextarea1" class="form-label">Message</label>
-                  <textarea v-model="message" class="form-control" id="exampleFormControlTextarea1" rows="3"></textarea>
+                  <textarea v-model="message" class="form-control" id="exampleFormControlTextarea1" rows="5"></textarea>
                 </div>
               </div>
             </div>
@@ -84,7 +84,7 @@
         if (image) {
           return `${profileImageBaseUrl}/${image}`
         }
-        return require(`~/assets/imgs/no_photo.svg`)
+        return require(`~/assets/imgs/no_image.png`)
       },
       imageToBase64: function (img) {
         const reader = new FileReader();
