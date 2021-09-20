@@ -80,7 +80,7 @@
 
 <script>
   import {mapGetters} from 'vuex'
-  import {ChurchMember, Tithe} from "../../network/Member";
+  import {Tithe} from "../../network/Member";
 
   const date = new Date();
   const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sept", "Oct", "Nov", "Dec"]
@@ -92,7 +92,6 @@
       return {
         week: 1,
         pageRefresh: false,
-        user: ChurchMember,
         amountPaid: 0,
         tithe: Tithe,
         totalAmount: 0,
@@ -114,11 +113,11 @@
       },
       setYear(yr) {
         this.year = yr
-        this.getTithe(this.user.id)
+        this.getTithe(this.loggedInUser.data.id)
       },
       setMonth(mth) {
         this.month = this.months[mth];
-        this.getTithe(this.user.id)
+        this.getTithe(this.loggedInUser.data.id)
       },
       generateArrayOfYears() {
         let max = new Date().getFullYear()
