@@ -1,5 +1,6 @@
 <template>
   <div class="container">
+
     <div v-if="!pageRefresh" class="row justify-content-center mt-10">
       <div class="row justify-content-center">
         <div class="col text-center">
@@ -43,12 +44,9 @@
               </div>
 
               <button type="button" class="btn btn-success w-25 d-none" disabled>Save</button>
-
             </div>
           </div>
         </div>
-
-
       </div>
       <div class="col-md-6">
         <div class="table-responsive">
@@ -65,13 +63,14 @@
               <th scope="row"><h2>{{i}}</h2></th>
               <td><h2>{{tithe['week'+i]}}</h2></td>
               <td>
-                <button @click="weekSelected(i)" class="btn btn-success"><i class="fa fa-plus-circle"></i> Record
+                <button data-bs-toggle="modal" data-bs-target="#exampleModal" @click="weekSelected(i)"
+                        class="btn btn-success"><i class="fa fa-plus-circle"></i> Record
                 </button>
               </td>
             </tr>
             <tr scope="row" class="text-center">
               <th scope="row"><h2>Total</h2></th>
-              <td colspan="2"><h2>{{getTotal()}}</h2></td>
+              <td colspan="2"><h2>GHS {{getTotal()}}</h2></td>
             </tr>
             </tbody>
           </table>
@@ -79,6 +78,28 @@
       </div>
     </div>
     <PageLoader v-else class="mt-10"></PageLoader>
+
+
+    <!-- Modal -->
+    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title text-center" id="exampleModalLabel">Amount</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body my-4 text-center d-flex justify-content-center">
+            <input v-model="amountPaid" class="form-control form-control-lg w-75 text-center" type="text"
+                   placeholder="GHs 100"
+                   aria-label=".form-control-lg example">
+          </div>
+          <div class="modal-footer">
+            <button data-bs-dismiss="modal" @click="recordTithe()" type="button" class="btn btn-primary">Save</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
 </template>
 
@@ -96,6 +117,7 @@
         week: 1,
         pageRefresh: false,
         user: ChurchMember,
+        amountPaid: 0,
         tithe: Tithe,
         totalAmount: 0,
         month: months[date.getMonth()],
@@ -152,6 +174,34 @@
       },
       getTotal() {
         return [this.tithe.week1, this.tithe.week2, this.tithe.week3, this.tithe.week4, this.tithe.week5].reduce((a, b) => a + b, 0)
+      },
+      recordTithe() {
+
+        if (this.amountPaid !== 0) {
+          this.tithe['week' + this.week] = parseFloat(this.amountPaid)
+
+          const requestBody = {
+            userId: this.user.id,
+            year: this.year + "",
+            signature: '',
+            month: this.month,
+            week1: this.tithe.week1,
+            week2: this.tithe.week2,
+            week3: this.tithe.week3,
+            week4: this.tithe.week4,
+            week5: this.tithe.week5,
+            amountPaid: 0.0,
+          }
+          this.$axios.post('tithes', requestBody).then(response => {
+            this.$toast.success("Successfully recorded")
+            this.isLoading = false
+            this.amountPaid = 0.0
+          }).catch(error => {
+            this.$toast.success(error.response.data.message)
+            this.isLoading = false
+          })
+        }
+
       }
     }
   }
