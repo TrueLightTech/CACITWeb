@@ -32,3 +32,12 @@ export const Tithe = {
   week5: 0
 }
 
+export const Announcement = {
+  id: "",
+  title: "",
+  body: "",
+  image: "",
+  announcementSummaryMessage: "",
+  createdAt: ""
+}
+

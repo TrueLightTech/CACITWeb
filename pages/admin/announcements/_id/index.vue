@@ -21,8 +21,12 @@
                       <i class="fas fa-ellipsis-v"></i>
                     </button>
                     <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                      <li><a class="dropdown-item" href="#">Update</a></li>
-                      <li><a class="dropdown-item text-danger" href="#">Delete</a></li>
+                      <li>
+                        <NuxtLink class="dropdown-item" :to="'/admin/announcements/'+announcement.id+'/edit'">Update
+                        </NuxtLink>
+                      </li>
+                      <li><a data-bs-target="#warningModal" data-bs-toggle="modal" class="dropdown-item text-danger"
+                             href="#">Delete</a></li>
                     </ul>
                   </div>
                 </div>
@@ -42,6 +46,8 @@
         </div>
       </div>
       <page-loader v-else></page-loader>
+      <warning-modal v-bind:title="'Are you sure?'" :message="'You are about to delete this announcement.'"
+                     @onclick="modalState($event)"></warning-modal>
     </div>
   </div>
 </template>
@@ -69,6 +75,19 @@
       this.getAnnouncement(id)
     },
     methods: {
+      modalState(data) {
+        if (data.toString().toLowerCase() === 'positive') {
+          this.deleteAnnouncement(this.announcement.id)
+        }
+      },
+      deleteAnnouncement(id) {
+        this.$axios.delete(`announcements/${id}`).then(response => {
+          this.$router.push('/admin/announcements')
+          this.$toast.success("Announcement successfully deleted.")
+        }).catch(error => {
+          console.log(error)
+        })
+      },
       getAnnouncement(id) {
         this.pageRefresh = true
         this.$axios.get(`announcements/${id}`).then(response => {
