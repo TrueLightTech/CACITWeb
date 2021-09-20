@@ -10,7 +10,7 @@ export const Announcement = {
   id: "",
   title: "",
   body: "",
-  image: null,
+  image: "",
   announcementSummaryMessage: "",
   createdAt: ''
 }

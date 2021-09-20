@@ -22,17 +22,18 @@
         <div v-if="!isLoading">
 
           <div class="row justify-content-start my-3">
-            <div v-for="(announcement,index) in announcements.results" :key="index" class="col-md-4">
+            <div v-for="(announcement,index) in announcements.results" :key="index" class="col-md-4 my-3">
               <div class="card h-100">
                 <img :src="getAnnouncementImage(announcements.image)"
                      class="card-img-top d-flex align-self-center justify-content-center w-50" alt="...">
                 <div class="card-body">
-                  <h5 class="card-title">{{announcement.title}}</h5>
-                  <small>{{announcement.createdAt}}</small>
+                  <h6 class="card-title">{{announcement.title}}</h6>
+                  <small>{{$moment(announcement.createdAt).format('Do MMMM, YYYY')}}</small>
                   <p class="mt-2 card-text">
                     {{announcement.announcementSummaryMessage}}
                   </p>
-                  <a href="#" class="btn btn-sm btn-outline-primary">View</a>
+                  <NuxtLink :to="'/admin/announcements/'+announcement.id" class="btn btn-sm btn-outline-primary">View
+                  </NuxtLink>
                 </div>
               </div>
             </div>
@@ -78,6 +79,7 @@
 
   import {profileImageBaseUrl} from "../../../resources/constants";
   import {AnnouncementList} from "../../../network/Announcement";
+  import moment from "../../../.nuxt/moment";
 
   export default {
     name: "index",
@@ -101,8 +103,8 @@
 
         this.$axios.get(`announcements?Page=${page}&PageSize=${pageSize}`).then(response => {
           this.announcements = Object.assign(AnnouncementList, response.data.data)
-          // this.announcements = this.announcements.totalPages
-          // this.totalCount = this.announcements.totalCount
+          this.numberOfPages = this.announcements.totalPages
+          this.totalCount = this.announcements.totalCount
 
           this.isLoading = false
         }).catch(error => {
