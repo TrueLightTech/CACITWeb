@@ -67,7 +67,7 @@
                     </ul>
                   </div>
 
-                  <div class="col-2">
+                  <div class="col-2 text-end">
                     <NuxtLink :to="'/admin/announcements/'+announcement.id">
                       <span class="badge bg-primary rounded-pill">view</span>
                     </NuxtLink>
