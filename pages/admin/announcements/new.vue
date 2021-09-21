@@ -31,6 +31,11 @@
                   <label for="exampleFormControlTextarea1" class="form-label">Message</label>
                   <textarea v-model="message" class="form-control" id="exampleFormControlTextarea1" rows="5"></textarea>
                 </div>
+
+                <div class="mb-3">
+                  <label for="exampleFormControlTextarea1" class="form-label">Announcement Summary</label>
+                  <textarea v-model="summary" class="form-control" id="exampleFormControlTextarea1" rows="4"></textarea>
+                </div>
               </div>
             </div>
 
@@ -66,6 +71,7 @@
         pageRefresh: false,
         title: '',
         message: '',
+        summary: '',
         image: this.getImage(''),
         roleId: "",
         emptyRole: true,
@@ -115,7 +121,7 @@
           title: this.title,
           body: this.message,
           image: this.image,
-          announcementSummaryMessage: ""
+          announcementSummaryMessage: this.summary
         }
 
         this.$axios.post('announcements', requestBody).then(response => {

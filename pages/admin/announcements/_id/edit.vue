@@ -34,6 +34,12 @@
                   <textarea v-model="announcement.body" class="form-control" id="exampleFormControlTextarea1"
                             rows="5"></textarea>
                 </div>
+
+                <div class="mb-3">
+                  <label for="exampleFormControlTextarea1" class="form-label">Announcement Summary</label>
+                  <textarea v-model="announcement.announcementSummaryMessage" class="form-control"
+                            id="exampleFormControlTextarea1" rows="4"></textarea>
+                </div>
               </div>
             </div>
 
@@ -128,13 +134,13 @@
             title: this.announcement.title,
             body: this.announcement.body,
             image: this.announcement.image,
-            announcementSummaryMessage: ""
+            announcementSummaryMessage: this.announcement.announcementSummaryMessage
           }
         } else {
           requestBody = {
             title: this.announcement.title,
             body: this.announcement.body,
-            announcementSummaryMessage: ""
+            announcementSummaryMessage: this.announcement.announcementSummaryMessage
           }
         }
 

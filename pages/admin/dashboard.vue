@@ -50,15 +50,31 @@
             <h5 class="mt-5">Announcements</h5>
             <ul class="list-group mb-5">
               <li v-for="(announcement,index) in announcements.results" :key="index"
-                  class="list-group-item d-flex justify-content-between align-items-center">
-                <ul class="list-unstyled">
-                  <li><h6 class="p-0 m-0">{{announcement.title}}</h6></li>
-                  <li><small class="text-muted">{{$moment(announcement.createdAt).format('Do MMMM, YYYY')}}</small></li>
-                  <li><p class="p-0 m-0 mt-2">{{truncateMessage(announcement.body)}}</p></li>
-                </ul>
-                <NuxtLink :to="'/admin/announcements/'+announcement.id">
-                  <span class="badge bg-primary rounded-pill">view</span>
-                </NuxtLink>
+                  class="list-group-item align-items-center">
+
+                <div class="row justify-content-center align-self-center d-flex">
+                  <div class="col-2">
+                    <div class="d-flex justify-content-center align-content-center" style="height: 50px;width: 50px;">
+                      <img :src="getImage(announcement.image)" style="object-fit: cover;" class="img-fluid w-100">
+                    </div>
+                  </div>
+                  <div class="col-8">
+                    <ul class="list-unstyled text-start">
+                      <li><h6 class="p-0 m-0">{{announcement.title}}</h6></li>
+                      <li><small class="text-muted">{{$moment(announcement.createdAt).format('Do MMMM, YYYY')}}</small>
+                      </li>
+                      <li><p class="p-0 m-0 mt-2">{{truncateMessage(announcement.body)}}</p></li>
+                    </ul>
+                  </div>
+
+                  <div class="col-2">
+                    <NuxtLink :to="'/admin/announcements/'+announcement.id">
+                      <span class="badge bg-primary rounded-pill">view</span>
+                    </NuxtLink>
+                  </div>
+                </div>
+
+
               </li>
             </ul>
             <!--            <div-->
@@ -86,6 +102,7 @@
   import {mapGetters} from 'vuex'
   import AdminHeader from "../../components/AdminHeader";
   import {AnnouncementList} from "../../network/Announcement";
+  import {profileImageBaseUrl} from "../../resources/constants";
 
   export default {
     name: "dashboard",
@@ -128,6 +145,12 @@
         }
         return message
       },
+      getImage(image) {
+        if (image) {
+          return `${profileImageBaseUrl}/${image}`
+        }
+        return require(`~/assets/imgs/no_image.png`)
+      }
     },
     mounted() {
     }
