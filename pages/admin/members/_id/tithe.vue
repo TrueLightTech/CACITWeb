@@ -117,7 +117,7 @@
         week: 1,
         pageRefresh: false,
         user: ChurchMember,
-        amountPaid: 0,
+        amountPaid: "",
         tithe: Tithe,
         totalAmount: 0,
         month: months[date.getMonth()],
@@ -177,7 +177,7 @@
       },
       recordTithe() {
 
-        if (this.amountPaid !== 0) {
+        if (this.amountPaid.length !== 0) {
           this.tithe['week' + this.week] = parseFloat(this.amountPaid)
 
           const requestBody = {
@@ -185,14 +185,12 @@
             year: this.year + "",
             signature: '',
             month: this.month,
-            week1: this.tithe.week1,
-            week2: this.tithe.week2,
-            week3: this.tithe.week3,
-            week4: this.tithe.week4,
-            week5: this.tithe.week5,
             amountPaid: 0.0,
           }
-          this.$axios.post('tithes', requestBody).then(response => {
+
+          requestBody[`week${this.week}`] = parseFloat(this.amountPaid)
+
+          this.$axios.put(`tithes/${this.tithe.titheId}`, requestBody).then(response => {
             this.$toast.success("Successfully recorded")
             this.isLoading = false
             this.amountPaid = 0.0

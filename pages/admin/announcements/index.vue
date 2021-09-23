@@ -21,6 +21,20 @@
       <div class="col-md-8">
         <div v-if="!isLoading">
 
+          <div class="row justify-content-end g-0 w-100">
+            <div class="input-group text-end float-end w-50 mb-3">
+            <span class="input-group-text" id="basic-addon1" style="background-color: #f8f8f8;">
+              <i class="fa fa-search" style="color:#cdcdcd;"></i>
+            </span>
+              <input type="text" v-model="searchQuery" @keyup="searchByTitle()" class="form-control"
+                     placeholder="Search Announcement"
+                     aria-label="Username"
+                     aria-describedby="basic-addon1">
+
+            </div>
+          </div>
+
+
           <div class="row justify-content-start my-3">
             <div v-for="(announcement,index) in announcements.results" :key="index" class="col-md-4 my-3">
               <div class="card h-100">
@@ -81,6 +95,7 @@
   import {profileImageBaseUrl} from "../../../resources/constants";
   import {AnnouncementList} from "../../../network/Announcement";
   import {mapGetters} from 'vuex'
+  import {MemberList} from "../../../network/Member";
 
 
   export default {
@@ -102,6 +117,19 @@
       this.fetchAnnouncement()
     },
     methods: {
+      searchByTitle() {
+        // this.isLoading = true
+        this.$axios.get(`announcements?Title=${this.searchQuery}`).then(response => {
+          this.announcements = Object.assign(AnnouncementList, response.data.data)
+          this.numberOfPages = this.announcements.totalPages
+          this.totalCount = this.announcements.totalCount
+
+          this.isLoading = false
+
+        }).catch(error => {
+          // this.isLoading = false
+        })
+      },
       fetchAnnouncement(page = 1, pageSize = 10) {
         this.currentPage = page
         this.isLoading = true
