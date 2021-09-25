@@ -48,7 +48,7 @@
           </div>
           <div v-if="!isLoading" class="col-md-12">
             <h5 class="mt-5">Announcements</h5>
-            <ul class="list-group mb-5">
+            <ul class="list-group mb-3">
               <li v-for="(announcement,index) in announcements.results" :key="index"
                   class="list-group-item align-items-center">
 
@@ -77,6 +77,21 @@
 
               </li>
             </ul>
+            <nav aria-label="Page navigation example">
+              <ul class="pagination justify-content-end">
+                <li class="page-item">
+                  <a @click="fetchAnnouncement(currentPage - 1)" class="page-link" href="#" tabindex="-1"
+                     aria-disabled="true">Previous</a>
+                </li>
+                <li v-for="index in numberOfPages" :key="index" class="page-item">
+                  <a @click="fetchAnnouncement(index)" class="page-link" href="#">{{index}}</a>
+                </li>
+                <li class="page-item">
+                  <a @click="fetchAnnouncement(currentPage+1)" class="page-link" href="#">Next</a>
+                </li>
+              </ul>
+            </nav>
+
             <!--            <div-->
             <!--              class="d-flex justify-content-center align-middle align-self-center align-content-center align-items-center mt-5">-->
             <!--              <ul class="list-unstyled  justify-content-center text-center">-->

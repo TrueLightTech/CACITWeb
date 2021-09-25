@@ -7,7 +7,7 @@
       <NuxtLink to="/admin/tithe" data-bs-dismiss="offcanvas" aria-label="Close"><h4>Tithe</h4></NuxtLink>
     </li>
     <li class="my-5">
-      <NuxtLink to="/admin/account" data-bs-dismiss="offcanvas" aria-label="Close"><h4>Account</h4></NuxtLink>
+      <NuxtLink to="/admin/account" data-bs-dismiss="offcanvas" aria-label="Close"><h4>My Profile</h4></NuxtLink>
     </li>
     <li class="my-5">
       <h4 :style="{'cursor':'pointer'}" @click="logout()" data-bs-dismiss="offcanvas" aria-label="Close">

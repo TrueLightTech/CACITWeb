@@ -16,6 +16,8 @@
          aria-labelledby="offcanvasWithBackdropLabel">
       <div class="offcanvas-header">
         <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+
+        <button class="btn btn-outline-danger btn-sm">Report An Issue</button>
       </div>
       <div class="offcanvas-body text-center">
         <div class="profile-header border-bottom-0 border-top-0 py-4">
