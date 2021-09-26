@@ -150,6 +150,7 @@
           gender: "",
           profilePicture: "",
           churchFamilyId: "",
+          churchFamilyName: "",
           churchGroupId: ""
         }
       }
@@ -273,11 +274,18 @@
               this.isLoading = true
               delete this.update.passCode
               this.update.dateOfBirth = this.update.dataOfBirth.split('T')[0]
+              this.update.churchFamilyName =
+                this.churchFamilies.filter(family => family.id === this.update.churchFamilyId)[0].name
+
+              console.log(this.update.churchFamilyName)
+
               let user = await this.$axios.put(`${url}`, this.update, {
                 headers: {
                   Authorization: 'Bearer ' + window.localStorage.getItem('auth._token.local')
                 }
               })
+
+
               this.$toast.success("Successfully updated")
               this.isLoading = false
             } catch (e) {

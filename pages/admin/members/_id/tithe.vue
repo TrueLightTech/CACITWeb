@@ -190,14 +190,27 @@
 
           requestBody[`week${this.week}`] = parseFloat(this.amountPaid)
 
-          this.$axios.put(`tithes/${this.tithe.titheId}`, requestBody).then(response => {
-            this.$toast.success("Successfully recorded")
-            this.isLoading = false
-            this.amountPaid = 0.0
-          }).catch(error => {
-            this.$toast.success(error.response.data.message)
-            this.isLoading = false
-          })
+          if (this.tithe.titheId == null) {
+            this.$axios.post(`tithes`, requestBody).then(response => {
+              this.$toast.success("Successfully recorded")
+              this.isLoading = false
+              this.amountPaid = 0.0
+            }).catch(error => {
+              this.$toast.success(error.response.data.message)
+              this.isLoading = false
+            })
+          } else {
+            this.$axios.put(`tithes/${this.tithe.titheId}`, requestBody).then(response => {
+              this.$toast.success("Successfully recorded")
+              this.isLoading = false
+              this.amountPaid = 0.0
+            }).catch(error => {
+              this.$toast.success(error.response.data.message)
+              this.isLoading = false
+            })
+          }
+
+
         }
 
       }
