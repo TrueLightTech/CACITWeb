@@ -192,6 +192,7 @@
 
           if (this.tithe.titheId == null) {
             this.$axios.post(`tithes`, requestBody).then(response => {
+              this.tithe.titheId = response.data.data[this.month]["titheId"]
               this.$toast.success("Successfully recorded")
               this.isLoading = false
               this.amountPaid = 0.0
