@@ -28,6 +28,9 @@
               <li><a class="dropdown-item"
                      id="pills-services-tab" data-bs-toggle="pill" data-bs-target="#pills-services"
                      href="#">Church Services</a></li>
+              <li><a class="dropdown-item"
+                     id="pills-family-tab" data-bs-toggle="pill" data-bs-target="#pills-family"
+                     href="#">Church Family</a></li>
             </ul>
           </li>
         </ul>
@@ -49,6 +52,9 @@
           <div class="tab-pane fade" id="pills-church-group" role="tabpanel" aria-labelledby="pills-church-group-tab">
             <ChurchGroup></ChurchGroup>
           </div>
+          <div class="tab-pane fade" id="pills-family" role="tabpanel" aria-labelledby="pills-family-tab">
+            <ChurchFamily></ChurchFamily>
+          </div>
           <div class="tab-pane fade" id="pills-services" role="tabpanel" aria-labelledby="pills-services-tab">
             <Services></Services>
           </div>
@@ -64,10 +70,11 @@
 
 
   import Members from "../../components/Members";
+  import ChurchFamily from "../../components/ChurchFamily";
 
   export default {
     name: "manage",
-    components: {Members}
+    components: {ChurchFamily, Members}
   }
 </script>
 

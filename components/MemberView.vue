@@ -277,8 +277,6 @@
               this.update.churchFamilyName =
                 this.churchFamilies.filter(family => family.id === this.update.churchFamilyId)[0].name
 
-              console.log(this.update.churchFamilyName)
-
               let user = await this.$axios.put(`${url}`, this.update, {
                 headers: {
                   Authorization: 'Bearer ' + window.localStorage.getItem('auth._token.local')

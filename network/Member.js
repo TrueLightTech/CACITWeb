@@ -45,6 +45,10 @@ export const GroupList = {
     data: [ServiceItem]
 }
 
+export const ChurchFamilyList = {
+    data: [ServiceItem]
+}
+
 
 export const ServiceList = {
     data: [ServiceItem]
