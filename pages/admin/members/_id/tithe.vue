@@ -85,13 +85,30 @@
       <div class="modal-dialog modal-dialog-centered modal-sm">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title text-center" id="exampleModalLabel">Amount</h5>
+            <h5 class="modal-title text-center" id="exampleModalLabel">Record Tithe</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body my-4 text-center d-flex justify-content-center">
-            <input v-model="amountPaid" class="form-control form-control-lg w-75 text-center" type="text"
-                   placeholder="GHs 100"
-                   aria-label=".form-control-lg example">
+            <ul class="list-unstyled">
+              <li>
+                <label class="mb-2 text-start">Amount</label>
+                <input v-model="amountPaid" class="form-control form-control-lg w-100 text-center" type="text"
+                       placeholder="GHs 100"
+                       aria-label=".form-control-lg example">
+              </li>
+
+              <li class="my-3" v-if="!isServiceLoaded">
+                <label class="mb-2 text-start">Select Service</label>
+                <select v-model="serviceId" class="form-select form-control-lg"
+                        aria-label="Default select example">
+                  <option :value="service.id"
+                          v-for="service in services.data">{{service.name}}
+                  </option>
+                </select>
+              </li>
+
+            </ul>
+
           </div>
           <div class="modal-footer">
             <button data-bs-dismiss="modal" @click="recordTithe()" type="button" class="btn btn-primary">Save</button>
@@ -104,7 +121,7 @@
 </template>
 
 <script>
-  import {ChurchMember, Tithe} from "../../../../network/Member";
+  import {ChurchMember, ServiceList, Tithe} from "../../../../network/Member";
 
   const date = new Date();
   const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
@@ -116,6 +133,7 @@
       return {
         week: 1,
         pageRefresh: false,
+        isServiceLoaded: false,
         user: ChurchMember,
         amountPaid: "",
         tithe: Tithe,
@@ -123,11 +141,15 @@
         month: months[date.getMonth()],
         year: date.getFullYear(),
         weeks: [1, 2, 3, 4, 5],
+        services: ServiceList,
+        serviceId: '',
+        serviceName: '',
         months: months,
       }
     },
     beforeMount() {
       let id = this.$route.params.id
+      this.getServices()
       this.getMember(id)
     },
     methods: {
@@ -172,18 +194,28 @@
           this.pageRefresh = false
         })
       },
+      getServices() {
+        this.isServiceLoaded = true
+        this.$axios.get(`services`).then(response => {
+          this.isServiceLoaded = false
+          this.services = Object.assign(this.services, response.data)
+        }).catch(error => {
+          this.isServiceLoaded = false
+        })
+      },
       getTotal() {
         return [this.tithe.week1, this.tithe.week2, this.tithe.week3, this.tithe.week4, this.tithe.week5].reduce((a, b) => a + b, 0)
       },
       recordTithe() {
 
-        if (this.amountPaid.length !== 0) {
+        if (this.amountPaid.length !== 0 && this.serviceId.length !== 0) {
           this.tithe['week' + this.week] = parseFloat(this.amountPaid)
 
           const requestBody = {
             userId: this.user.id,
             year: this.year + "",
             signature: '',
+            serviceId: this.serviceId,
             month: this.month,
             amountPaid: 0.0,
           }
@@ -196,6 +228,7 @@
               this.$toast.success("Successfully recorded")
               this.isLoading = false
               this.amountPaid = 0.0
+              this.serviceId = ''
             }).catch(error => {
               this.$toast.success(error.response.data.message)
               this.isLoading = false
@@ -205,6 +238,7 @@
               this.$toast.success("Successfully recorded")
               this.isLoading = false
               this.amountPaid = 0.0
+              this.serviceId = ''
             }).catch(error => {
               this.$toast.success(error.response.data.message)
               this.isLoading = false
