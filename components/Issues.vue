@@ -6,9 +6,24 @@
 
         <ul class="list-unstyled">
           <li>
-            <h3>Issues</h3>
+            <h3>Issues <span style="font-size: 0.9em;">({{getStatus()}})</span></h3>
           </li>
         </ul>
+
+
+        <div>
+          <div class="dropdown">
+            <a class="btn btn-secondary dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
+               data-bs-toggle="dropdown" aria-expanded="false">
+              Filter
+            </a>
+
+            <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+              <li><a @click="selectFilter(true)" class="dropdown-item" href="#">Resolved</a></li>
+              <li><a @click="selectFilter(false)" class="dropdown-item" href="#">Unresolved</a></li>
+            </ul>
+          </div>
+        </div>
 
 
       </div>
@@ -24,7 +39,6 @@
               <th scope="col">Member</th>
               <th scope="col">Title</th>
               <th scope="col">Message</th>
-              <th scope="col">Status</th>
               <th class="text-end" scope="col">Actions</th>
             </tr>
             </thead>
@@ -34,7 +48,6 @@
               <td>{{issue.userName}}</td>
               <td>{{issue.title}}</td>
               <td>{{issue.issueMessage}}</td>
-              <td>{{issue.isResolved}}</td>
               <td class="text-end">
                 <div class="btn-group">
                   <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown"
@@ -42,13 +55,13 @@
                     Action
                   </button>
                   <ul class="dropdown-menu">
-                    <li v-if="loggedInUser.data.roleId === '1'">
-                      <NuxtLink class="dropdown-item" :to="''">Edit</NuxtLink>
+                    <li v-if="loggedInUser.data.roleId === '1'" @click="updateState(issue)">
+                      <NuxtLink v-if="!isResolved" class="dropdown-item" :to="''">Resolve</NuxtLink>
                     </li>
                     <li v-if="loggedInUser.data.roleId === '1'">
                       <a @click="checkToDelete(issue.id)" class="dropdown-item text-danger" style="cursor: pointer;"
                          data-bs-toggle="modal"
-                         data-bs-target="#exampleModal1">Delete
+                         data-bs-target="#exampleModal4">Delete
                       </a>
                     </li>
                   </ul>
@@ -62,6 +75,33 @@
 
       </div>
     </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="exampleModal4" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body text-center">
+            <ul class="list-unstyled">
+              <li><h3>{{this.title}}</h3></li>
+              <li><p>
+                {{this.message}}
+              </p></li>
+            </ul>
+          </div>
+          <div class="modal-footer d-flex justify-content-center">
+            <button type="button" class="btn btn-secondary" @click="negativeButton()" data-bs-dismiss="modal">Cancel
+            </button>
+            <button type="button" class="btn btn-primary" @click="positiveButton()" data-bs-dismiss="modal">Continue
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
   </div>
 </template>
 
@@ -77,15 +117,43 @@
     data() {
       return {
         title: "Are you sure?",
-        message: 'You are about to delete this service.',
+        message: 'You are about to delete this Issue.',
         isLoading: false,
         serviceName: '',
         toDeleteId: '',
+        isResolved: false,
         serviceDescription: '',
         issues: IssuesList
       }
     },
     methods: {
+      updateState(data) {
+
+        const requestBody = {
+          userId: this.loggedInUser.data.id,
+          isResolved: true
+        }
+
+        this.$axios.put(`issues/${data.id}`, requestBody).then(response => {
+          this.$toast.success("Successfully Updated")
+          this.isLoading = false
+          this.fetchServices()
+        }).catch(error => {
+          this.$toast.success(error.response.data.message)
+          this.isLoading = false
+        })
+      },
+      getStatus() {
+        if (this.isResolved) {
+          return "Resolved"
+        } else {
+          return "Unresolved"
+        }
+      },
+      selectFilter(status) {
+        this.isResolved = status
+        this.fetchServices()
+      },
       saveService() {
         const requestBody = {
           name: this.serviceName,
@@ -102,10 +170,8 @@
       },
       fetchServices() {
         this.isLoading = true
-        this.$axios.get(`issues?IsResolved=false`).then(response => {
+        this.$axios.get(`issues?IsResolved=${this.isResolved}`).then(response => {
           this.issues = Object.assign(IssuesList, response.data.data)
-
-          console.log(this.issues)
 
           this.isLoading = false
         }).catch(error => {
@@ -116,9 +182,9 @@
         this.toDeleteId = id
       },
       deleteService(id) {
-        this.$axios.delete(`services/${id}`).then(response => {
+        this.$axios.delete(`issues/${id}`).then(response => {
           this.fetchServices()
-          this.$toast.info("User successfully deleted.")
+          this.$toast.info("Issue successfully deleted.")
         }).catch(error => {
           console.log(error)
         })
