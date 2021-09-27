@@ -2,21 +2,32 @@
   <div class="container">
     <div class="row justify-content-center mt-10">
       <div class="col-sm-10 col-md-10 col-lg-10 col-xl-8">
-        <h6>Hi,{{loggedInUser.data.name}}</h6>
+
+        <div class="d-flex justify-content-between">
+          <h6>Hi,{{loggedInUser.data.name}}</h6>
+
+          <div>
+            <NuxtLink to="/admin/manage">
+              <span class="badge bg-primary">View more</span>
+            </NuxtLink>
+          </div>
+        </div>
+
         <div class="row justify-content-center">
           <div class="col-md-4 my-2 h-100">
             <div class="card h-100">
               <div class="card-body h-100">
                 <ul class="list-unstyled text-center">
                   <li>
-                    <h1>1000</h1>
+                    <h6>GHS</h6>
+                  </li>
+                  <li>
+                    <h1>0.00</h1>
                   </li>
                   <li>
                     <p>Total Money Received</p>
                   </li>
-                  <li>
-                    <span class="badge bg-primary">View more</span>
-                  </li>
+
                 </ul>
               </div>
             </div>
@@ -26,13 +37,13 @@
               <div class="card-body">
                 <ul class="list-unstyled text-center">
                   <li>
-                    <h1>1400</h1>
+                    <h6>GHS</h6>
+                  </li>
+                  <li>
+                    <h1>0.00</h1>
                   </li>
                   <li>
                     <p>Total Offering Received</p>
-                  </li>
-                  <li>
-                    <span class="badge bg-primary">View more</span>
                   </li>
                 </ul>
               </div>
@@ -43,13 +54,13 @@
               <div class="card-body h-100">
                 <ul class="list-unstyled text-center">
                   <li>
-                    <h1>4000</h1>
+                    <h6>GHS</h6>
+                  </li>
+                  <li>
+                    <h1>0.00</h1>
                   </li>
                   <li>
                     <p>Total Tithe Received </p>
-                  </li>
-                  <li>
-                    <span class="badge bg-primary">View more</span>
                   </li>
                 </ul>
               </div>
@@ -60,13 +71,10 @@
               <div class="card-body">
                 <ul class="list-unstyled text-center">
                   <li>
-                    <h1>100</h1>
+                    <h1>0</h1>
                   </li>
                   <li>
                     <p>Unresolved Issues </p>
-                  </li>
-                  <li>
-                    <span class="badge bg-primary">View more</span>
                   </li>
                 </ul>
               </div>
@@ -77,13 +85,10 @@
               <div class="card-body">
                 <ul class="list-unstyled text-center">
                   <li>
-                    <h1>20</h1>
+                    <h1>0</h1>
                   </li>
                   <li>
                     <p>Members</p>
-                  </li>
-                  <li>
-                    <span class="badge bg-primary">View more</span>
                   </li>
                 </ul>
               </div>

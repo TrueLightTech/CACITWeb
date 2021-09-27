@@ -16,7 +16,7 @@
           </li>
           <li class="nav-item" role="presentation">
             <button class="nav-link" id="pills-contact-tab" data-bs-toggle="pill" data-bs-target="#pills-contact"
-                    type="button" role="tab" aria-controls="pills-contact" aria-selected="false">Offerings/Tithe
+                    type="button" role="tab" aria-controls="pills-contact" aria-selected="false">Offerings
             </button>
           </li>
           <li class="nav-item d-none" role="presentation">
