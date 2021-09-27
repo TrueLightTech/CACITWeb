@@ -19,7 +19,7 @@
                     type="button" role="tab" aria-controls="pills-contact" aria-selected="false">Offerings/Tithe
             </button>
           </li>
-          <li class="nav-item" role="presentation">
+          <li class="nav-item d-none" role="presentation">
             <button class="nav-link" id="pills-users-tab" data-bs-toggle="pill" data-bs-target="#pills-users"
                     type="button" role="tab" aria-controls="pills-contact" aria-selected="false">Users
             </button>
