@@ -11,7 +11,8 @@
         </ul>
 
         <div>
-          <button type="button" data-bs-toggle="modal" data-bs-target="#staticBackdrop1" class="btn btn-primary"><i
+          <button @click="clearFields()" type="button" data-bs-toggle="modal" data-bs-target="#staticBackdrop1"
+                  class="btn btn-primary"><i
             class="fas fa-plus-circle"></i> Add Family
           </button>
         </div>
@@ -42,7 +43,9 @@
                     Action
                   </button>
                   <ul class="dropdown-menu">
-                    <li v-if="loggedInUser.data.roleId === '1'">
+                    <li v-if="loggedInUser.data.roleId === '1'"
+                        @click="edit(family)"
+                        data-bs-toggle="modal" data-bs-target="#staticBackdrop1">
                       <NuxtLink class="dropdown-item" :to="''">Edit</NuxtLink>
                     </li>
                     <li v-if="loggedInUser.data.roleId === '1'">
@@ -137,27 +140,51 @@
         message: 'You are about to delete this family.',
         isLoading: false,
         familyName: '',
+        familyId: '',
         toDeleteId: '',
         familyDescription: '',
         families: ChurchFamilyList
       }
     },
     methods: {
+      clearFields() {
+        this.familyName = ''
+        this.familyId = ''
+        this.familyDescription = ''
+      },
+      edit(data) {
+        this.familyId = data.id
+        this.familyName = data.name
+        this.familyDescription = data.description
+      },
       saveFamily() {
         const requestBody = {
           name: this.familyName,
           description: this.familyDescription
         }
-        this.$axios.post(`churchfamilies`, requestBody).then(response => {
-          this.$toast.success("Successfully added")
-          this.isLoading = false
-          this.familyName = ''
-          this.familyDescription = ''
-          this.fetchFamilies()
-        }).catch(error => {
-          this.$toast.success(error.response.data.message)
-          this.isLoading = false
-        })
+
+        if (this.familyId.length === 0) {
+          this.$axios.post(`churchfamilies`, requestBody).then(response => {
+            this.$toast.success("Successfully added")
+            this.isLoading = false
+            this.clearFields()
+            this.fetchFamilies()
+          }).catch(error => {
+            this.$toast.success(error.response.data.message)
+            this.isLoading = false
+          })
+        } else {
+          this.$axios.put(`churchfamilies/${this.familyId}`, requestBody).then(response => {
+            this.$toast.success("Successfully updated")
+            this.isLoading = false
+            this.clearFields()
+            this.fetchFamilies()
+          }).catch(error => {
+            this.$toast.success(error.response.data.message)
+            this.isLoading = false
+          })
+        }
+
       },
       fetchFamilies() {
         this.isLoading = true

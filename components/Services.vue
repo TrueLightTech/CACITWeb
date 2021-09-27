@@ -11,7 +11,8 @@
         </ul>
 
         <div>
-          <button type="button" data-bs-toggle="modal" data-bs-target="#staticBackdrop" class="btn btn-primary"><i
+          <button @click="clearFields()" type="button" data-bs-toggle="modal" data-bs-target="#staticBackdrop2"
+                  class="btn btn-primary"><i
             class="fas fa-plus-circle"></i> Add Service
           </button>
         </div>
@@ -42,13 +43,15 @@
                     Action
                   </button>
                   <ul class="dropdown-menu">
-                    <li v-if="loggedInUser.data.roleId === '1'">
+                    <li v-if="loggedInUser.data.roleId === '1'"
+                        data-bs-toggle="modal" data-bs-target="#staticBackdrop2"
+                        @click="edit(service)">
                       <NuxtLink class="dropdown-item" :to="''">Edit</NuxtLink>
                     </li>
                     <li v-if="loggedInUser.data.roleId === '1'">
                       <a @click="checkToDelete(service.id)" class="dropdown-item text-danger" style="cursor: pointer;"
                          data-bs-toggle="modal"
-                         data-bs-target="#exampleModal1">Delete
+                         data-bs-target="#exampleModal3">Delete
                       </a>
                     </li>
                   </ul>
@@ -65,7 +68,7 @@
 
 
     <!-- Modal -->
-    <div class="modal fade" id="exampleModal1" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal fade" id="exampleModal3" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered modal-sm">
         <div class="modal-content">
           <div class="modal-header">
@@ -91,7 +94,7 @@
 
 
     <!-- Modal -->
-    <div class="modal fade" id="staticBackdrop" data-bs-keyboard="false" tabindex="-1"
+    <div class="modal fade" id="staticBackdrop2" data-bs-keyboard="false" tabindex="-1"
          aria-labelledby="staticBackdropLabel" aria-hidden="true">
       <div class="modal-dialog">
         <div class="modal-content">
@@ -113,7 +116,7 @@
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-            <button @click="saveService()" type="button" class="btn btn-primary">Save</button>
+            <button @click="saveService()" type="button" data-bs-dismiss="modal" class="btn btn-primary">Save</button>
           </div>
         </div>
       </div>
@@ -143,19 +146,44 @@
       }
     },
     methods: {
+      clearFields() {
+        this.serviceName = ''
+        this.serviceId = ''
+        this.serviceDescription = ''
+      },
+      edit(data) {
+        this.serviceId = data.id
+        this.serviceName = data.name
+        this.serviceDescription = data.description
+      },
       saveService() {
         const requestBody = {
           name: this.serviceName,
           description: this.serviceDescription
         }
-        this.$axios.post(`services`, requestBody).then(response => {
-          this.$toast.success("Successfully recorded")
-          this.isLoading = false
-          this.fetchServices()
-        }).catch(error => {
-          this.$toast.success(error.response.data.message)
-          this.isLoading = false
-        })
+
+        if (this.serviceId.length === 0) {
+          this.$axios.post(`services`, requestBody).then(response => {
+            this.$toast.success("Successfully recorded")
+            this.isLoading = false
+            this.fetchServices()
+            this.clearFields()
+          }).catch(error => {
+            this.$toast.success(error.response.data.message)
+            this.isLoading = false
+          })
+        } else {
+          this.$axios.put(`services/${this.serviceId}`, requestBody).then(response => {
+            this.$toast.success("Successfully recorded")
+            this.isLoading = false
+            this.fetchServices()
+            this.clearFields()
+          }).catch(error => {
+            this.$toast.success(error.response.data.message)
+            this.isLoading = false
+          })
+        }
+
       },
       fetchServices() {
         this.isLoading = true

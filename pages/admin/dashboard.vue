@@ -3,8 +3,50 @@
     <div class="row justify-content-center mt-10">
       <div class="col-sm-10 col-md-10 col-lg-10 col-xl-6">
         <h6>Hi,{{loggedInUser.data.name}}</h6>
-        <div class="row">
-          <div class="col-md-4 my-2">
+        <div class="row justify-content-center">
+          <div class="col-md-6 my-2 h-100">
+            <div class="card h-100">
+              <div class="card-body h-100">
+                <ul class="list-unstyled text-center">
+                  <li>
+                    <h1>1000</h1>
+                  </li>
+                  <li>
+                    <p>Total Money Received</p>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6 my-2 h-100">
+            <div class="card h-100">
+              <div class="card-body">
+                <ul class="list-unstyled text-center">
+                  <li>
+                    <h1>1400</h1>
+                  </li>
+                  <li>
+                    <p>Total Offering Received</p>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6 my-2 h-100">
+            <div class="card h-100">
+              <div class="card-body h-100">
+                <ul class="list-unstyled text-center">
+                  <li>
+                    <h1>4000</h1>
+                  </li>
+                  <li>
+                    <p>Total Tithe Received</p>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6 my-2 h-100">
             <div class="card">
               <div class="card-body">
                 <ul class="list-unstyled text-center">
@@ -12,35 +54,21 @@
                     <h1>100</h1>
                   </li>
                   <li>
+                    <p>Unresolved Issues</p>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          <div class="col my-2 h-100">
+            <div class="card">
+              <div class="card-body">
+                <ul class="list-unstyled text-center">
+                  <li>
+                    <h1>20</h1>
+                  </li>
+                  <li>
                     <p>Members</p>
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </div>
-          <div class="col-md-4 my-2">
-            <div class="card">
-              <div class="card-body">
-                <ul class="list-unstyled text-center">
-                  <li>
-                    <h1>14</h1>
-                  </li>
-                  <li>
-                    <p>Groups</p>
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </div>
-          <div class="col-md-4 my-2">
-            <div class="card">
-              <div class="card-body">
-                <ul class="list-unstyled text-center">
-                  <li>
-                    <h1>12</h1>
-                  </li>
-                  <li>
-                    <p>Families</p>
                   </li>
                 </ul>
               </div>

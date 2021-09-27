@@ -52,7 +52,7 @@
       </div>
       <div class="col-lg-8 col-xl-9 col-md-9 d-none d-lg-block d-xl-block g-0">
         <div class="form-right-window d-flex justify-content-center">
-          <img src="~assets/imgs/login_form_image.svg" class="img-fluid w-50 align-self-center"/>
+          <img src="~assets/imgs/caci_logo.png" class="img-fluid w-50 align-self-center"/>
         </div>
       </div>
     </div>

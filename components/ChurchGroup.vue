@@ -12,7 +12,8 @@
 
 
         <div>
-          <button data-bs-toggle="modal" data-bs-target="#staticBackdrop" class="btn btn-primary"><i
+          <button @click="clearFields()" data-bs-toggle="modal" data-bs-target="#staticBackdrop"
+                  class="btn btn-primary"><i
             class="fas fa-plus-circle"></i> Add Church Group
           </button>
         </div>
@@ -43,7 +44,9 @@
                     Action
                   </button>
                   <ul class="dropdown-menu">
-                    <li v-if="loggedInUser.data.roleId === '1'">
+                    <li v-if="loggedInUser.data.roleId === '1'"
+                        @click="edit(group)"
+                        data-bs-toggle="modal" data-bs-target="#staticBackdrop">
                       <NuxtLink class="dropdown-item" :to="''">Edit</NuxtLink>
                     </li>
                     <li v-if="loggedInUser.data.roleId === '1'">
@@ -135,6 +138,7 @@
       return {
         title: "Are you sure?",
         message: 'You are about to delete this group.',
+        groupId: '',
         groupName: '',
         groupDescription: '',
         toDeleteId: '',
@@ -143,7 +147,16 @@
       }
     },
     methods: {
-
+      clearFields() {
+        this.groupName = ''
+        this.groupId = ''
+        this.groupDescription = ''
+      },
+      edit(group) {
+        this.groupId = group.id
+        this.groupName = group.name
+        this.groupDescription = group.description
+      },
       fetchGroups() {
         this.isLoading = true
         this.$axios.get(`churchgroups`).then(response => {
@@ -163,15 +176,30 @@
           description: this.groupDescription
         }
 
-        if (this.groupName.length !== 0 && this.groupDescription.length !== 0) {
-          this.$axios.post(`churchgroups/me`, requestBody).then(response => {
-            this.$toast.success("Successfully recorded")
-            this.fetchGroups()
-            this.isLoading = false
-          }).catch(error => {
-            this.$toast.success(error.response.data.message)
-            this.isLoading = false
-          })
+        if (this.groupId.length === 0) {
+          if (this.groupName.length !== 0 && this.groupDescription.length !== 0) {
+            this.$axios.post(`churchgroups/me`, requestBody).then(response => {
+              this.$toast.success("Successfully recorded")
+              this.fetchGroups()
+              this.clearFields()
+              this.isLoading = false
+            }).catch(error => {
+              this.$toast.success(error.response.data.message)
+              this.isLoading = false
+            })
+          }
+        } else {
+          if (this.groupName.length !== 0 && this.groupDescription.length !== 0) {
+            this.$axios.put(`churchgroups/${this.groupId}`, requestBody).then(response => {
+              this.$toast.success("Successfully updated")
+              this.fetchGroups()
+              this.clearFields()
+              this.isLoading = false
+            }).catch(error => {
+              this.$toast.success(error.response.data.message)
+              this.isLoading = false
+            })
+          }
         }
 
       },

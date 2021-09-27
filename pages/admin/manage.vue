@@ -19,6 +19,11 @@
                     type="button" role="tab" aria-controls="pills-contact" aria-selected="false">Offerings/Tithe
             </button>
           </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="pills-users-tab" data-bs-toggle="pill" data-bs-target="#pills-users"
+                    type="button" role="tab" aria-controls="pills-contact" aria-selected="false">Users
+            </button>
+          </li>
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-expanded="false">Settings</a>
             <ul class="dropdown-menu">
@@ -44,10 +49,13 @@
             <Members></Members>
           </div>
           <div class="tab-pane fade" id="pills-profile" role="tabpanel" aria-labelledby="pills-profile-tab">
-
+            <Issues></Issues>
           </div>
           <div class="tab-pane fade" id="pills-contact" role="tabpanel" aria-labelledby="pills-contact-tab">
 
+          </div>
+          <div class="tab-pane fade" id="pills-users" role="tabpanel" aria-labelledby="pills-users-tab">
+            <Users></Users>
           </div>
           <div class="tab-pane fade" id="pills-church-group" role="tabpanel" aria-labelledby="pills-church-group-tab">
             <ChurchGroup></ChurchGroup>
@@ -71,10 +79,12 @@
 
   import Members from "../../components/Members";
   import ChurchFamily from "../../components/ChurchFamily";
+  import Users from "../../components/Users";
+  import Issues from "../../components/Issues";
 
   export default {
     name: "manage",
-    components: {ChurchFamily, Members}
+    components: {Issues, Users, ChurchFamily, Members}
   }
 </script>
 
