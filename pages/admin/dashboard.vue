@@ -1,10 +1,10 @@
 <template>
   <div class="container">
     <div class="row justify-content-center mt-10">
-      <div class="col-sm-10 col-md-10 col-lg-10 col-xl-6">
+      <div class="col-sm-10 col-md-10 col-lg-10 col-xl-8">
         <h6>Hi,{{loggedInUser.data.name}}</h6>
         <div class="row justify-content-center">
-          <div class="col-md-6 my-2 h-100">
+          <div class="col-md-4 my-2 h-100">
             <div class="card h-100">
               <div class="card-body h-100">
                 <ul class="list-unstyled text-center">
@@ -18,7 +18,7 @@
               </div>
             </div>
           </div>
-          <div class="col-md-6 my-2 h-100">
+          <div class="col-md-4 my-2 h-100">
             <div class="card h-100">
               <div class="card-body">
                 <ul class="list-unstyled text-center">
@@ -32,7 +32,7 @@
               </div>
             </div>
           </div>
-          <div class="col-md-6 my-2 h-100">
+          <div class="col-md-4 my-2 h-100">
             <div class="card h-100">
               <div class="card-body h-100">
                 <ul class="list-unstyled text-center">
@@ -46,7 +46,7 @@
               </div>
             </div>
           </div>
-          <div class="col-md-6 my-2 h-100">
+          <div class="col-md-4 my-2 h-100">
             <div class="card">
               <div class="card-body">
                 <ul class="list-unstyled text-center">
