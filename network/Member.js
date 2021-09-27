@@ -32,6 +32,16 @@ export const Tithe = {
   week5: 0
 }
 
+export const Offering = {
+  id: "",
+  name: "",
+  amount: 0,
+  serviceId: "",
+  serviceName: "",
+  createdAt: ""
+}
+
+
 export const Announcement = {
   id: "",
   title: "",
@@ -50,6 +60,10 @@ export const Issue = {
   title: "",
   issueMessage: "",
   isResolved: false
+}
+
+export const OfferingList = {
+  results: [Offering]
 }
 
 export const IssuesList = {

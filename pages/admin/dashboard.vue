@@ -14,86 +14,91 @@
         </div>
 
         <div class="row justify-content-center">
-          <div class="col-md-4 my-2 h-100">
-            <div class="card h-100">
-              <div class="card-body h-100">
-                <ul class="list-unstyled text-center">
-                  <li>
-                    <h6>GHS</h6>
-                  </li>
-                  <li>
-                    <h1>0.00</h1>
-                  </li>
-                  <li>
-                    <p>Total Money Received</p>
-                  </li>
+          <div class="col" v-if="loggedInUser.data.roleId === '1'">
+            <div class="row justify-content-center">
+              <div class="col-md-4 my-2 h-100">
+                <div class="card h-100">
+                  <div class="card-body h-100">
+                    <ul class="list-unstyled text-center">
+                      <li>
+                        <h6>GHS</h6>
+                      </li>
+                      <li>
+                        <h1>0.00</h1>
+                      </li>
+                      <li>
+                        <p>Total Money Received</p>
+                      </li>
 
-                </ul>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-4 my-2 h-100">
+                <div class="card h-100">
+                  <div class="card-body">
+                    <ul class="list-unstyled text-center">
+                      <li>
+                        <h6>GHS</h6>
+                      </li>
+                      <li>
+                        <h1>0.00</h1>
+                      </li>
+                      <li>
+                        <p>Total Offering Received</p>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-4 my-2 h-100">
+                <div class="card h-100">
+                  <div class="card-body h-100">
+                    <ul class="list-unstyled text-center">
+                      <li>
+                        <h6>GHS</h6>
+                      </li>
+                      <li>
+                        <h1>0.00</h1>
+                      </li>
+                      <li>
+                        <p>Total Tithe Received </p>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-4 my-2 h-100">
+                <div class="card">
+                  <div class="card-body">
+                    <ul class="list-unstyled text-center">
+                      <li>
+                        <h1>0</h1>
+                      </li>
+                      <li>
+                        <p>Unresolved Issues </p>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+              <div class="col my-2 h-100">
+                <div class="card">
+                  <div class="card-body">
+                    <ul class="list-unstyled text-center">
+                      <li>
+                        <h1>0</h1>
+                      </li>
+                      <li>
+                        <p>Members</p>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-          <div class="col-md-4 my-2 h-100">
-            <div class="card h-100">
-              <div class="card-body">
-                <ul class="list-unstyled text-center">
-                  <li>
-                    <h6>GHS</h6>
-                  </li>
-                  <li>
-                    <h1>0.00</h1>
-                  </li>
-                  <li>
-                    <p>Total Offering Received</p>
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </div>
-          <div class="col-md-4 my-2 h-100">
-            <div class="card h-100">
-              <div class="card-body h-100">
-                <ul class="list-unstyled text-center">
-                  <li>
-                    <h6>GHS</h6>
-                  </li>
-                  <li>
-                    <h1>0.00</h1>
-                  </li>
-                  <li>
-                    <p>Total Tithe Received </p>
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </div>
-          <div class="col-md-4 my-2 h-100">
-            <div class="card">
-              <div class="card-body">
-                <ul class="list-unstyled text-center">
-                  <li>
-                    <h1>0</h1>
-                  </li>
-                  <li>
-                    <p>Unresolved Issues </p>
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </div>
-          <div class="col my-2 h-100">
-            <div class="card">
-              <div class="card-body">
-                <ul class="list-unstyled text-center">
-                  <li>
-                    <h1>0</h1>
-                  </li>
-                  <li>
-                    <p>Members</p>
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </div>
+
           <div v-if="!isLoading" class="col-md-12">
             <h5 class="mt-5">Announcements</h5>
             <ul class="list-group mb-3">
