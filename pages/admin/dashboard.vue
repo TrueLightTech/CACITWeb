@@ -14,6 +14,9 @@
                   <li>
                     <p>Total Money Received</p>
                   </li>
+                  <li>
+                    <span class="badge bg-primary">View more</span>
+                  </li>
                 </ul>
               </div>
             </div>
@@ -28,6 +31,9 @@
                   <li>
                     <p>Total Offering Received</p>
                   </li>
+                  <li>
+                    <span class="badge bg-primary">View more</span>
+                  </li>
                 </ul>
               </div>
             </div>
@@ -40,7 +46,10 @@
                     <h1>4000</h1>
                   </li>
                   <li>
-                    <p>Total Tithe Received</p>
+                    <p>Total Tithe Received </p>
+                  </li>
+                  <li>
+                    <span class="badge bg-primary">View more</span>
                   </li>
                 </ul>
               </div>
@@ -54,7 +63,10 @@
                     <h1>100</h1>
                   </li>
                   <li>
-                    <p>Unresolved Issues</p>
+                    <p>Unresolved Issues </p>
+                  </li>
+                  <li>
+                    <span class="badge bg-primary">View more</span>
                   </li>
                 </ul>
               </div>
@@ -69,6 +81,9 @@
                   </li>
                   <li>
                     <p>Members</p>
+                  </li>
+                  <li>
+                    <span class="badge bg-primary">View more</span>
                   </li>
                 </ul>
               </div>

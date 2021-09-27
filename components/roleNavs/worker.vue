@@ -11,6 +11,9 @@
       <NuxtLink to="/admin/tithe" data-bs-dismiss="offcanvas" aria-label="Close"><h4>Tithe</h4></NuxtLink>
     </li>
     <li class="my-5">
+      <NuxtLink to="/admin/report" data-bs-dismiss="offcanvas" aria-label="Close"><h4>Report An Issue</h4></NuxtLink>
+    </li>
+    <li class="my-5">
       <NuxtLink to="/admin/manage" data-bs-dismiss="offcanvas" aria-label="Close"><h4>Manage</h4></NuxtLink>
     </li>
     <li class="my-5">
