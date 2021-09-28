@@ -11,7 +11,7 @@
         </ul>
 
         <div>
-          <button @click="clearFields()" type="button" data-bs-toggle="modal" data-bs-target="#staticBackdrop3"
+          <button @click="clearFields()" type="button" data-bs-toggle="modal" data-bs-target="#staticBackdrop4"
                   class="btn btn-primary"><i
             class="fas fa-plus-circle"></i> Add Offering
           </button>
@@ -47,13 +47,13 @@
                   <ul class="dropdown-menu">
                     <li v-if="loggedInUser.data.roleId === '1'"
                         @click="edit(offering)"
-                        data-bs-toggle="modal" data-bs-target="#staticBackdrop1">
+                        data-bs-toggle="modal" data-bs-target="#staticBackdrop4">
                       <NuxtLink class="dropdown-item" :to="''">Edit</NuxtLink>
                     </li>
                     <li v-if="loggedInUser.data.roleId === '1'">
                       <a @click="checkToDelete(offering.id)" class="dropdown-item text-danger" style="cursor: pointer;"
                          data-bs-toggle="modal"
-                         data-bs-target="#exampleModal1">Delete
+                         data-bs-target="#exampleModal7">Delete
                       </a>
                     </li>
                   </ul>
@@ -70,7 +70,7 @@
 
 
     <!-- Modal -->
-    <div class="modal fade" id="exampleModal5" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal fade" id="exampleModal7" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered modal-sm">
         <div class="modal-content">
           <div class="modal-header">
@@ -96,24 +96,39 @@
 
 
     <!-- Modal -->
-    <div class="modal fade" id="staticBackdrop3" data-bs-keyboard="false" tabindex="-1"
+    <div class="modal fade" id="staticBackdrop4" data-bs-keyboard="false" tabindex="-1"
          aria-labelledby="staticBackdropLabel" aria-hidden="true">
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title" id="staticBackdropLabel">Add Family</h5>
+            <h5 class="modal-title" id="staticBackdropLabel">Add Offering</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
             <form>
-              <div class="mb-3">
-                <label for="recipient-name" class="col-form-label">Name</label>
-                <input type="text" v-model="familyName" class="form-control" id="recipient-name">
-              </div>
-              <div class="mb-3">
-                <label for="message-text" class="col-form-label">Description</label>
-                <textarea v-model="familyDescription" class="form-control" id="message-text"></textarea>
-              </div>
+              <ul class="list-unstyled">
+                <li>
+                  <div class="mb-3">
+                    <label for="recipient-name" class="col-form-label">Name</label>
+                    <input type="text" v-model="offeringName" class="form-control" id="recipient-name">
+                  </div>
+                </li>
+                <li>
+                  <div class="mb-3">
+                    <label for="recipient-amount" class="col-form-label">Amount</label>
+                    <input type="text" v-model="amount" class="form-control" id="recipient-amount">
+                  </div>
+                </li>
+                <li class="my-3" v-if="!isServiceLoaded">
+                  <label class="mb-2 text-start">Select Service</label>
+                  <select v-model="serviceId" class="form-select form-control-lg"
+                          aria-label="Default select example">
+                    <option :value="service.id"
+                            v-for="service in services.data">{{service.name}}
+                    </option>
+                  </select>
+                </li>
+              </ul>
             </form>
           </div>
           <div class="modal-footer">
@@ -129,20 +144,28 @@
 
 <script>
   import {mapGetters} from 'vuex'
-  import { OfferingList} from "../network/Member";
+  import {OfferingList, ServiceList} from "../network/Member";
 
   export default {
-    name: "ChurchFamily",
+    name: "Offerings",
     beforeMount() {
       this.fetchFamilies()
+      this.getServices()
+    },
+    mounted() {
+      this.getServices()
     },
     data() {
       return {
         title: "Are you sure?",
-        message: 'You are about to delete this family.',
+        message: 'You are about to delete this Offering.',
         isLoading: false,
-        familyName: '',
-        familyId: '',
+        isServiceLoaded: false,
+        services: ServiceList,
+        offeringName: '',
+        amount: '',
+        offeringId: '',
+        serviceId: '',
         toDeleteId: '',
         familyDescription: '',
         offerings: OfferingList
@@ -150,22 +173,26 @@
     },
     methods: {
       clearFields() {
-        this.familyName = ''
-        this.familyId = ''
-        this.familyDescription = ''
+        this.offeringName = ''
+        this.amount = ''
+        this.serviceId = ''
+        this.offeringId = ''
       },
       edit(data) {
-        this.familyId = data.id
-        this.familyName = data.name
-        this.familyDescription = data.description
+        this.offeringId = data.id
+        this.offeringName = data.name
+        this.amount = data.amount
+        this.serviceId = data.serviceId
       },
       saveFamily() {
         const requestBody = {
-          name: this.familyName,
-          description: this.familyDescription
+          name: this.offeringName,
+          amount: parseFloat(this.amount),
+          serviceId: this.serviceId,
+          serviceName: this.services.data.filter(service => service.id === this.serviceId)[0].name
         }
 
-        if (this.familyId.length === 0) {
+        if (this.offeringId.length === 0) {
           this.$axios.post(`offerings`, requestBody).then(response => {
             this.$toast.success("Successfully added")
             this.isLoading = false
@@ -176,11 +203,11 @@
             this.isLoading = false
           })
         } else {
-          this.$axios.put(`offerings/${this.familyId}`, requestBody).then(response => {
+          this.$axios.put(`offerings/${this.offeringId}`, requestBody).then(response => {
             this.$toast.success("Successfully updated")
             this.isLoading = false
-            this.clearFields()
             this.fetchFamilies()
+            this.clearFields()
           }).catch(error => {
             this.$toast.success(error.response.data.message)
             this.isLoading = false
@@ -203,7 +230,7 @@
       deleteService(id) {
         this.$axios.delete(`offerings/${id}`).then(response => {
           this.fetchFamilies()
-          this.$toast.info("Family successfully deleted.")
+          this.$toast.info("Offering successfully deleted.")
         }).catch(error => {
           console.log(error)
         })
@@ -213,6 +240,15 @@
       },
       negativeButton() {
         // this.$emit("onclick", "negative")
+      },
+      getServices() {
+        this.isServiceLoaded = true
+        this.$axios.get(`services`).then(response => {
+          this.isServiceLoaded = false
+          this.services = Object.assign(this.services, response.data)
+        }).catch(error => {
+          this.isServiceLoaded = false
+        })
       }
     },
     computed: {

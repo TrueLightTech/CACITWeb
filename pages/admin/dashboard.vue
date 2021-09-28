@@ -6,7 +6,7 @@
         <div class="d-flex justify-content-between">
           <h6>Hi,{{loggedInUser.data.name}}</h6>
 
-          <div>
+          <div v-if="loggedInUser.data.roleId === '1'">
             <NuxtLink to="/admin/manage">
               <span class="badge bg-primary">View more</span>
             </NuxtLink>

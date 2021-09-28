@@ -122,6 +122,7 @@
 
 <script>
   import {ChurchMember, ServiceList, Tithe} from "../../../../network/Member";
+  import {mapGetters} from 'vuex'
 
   const date = new Date();
   const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
@@ -151,6 +152,9 @@
       let id = this.$route.params.id
       this.getServices()
       this.getMember(id)
+    },
+    computed: {
+      ...mapGetters(['isAuthenticated', 'loggedInUser'])
     },
     methods: {
       weekSelected(i) {
@@ -214,8 +218,9 @@
           const requestBody = {
             userId: this.user.id,
             year: this.year + "",
-            signature: '',
+            signature: this.loggedInUser.data.name,
             serviceId: this.serviceId,
+            serviceName: this.services.data.filter(service => service.id === this.serviceId)[0].name,
             month: this.month,
             amountPaid: 0.0,
           }
