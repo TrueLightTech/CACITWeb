@@ -51,6 +51,12 @@ export const Announcement = {
   createdAt: ""
 }
 
+export const DashboardAccountingTotal = {
+  titheSum: 0.0,
+  offeringSum: 0.0,
+  total: 0.0
+}
+
 export const Issue = {
   id: "",
   userId: "",

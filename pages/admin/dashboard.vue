@@ -15,7 +15,7 @@
 
         <div class="row justify-content-center">
           <div class="col" v-if="loggedInUser.data.roleId === '1'">
-            <div class="row justify-content-center">
+            <div class="row justify-content-center" v-if="!isAccountingLoading">
               <div class="col-md-4 my-2 h-100">
                 <div class="card h-100">
                   <div class="card-body h-100">
@@ -24,7 +24,7 @@
                         <h6>GHS</h6>
                       </li>
                       <li>
-                        <h1>0.00</h1>
+                        <h1>{{accountTotals.total}}</h1>
                       </li>
                       <li>
                         <p>Total Money Received</p>
@@ -42,7 +42,7 @@
                         <h6>GHS</h6>
                       </li>
                       <li>
-                        <h1>0.00</h1>
+                        <h1>{{accountTotals.offeringSum}}</h1>
                       </li>
                       <li>
                         <p>Total Offering Received</p>
@@ -59,7 +59,7 @@
                         <h6>GHS</h6>
                       </li>
                       <li>
-                        <h1>0.00</h1>
+                        <h1>{{accountTotals.titheSum}}</h1>
                       </li>
                       <li>
                         <p>Total Tithe Received </p>
@@ -171,6 +171,7 @@
   import AdminHeader from "../../components/AdminHeader";
   import {AnnouncementList} from "../../network/Announcement";
   import {profileImageBaseUrl} from "../../resources/constants";
+  import {DashboardAccountingTotal} from "../../network/Member";
 
   export default {
     name: "dashboard",
@@ -180,6 +181,7 @@
     },
     beforeMount() {
       this.fetchAnnouncement()
+      this.getAccounting()
     },
     data() {
       return {
@@ -189,10 +191,22 @@
         totalCount: 0,
         searchQuery: '',
         isLoading: false,
-        announcements: AnnouncementList
+        isAccountingLoading: false,
+        announcements: AnnouncementList,
+        accountTotals: DashboardAccountingTotal
       }
     },
     methods: {
+      getAccounting() {
+        this.isAccountingLoading = true
+        this.$axios.get(`accounting/total`).then(response => {
+          this.accountTotals = Object.assign(DashboardAccountingTotal, response.data.data)
+
+          this.isAccountingLoading = false
+        }).catch(error => {
+          this.isAccountingLoading = false
+        })
+      },
       fetchAnnouncement(page = 1, pageSize = 10) {
         this.currentPage = page
         this.isLoading = true
