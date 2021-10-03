@@ -131,6 +131,14 @@
 
   export default {
     name: "ChurchGroup",
+    props: ['isActive'],
+    watch: {
+      isActive: function (newVal, oldVal) { // watch it
+        if (newVal) {
+          this.fetchGroups()
+        }
+      }
+    },
     beforeMount() {
       this.fetchGroups()
     },

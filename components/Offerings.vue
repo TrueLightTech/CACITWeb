@@ -148,6 +148,15 @@
 
   export default {
     name: "Offerings",
+    props: ['isActive'],
+    watch: {
+      isActive: function (newVal, oldVal) { // watch it
+        if (newVal) {
+          this.fetchFamilies()
+          this.getServices()
+        }
+      }
+    },
     beforeMount() {
       this.fetchFamilies()
       this.getServices()

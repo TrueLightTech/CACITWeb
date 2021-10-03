@@ -119,10 +119,10 @@
   import {profileImageBaseUrl} from "../resources/constants";
 
 
-
   export default {
     name: "Members",
     components: {PageLoader},
+    props: ['isActive'],
     data() {
       return {
         numberOfPages: 0,
@@ -132,6 +132,13 @@
         isLoading: false,
         toDeleteId: '',
         members: MemberList
+      }
+    },
+    watch: {
+      isActive: function (newVal, oldVal) { // watch it
+        if (newVal) {
+          this.fetchMembers()
+        }
       }
     },
     beforeMount() {

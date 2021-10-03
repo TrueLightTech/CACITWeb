@@ -131,6 +131,14 @@
 
   export default {
     name: "ChurchFamily",
+    props: ['isActive'],
+    watch: {
+      isActive: function (newVal, oldVal) { // watch it
+        if (newVal) {
+          this.fetchFamilies()
+        }
+      }
+    },
     beforeMount() {
       this.fetchFamilies()
     },

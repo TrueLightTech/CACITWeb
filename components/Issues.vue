@@ -111,6 +111,14 @@
 
   export default {
     name: "Issues",
+    props: ['isActive'],
+    watch: {
+      isActive: function (newVal, oldVal) { // watch it
+        if (newVal) {
+          this.fetchServices()
+        }
+      }
+    },
     beforeMount() {
       this.fetchServices()
     },
