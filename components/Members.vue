@@ -95,9 +95,9 @@
               <li class="page-item">
                 <a @click="fetchMembers(currentPage - 1)" class="page-link" href="#" tabindex="-1" aria-disabled="true">Previous</a>
               </li>
-              <li v-for="index in numberOfPages" :key="index" class="page-item">
-                <a @click="fetchMembers(index)" class="page-link" href="#">{{index}}</a>
-              </li>
+<!--              <li v-for="index in numberOfPages" :key="index" class="page-item">-->
+<!--                <a @click="fetchMembers(index)" class="page-link" href="#">{{index}}</a>-->
+<!--              </li>-->
               <li class="page-item">
                 <a @click="fetchMembers(currentPage+1)" class="page-link" href="#">Next</a>
               </li>

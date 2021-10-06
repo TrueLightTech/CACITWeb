@@ -7,7 +7,7 @@
           <h6>Hi,{{loggedInUser.data.name}}</h6>
 
           <div v-if="loggedInUser.data.roleId === '1'">
-            <NuxtLink to="/admin/manage">
+            <NuxtLink to="/admin/accounting">
               <span class="badge bg-primary">View more</span>
             </NuxtLink>
           </div>
