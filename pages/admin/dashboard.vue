@@ -82,6 +82,7 @@
                   </div>
                 </div>
               </div>
+
               <div class="col my-2 h-100">
                 <div class="card h-100">
                   <div class="card-body">
