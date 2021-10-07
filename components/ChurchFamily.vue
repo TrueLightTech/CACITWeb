@@ -197,7 +197,7 @@
       fetchFamilies() {
         this.isLoading = true
         this.$axios.get(`churchfamilies`).then(response => {
-          this.services = Object.assign(ChurchFamilyList, response.data)
+          this.families = Object.assign(ChurchFamilyList, response.data)
           this.isLoading = false
         }).catch(error => {
           this.isLoading = false
