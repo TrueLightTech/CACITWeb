@@ -13,7 +13,7 @@
                 <li v-if="!isLoading" @click="fetchTotalByServiceId(service.id)"
                     v-for="(service,index) in services.data" :key="index"><a
                   class="dropdown-item" href="#">
-                  {{service.name}}
+                  {{ service.name }}
                 </a></li>
               </ul>
             </div>
@@ -49,9 +49,9 @@
           </thead>
           <tbody>
           <tr>
-            <td>GHS {{accountTotals.total}}</td>
-            <td>GHS {{accountTotals.offeringSum}}</td>
-            <td>GHS {{accountTotals.titheSum}}</td>
+            <td>GHS {{ accountTotals.total }}</td>
+            <td>GHS {{ accountTotals.offeringSum }}</td>
+            <td>GHS {{ accountTotals.titheSum }}</td>
           </tr>
           </tbody>
         </table>
@@ -96,9 +96,9 @@
           </thead>
           <tbody>
           <tr v-for="(offering,index) in offerings.results">
-            <td>{{offering.name}}</td>
-            <td>{{offering.serviceName}}</td>
-            <td>GHS {{offering.amount}}</td>
+            <td>{{ offering.name }}</td>
+            <td>{{ offering.serviceName }}</td>
+            <td>GHS {{ offering.amount }}</td>
           </tr>
           </tbody>
         </table>
@@ -119,7 +119,7 @@
                   <li v-if="!isFamiliesLoading" @click="fetchTotalByServiceId(family.id)"
                       v-for="(family,index) in families.data" :key="index"><a
                     class="dropdown-item" href="#">
-                    {{family.name}}
+                    {{ family.name }}
                   </a></li>
                 </ul>
               </div>
@@ -143,9 +143,9 @@
           </thead>
           <tbody>
           <tr class="d-none">
-            <td>GHS {{accountTotals.total}}</td>
-            <td>GHS {{accountTotals.offeringSum}}</td>
-            <td>GHS {{accountTotals.titheSum}}</td>
+            <td>GHS {{ accountTotals.total.toLocaleString() }}</td>
+            <td>GHS {{ accountTotals.offeringSum.toLocaleString() }}</td>
+            <td>GHS {{ accountTotals.titheSum }}</td>
           </tr>
           </tbody>
         </table>
@@ -156,78 +156,78 @@
 </template>
 
 <script>
-  import {ChurchFamilyList, DashboardAccountingTotal, OfferingList, ServiceList} from "../../network/Member";
+import {ChurchFamilyList, DashboardAccountingTotal, OfferingList, ServiceList} from "../../network/Member";
+import {numberWithCommas} from "../../resources/constants";
 
-  export default {
-    name: "accounting",
-    data() {
-      return {
-        services: ServiceList,
-        isLoading: false,
-        families: ChurchFamilyList,
-        accountTotals: DashboardAccountingTotal,
-        offerings: OfferingList,
-        isAccountingLoading: false,
-        isFamiliesLoading: false,
-        isOfferingLoading: false
-      }
+export default {
+  name: "accounting",
+  data() {
+    return {
+      services: ServiceList,
+      isLoading: false,
+      families: ChurchFamilyList,
+      accountTotals: DashboardAccountingTotal,
+      offerings: OfferingList,
+      isAccountingLoading: false,
+      isFamiliesLoading: false,
+      isOfferingLoading: false
+    }
+  },
+  beforeMount() {
+    this.getAccounting()
+    this.fetchServices()
+    this.fetchFamilies()
+    this.fetchOfferings()
+  },
+  methods: {
+    getAccounting() {
+      this.isAccountingLoading = true
+      this.$axios.get(`accounting/total`).then(response => {
+        this.accountTotals = Object.assign(DashboardAccountingTotal, response.data.data)
+        this.isAccountingLoading = false
+      }).catch(error => {
+        this.isAccountingLoading = false
+      })
     },
-    beforeMount() {
-      this.getAccounting()
-      this.fetchServices()
-      this.fetchFamilies()
-      this.fetchOfferings()
+    fetchServices() {
+      this.isLoading = true
+      this.$axios.get(`services`).then(response => {
+        this.services = Object.assign(ServiceList, response.data)
+
+        this.isLoading = false
+      }).catch(error => {
+        this.isLoading = false
+      })
     },
-    methods: {
-      getAccounting() {
-        this.isAccountingLoading = true
-        this.$axios.get(`accounting/total`).then(response => {
-          this.accountTotals = Object.assign(DashboardAccountingTotal, response.data.data)
-
-          this.isAccountingLoading = false
-        }).catch(error => {
-          this.isAccountingLoading = false
-        })
-      },
-      fetchServices() {
-        this.isLoading = true
-        this.$axios.get(`services`).then(response => {
-          this.services = Object.assign(ServiceList, response.data)
-
-          this.isLoading = false
-        }).catch(error => {
-          this.isLoading = false
-        })
-      },
-      fetchTotalByServiceId(serviceId) {
-        this.isAccountingLoading = true
-        this.$axios.get(`accounting/total?ServiceId=${serviceId}`).then(response => {
-          this.accountTotals = Object.assign(DashboardAccountingTotal, response.data.data)
-          this.isAccountingLoading = false
-        }).catch(error => {
-          this.isAccountingLoading = false
-        })
-      },
-      fetchFamilies() {
-        this.isFamiliesLoading = true
-        this.$axios.get(`churchfamilies`).then(response => {
-          this.families = Object.assign(ChurchFamilyList, response.data)
-          this.isFamiliesLoading = false
-        }).catch(error => {
-          this.isFamiliesLoading = false
-        })
-      },
-      fetchOfferings() {
-        this.isOfferingLoading = true
-        this.$axios.get(`offerings`).then(response => {
-          this.offerings = Object.assign(OfferingList, response.data.data)
-          this.isOfferingLoading = false
-        }).catch(error => {
-          this.isOfferingLoading = false
-        })
-      }
+    fetchTotalByServiceId(serviceId) {
+      this.isAccountingLoading = true
+      this.$axios.get(`accounting/total?ServiceId=${serviceId}`).then(response => {
+        this.accountTotals = Object.assign(DashboardAccountingTotal, response.data.data)
+        this.isAccountingLoading = false
+      }).catch(error => {
+        this.isAccountingLoading = false
+      })
+    },
+    fetchFamilies() {
+      this.isFamiliesLoading = true
+      this.$axios.get(`churchfamilies`).then(response => {
+        this.families = Object.assign(ChurchFamilyList, response.data)
+        this.isFamiliesLoading = false
+      }).catch(error => {
+        this.isFamiliesLoading = false
+      })
+    },
+    fetchOfferings() {
+      this.isOfferingLoading = true
+      this.$axios.get(`offerings`).then(response => {
+        this.offerings = Object.assign(OfferingList, response.data.data)
+        this.isOfferingLoading = false
+      }).catch(error => {
+        this.isOfferingLoading = false
+      })
     }
   }
+}
 </script>
 
 <style scoped>

@@ -88,17 +88,21 @@
                   <div class="card-body">
 
                     <div class="w-100 text-end float-end">
-                      <div class="dropdown">
-                        <a class="btn btn-secondary dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
-                           data-bs-toggle="dropdown" aria-expanded="false">
-                          Filter by Family
-                        </a>
+                      <div class="d-flex justify-content-between">
+                        <p>{{selectedFamilyName}}</p>
+                        <div class="dropdown">
+                          <a class="btn btn-secondary dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
+                             data-bs-toggle="dropdown" aria-expanded="false">
+                            Filter by Family
+                          </a>
 
-                        <ul v-if="!isChurchFamiliesLoading" class="dropdown-menu" aria-labelledby="dropdownMenuLink">
-                          <li v-for="(family,index) in families.data" :key="index" @click="getMembersCount(family.id)">
-                            <a class="dropdown-item" href="#">{{ family.name }}</a>
-                          </li>
-                        </ul>
+                          <ul v-if="!isChurchFamiliesLoading" class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                            <li><a class="dropdown-item" href="#" @click="getMembersCount('')">All</a></li>
+                            <li v-for="(family,index) in families.data" :key="index" @click="getMembersCount(family)">
+                              <a class="dropdown-item" href="#">{{ family.name }}</a>
+                            </li>
+                          </ul>
+                        </div>
                       </div>
                     </div>
 
@@ -212,6 +216,7 @@ export default {
     return {
       user: JSON.parse(window.localStorage.getItem('auth.user')),
       unResolvedIssuesCount: 0,
+      selectedFamilyName: 'All',
       families: ChurchFamilyList,
       numberOfPages: 0,
       currentPage: 0,
@@ -228,9 +233,17 @@ export default {
     }
   },
   methods: {
-    getMembersCount(familyId = "") {
+    getMembersCount(family = "") {
+      let famId = ""
+      if (family.length !== 0) {
+        famId = family.id
+        this.selectedFamilyName = family.name
+      } else {
+        famId = ""
+        this.selectedFamilyName =  "All"
+      }
       this.isMembersLoading = true
-      this.$axios.get(`accounting/users?FamilyId=${familyId}`).then(response => {
+      this.$axios.get(`accounting/users?FamilyId=${famId}`).then(response => {
         this.totalMembersCount = response.data.data.totalCount
         this.isMembersLoading = false
       }).catch(error => {
