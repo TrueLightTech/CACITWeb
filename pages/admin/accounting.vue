@@ -174,14 +174,12 @@
             <thead>
             <tr>
               <th scope="col"><h4>Family</h4></th>
-              <th scope="col"><h4>Service</h4></th>
               <th scope="col"><h4>Amount</h4></th>
             </tr>
             </thead>
             <tbody v-if="!isTitheLoading">
             <tr v-for="(tithe,index) in titheAggregate.data" :key="index">
               <td>{{ tithe.userFamilyName }}</td>
-              <td>{{ tithe.serviceName }}</td>
               <td>{{ tithe.totalAmount }}</td>
             </tr>
             </tbody>
