@@ -220,18 +220,18 @@ export default {
       selectedTotalsFilterService: 'All',
       totalFilterByServiceId: '',
       totalsDateRange: {
-        startDate: `${date.getFullYear()}-${date.getMonth()}-${date.getDay() - 1}`,
-        endDate: `${date.getFullYear()}-${date.getMonth()}-${date.getDay()}`,
+        startDate: `${moment().format('YYYY-MM-DD')}`,
+        endDate: `${moment().format('YYYY-MM-DD')}`,
       },
       offeringsDateRange: {
-        startDate: `${date.getFullYear()}-${date.getMonth()}-${date.getDay() - 1}`,
-        endDate: `${date.getFullYear()}-${date.getMonth()}-${date.getDay()}`,
+        startDate: `${moment().format('YYYY-MM-DD')}`,
+        endDate: `${moment().format('YYYY-MM-DD')}`,
       },
       selectedTitheFilterFamily: 'All',
       titheFilterByFamilyId: '',
       titheDateRange: {
-        startDate: `${date.getFullYear()}-${date.getMonth()}-${date.getDay() - 1}`,
-        endDate: `${date.getFullYear()}-${date.getMonth()}-${date.getDay()}`,
+        startDate: `${moment().format('YYYY-MM-DD')}`,
+        endDate: `${moment().format('YYYY-MM-DD')}`,
       },
     }
   },
