@@ -59,7 +59,7 @@ export default {
     'bootstrap-vue/nuxt',
     '@nuxtjs/axios',
     '@nuxtjs/toast',
-    '@nuxtjs/auth-next'
+    '@nuxtjs/auth-next',
   ],
   toast: {
     position: 'top-right',

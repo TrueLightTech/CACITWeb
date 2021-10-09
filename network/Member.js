@@ -68,6 +68,18 @@ export const Issue = {
   isResolved: false
 }
 
+export const TitheAggregate = {
+  userFamilyName: "",
+  userFamilyId: "",
+  serviceId: "",
+  serviceName: "",
+  totalAmount: 0
+}
+
+export const TitheAggregateList = {
+  data: [TitheAggregate]
+}
+
 export const OfferingList = {
   results: [Offering]
 }
