@@ -71,8 +71,6 @@ export const Issue = {
 export const TitheAggregate = {
   userFamilyName: "",
   userFamilyId: "",
-  serviceId: "",
-  serviceName: "",
   totalAmount: 0
 }
 

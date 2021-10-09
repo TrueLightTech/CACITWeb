@@ -15,8 +15,8 @@ const systemRoles = [
   }
 ]
 
-export function numberWithCommas(x) {
-  let parts = x.toString().split(".");
-  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-  return parts.join(".");
+export function numberWithCommas(amount) {
+  return (amount).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');  // 12,345.67
 }
+
+

@@ -1,26 +1,33 @@
 <template>
   <div class="mt-10">
     <div class="container">
-      <div class="row justify-content-center my-4">
-        <div class="col-md-10 g-0">
-
-        </div>
-      </div>
 
       <div class="row justify-content-center my-4">
-        <div class="col-md-10 g-0">
-          <div class="d-flex justify-content-between">
-            <div class="align-self-center">
-              <h5 class="mx-1"> ({{ selectedTotalsFilterService }})</h5>
-            </div>
-            <div class="d-flex justify-content-end">
+        <div class="col-md-8 g-0">
+          <div class="d-flex justify-content-end">
+            <div class="d-flex justify-content-end float-end text-end">
               <div class="dropdown w-100">
+                <button class="btn btn-primary btn-md dropdown-toggle" type="button" id="dropdownMenuButton1"
+                        data-bs-toggle="dropdown" aria-expanded="false">
+                  Filter By Family
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                  <li><a class="dropdown-item" href="#" @click="filterByFamilyId('')">All</a></li>
+                  <li v-if="!isFamiliesLoading" @click="filterByFamilyId(family)"
+                      v-for="(family,index) in families.data" :key="index"><a
+                    class="dropdown-item" href="#">{{ family.name }}
+                  </a></li>
+                </ul>
+              </div>
+
+              <div class="dropdown w-100 mx-2">
                 <button class="btn btn-primary btn-md dropdown-toggle" type="button" id="dropdownMenuButton1"
                         data-bs-toggle="dropdown" aria-expanded="false">
                   Filter By Service
                 </button>
                 <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                  <li v-if="!isLoading" @click="filterTotalsByServiceId(service)"
+                  <li><a class="dropdown-item" href="#" @click="filterByService('')">All</a></li>
+                  <li v-if="!isLoading" @click="filterByService(service)"
                       v-for="(service,index) in services.data" :key="index"><a
                     class="dropdown-item" href="#">
                     {{ service.name }}
@@ -35,7 +42,7 @@
                   :locale-data="{ format: 'yyyy/mm/dd' }"
                   v-model="totalsDateRange"
                   :time-picker="false"
-                  @update="totalsDatePickerCallback($event)">
+                  @update="datePickerCallback($event)">
                   <template v-slot:input="picker" style="min-width: 350px;">
                     <i class="far fa-calendar-alt"></i>
                     {{ $moment(picker.startDate).format('YYYY-MM-DD') }} - {{
@@ -47,11 +54,17 @@
             </div>
 
           </div>
+          <div class="d-flex justify-content-start mt-3 mx-2 float-start">
+            <ul class="list-unstyled">
+              <li>Selected Service: <span style="font-weight: bolder;">{{ selectedServiceName }}</span></li>
+              <li>Selected Family: <span style="font-weight: bolder;">{{ selectedFamilyName }}</span></li>
+            </ul>
+          </div>
         </div>
       </div>
 
       <div class="row justify-content-center">
-        <div class="col-md-10" v-if="!isAccountingLoading">
+        <div class="col-md-8" v-if="!isAccountingLoading">
           <table class="table table-bordered border-primary mb-5">
             <thead>
             <tr>
@@ -62,9 +75,9 @@
             </thead>
             <tbody>
             <tr>
-              <td>GHS {{ accountTotals.total }}</td>
-              <td>GHS {{ accountTotals.offeringSum }}</td>
-              <td>GHS {{ accountTotals.titheSum }}</td>
+              <td>GHS {{ formatMoney(accountTotals.total) }}</td>
+              <td>GHS {{ formatMoney(accountTotals.offeringSum) }}</td>
+              <td>GHS {{ formatMoney(accountTotals.titheSum) }}</td>
             </tr>
             </tbody>
           </table>
@@ -75,29 +88,13 @@
         <div class="row justify-content-center my-4">
           <div class="col-md-10 g-0">
             <div class="d-flex justify-content-end">
-              <div class="d-flex justify-content-end">
 
-                <div class="mx-2  w-100">
-                  <date-range-picker
-                    ref="picker"
-                    v-model="offeringsDateRange"
-                    :time-picker="false"
-                    @update="offeringsDatePickerCallback($event)"
-                  >
-                    <template v-slot:input="picker" style="min-width: 350px;">
-                      <i class="far fa-calendar-alt"></i>
-                      {{ $moment(picker.startDate).format('YYYY-MM-DD') }} -
-                      {{ $moment(picker.endDate).format('YYYY-MM-DD') }}
-                    </template>
-                  </date-range-picker>
-                </div>
-              </div>
             </div>
           </div>
         </div>
 
 
-        <div class="col-md-10 mb-5" v-if="!isOfferingLoading">
+        <div class="col-md-8 mb-5" v-if="!isOfferingLoading">
           <h4 class="mb-4">List of All Offerings</h4>
           <div class="table-responsive">
             <table class="table table-bordered border-primary">
@@ -112,7 +109,7 @@
               <tr v-for="(offering,index) in offerings.results">
                 <td>{{ offering.name }}</td>
                 <td>{{ offering.serviceName }}</td>
-                <td>GHS {{ offering.amount }}</td>
+                <td>GHS {{ formatMoney(offering.amount) }}</td>
               </tr>
               </tbody>
             </table>
@@ -125,50 +122,7 @@
         <PageLoader v-else></PageLoader>
 
 
-        <div class="row justify-content-center my-4">
-          <div class="col-md-10 g-0">
-            <div class="d-flex justify-content-between">
-              <div class="align-self-center">
-                <h5 class="mx-1"> ({{ selectedTitheFilterFamily }})</h5>
-              </div>
-              <div class="d-flex justify-content-end">
-                <div class="dropdown w-100">
-                  <button class="btn btn-primary btn-md dropdown-toggle" type="button" id="dropdownMenuButton1"
-                          data-bs-toggle="dropdown" aria-expanded="false">
-                    Filter By Family
-                  </button>
-                  <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                    <li><a class="dropdown-item" href="#" @click="filterTitheFamilyByID('')">All</a></li>
-                    <li v-if="!isFamiliesLoading" @click="filterTitheFamilyByID(family)"
-                        v-for="(family,index) in families.data" :key="index"><a
-                      class="dropdown-item" href="#">{{ family.name }}
-                    </a></li>
-                  </ul>
-                </div>
-
-                <div class="mx-2  w-100">
-                  <date-range-picker
-                    ref="picker"
-                    v-model="titheDateRange"
-                    :locale-data="{ format: 'yyyy/mm/dd' }"
-                    :time-picker="false"
-                    @update="titheDatePickerCallback($event)"
-                  >
-                    <template v-slot:input="picker" style="min-width: 350px;">
-                      <i class="far fa-calendar-alt"></i>
-                      {{ $moment(picker.startDate).format('YYYY-MM-DD') }} -
-                      {{ $moment(picker.endDate).format('YYYY-MM-DD') }}
-                    </template>
-                  </date-range-picker>
-                </div>
-
-              </div>
-
-            </div>
-          </div>
-        </div>
-
-        <div v-if="!isTitheLoading" class="col-md-10">
+        <div v-if="!isTitheLoading" class="col-md-8">
           <h4 class="mb-4">List of All Tithe By Family</h4>
           <table class="table table-bordered border-primary mb-5">
             <thead>
@@ -180,7 +134,7 @@
             <tbody v-if="!isTitheLoading">
             <tr v-for="(tithe,index) in titheAggregate.data" :key="index">
               <td>{{ tithe.userFamilyName }}</td>
-              <td>{{ tithe.totalAmount }}</td>
+              <td>{{ formatMoney(tithe.totalAmount) }}</td>
             </tr>
             </tbody>
           </table>
@@ -205,6 +159,7 @@ import {
 import DateRangePicker from 'vue2-daterange-picker'
 import 'vue2-daterange-picker/dist/vue2-daterange-picker.css'
 import moment from "moment";
+import {numberWithCommas} from "../../resources/constants";
 
 const date = new Date();
 
@@ -212,6 +167,10 @@ export default {
   name: "accounting",
   data() {
     return {
+      selectedService: '',
+      selectedFamily: '',
+      selectedServiceName: 'All',
+      selectedFamilyName: 'All',
       services: ServiceList,
       isLoading: false,
       families: ChurchFamilyList,
@@ -248,10 +207,13 @@ export default {
     this.fetchTitheAggregate()
   },
   methods: {
+    formatMoney(value) {
+      return numberWithCommas(value)
+    },
     getAccounting() {
       let filter = ""
-      if (this.totalFilterByServiceId) {
-        filter = `&ServiceId=${this.totalFilterByServiceId}`
+      if (this.selectedService) {
+        filter = `&ServiceId=${this.selectedService}`
       } else {
 
       }
@@ -295,42 +257,59 @@ export default {
     },
     fetchOfferings() {
       this.isOfferingLoading = true
-      this.$axios.get(`offerings?StartDate=${this.offeringsDateRange.startDate}&EndDate=${this.offeringsDateRange.endDate}`).then(response => {
+      let filter = ""
+      if (this.selectedService) {
+        filter = `&ServiceId=${this.selectedService}`
+      }
+
+      this.$axios.get(`offerings?StartDate=${this.totalsDateRange.startDate}&EndDate=${this.totalsDateRange.endDate}${filter}`).then(response => {
         this.offerings = Object.assign(OfferingList, response.data.data)
         this.isOfferingLoading = false
       }).catch(error => {
         this.isOfferingLoading = false
       })
     },
-    filterTitheFamilyByID(value) {
-      this.titheFilterByFamilyId = value.id
+    filterByFamilyId(value) {
+      this.selectedFamily = value.id
       if (!value) {
-        this.selectedTitheFilterFamily = 'All'
+        this.selectedFamilyName = 'All'
       } else {
-        this.selectedTitheFilterFamily = value.name
+        this.selectedFamilyName = value.name
       }
       this.fetchTitheAggregate()
     },
-    filterTotalsByServiceId(value) {
-      this.totalFilterByServiceId = value.id
+    filterByService(value) {
+      this.selectedService = value.id
       if (!value) {
-        this.selectedTotalsFilterService = 'All'
+        this.selectedServiceName = 'All'
       } else {
-        this.selectedTotalsFilterService = value.name
+        this.selectedServiceName = value.name
+      }
+      if (this.selectedFamily) {
+        this.fetchTitheAggregate()
       }
       this.getAccounting()
+      this.fetchOfferings()
     },
     fetchTitheAggregate() {
       this.isTitheLoading = true
       let filter = ""
-      if (this.titheFilterByFamilyId) {
-        filter = `&FamilyId=${this.titheFilterByFamilyId}`
+      if (this.selectedFamily) {
+        filter = `&FamilyId=${this.selectedFamily}`
       } else {
 
       }
+      let filterService = ""
+      if (this.selectedService) {
+        filterService = `&ServiceId=${this.selectedService}`
+      }
 
-      this.$axios.get(`/accounting/tithe-aggregate?StartDate=${this.titheDateRange.startDate}&EndDate=${this.titheDateRange.endDate}${filter}`).then(response => {
-        this.titheAggregate = Object.assign(TitheAggregateList, response.data.data)
+      this.$axios.get(`/accounting/tithe-aggregate?StartDate=${this.totalsDateRange.startDate}&EndDate=${this.totalsDateRange.endDate}${filter}${filterService}`).then(response => {
+        console.log(response.data.data)
+        // this.titheAggregate = []
+        this.titheAggregate = Object.assign(this.titheAggregate, response.data.data)
+        console.log(response.data.data)
+        console.log(this.titheAggregate)
 
         this.isTitheLoading = false
       }).catch(error => {
@@ -338,20 +317,12 @@ export default {
       })
 
     },
-    titheDatePickerCallback(date) {
-      this.titheDateRange.startDate = moment(date.startDate).format('YYYY-MM-DD')
-      this.titheDateRange.endDate = moment(date.endDate).format('YYYY-MM-DD')
-      this.fetchTitheAggregate()
-    },
-    totalsDatePickerCallback(date) {
+    datePickerCallback(date) {
       this.totalsDateRange.startDate = moment(date.startDate).format('YYYY-MM-DD')
       this.totalsDateRange.endDate = moment(date.endDate).format('YYYY-MM-DD')
       this.getAccounting()
-    },
-    offeringsDatePickerCallback(date) {
-      this.offeringsDateRange.startDate = moment(date.startDate).format('YYYY-MM-DD')
-      this.offeringsDateRange.endDate = moment(date.endDate).format('YYYY-MM-DD')
       this.fetchOfferings()
+      this.fetchTitheAggregate()
     },
   },
   components: {DateRangePicker},

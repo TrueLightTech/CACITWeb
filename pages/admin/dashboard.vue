@@ -24,7 +24,7 @@
                         <h6>GHS</h6>
                       </li>
                       <li>
-                        <h1>{{ accountTotals.total }}</h1>
+                        <h1>{{ formatMoney(accountTotals.total) }}</h1>
                       </li>
                       <li>
                         <p>Total Money Received</p>
@@ -42,7 +42,7 @@
                         <h6>GHS</h6>
                       </li>
                       <li>
-                        <h1>{{ accountTotals.offeringSum }}</h1>
+                        <h1>{{ formatMoney(accountTotals.offeringSum) }}</h1>
                       </li>
                       <li>
                         <p>Total Offering Received</p>
@@ -59,7 +59,7 @@
                         <h6>GHS</h6>
                       </li>
                       <li>
-                        <h1>{{ accountTotals.titheSum }}</h1>
+                        <h1>{{ formatMoney(accountTotals.titheSum) }}</h1>
                       </li>
                       <li>
                         <p>Total Tithe Received </p>
@@ -89,7 +89,7 @@
 
                     <div class="w-100 text-end float-end">
                       <div class="d-flex justify-content-between">
-                        <p>{{selectedFamilyName}}</p>
+                        <p>{{ selectedFamilyName }}</p>
                         <div class="dropdown">
                           <a class="btn btn-secondary dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
                              data-bs-toggle="dropdown" aria-expanded="false">
@@ -195,9 +195,11 @@
 import {mapGetters} from 'vuex'
 import AdminHeader from "../../components/AdminHeader";
 import {AnnouncementList} from "../../network/Announcement";
-import {profileImageBaseUrl} from "../../resources/constants";
+import {numberWithCommas, profileImageBaseUrl} from "../../resources/constants";
 import {ChurchFamilyList, DashboardAccountingTotal} from "../../network/Member";
 import PageLoader from "../../components/PageLoader";
+import {formatNumber} from "accounting-js";
+
 
 export default {
   name: "dashboard",
@@ -206,6 +208,9 @@ export default {
     ...mapGetters(['isAuthenticated', 'loggedInUser'])
   },
   beforeMount() {
+
+    // console.log(formatNumber)
+
     this.fetchAnnouncement()
     this.getAccounting()
     this.getUnresolvedIssuesCount()
@@ -233,6 +238,9 @@ export default {
     }
   },
   methods: {
+    formatMoney(value) {
+      return numberWithCommas(value)
+    },
     getMembersCount(family = "") {
       let famId = ""
       if (family.length !== 0) {
@@ -240,7 +248,7 @@ export default {
         this.selectedFamilyName = family.name
       } else {
         famId = ""
-        this.selectedFamilyName =  "All"
+        this.selectedFamilyName = "All"
       }
       this.isMembersLoading = true
       this.$axios.get(`accounting/users?FamilyId=${famId}`).then(response => {
