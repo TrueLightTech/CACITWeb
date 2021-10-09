@@ -109,6 +109,9 @@
             </tr>
             </tbody>
           </table>
+          <div v-if="!isOfferingLoading">
+            <p class="align-self-center text-center mt-5" v-if="offerings.results.length === 0 ">No Data Found</p>
+          </div>
 
         </div>
       </div>
@@ -176,6 +179,9 @@
           </tr>
           </tbody>
         </table>
+        <div v-if="!isTitheLoading">
+          <p class="align-self-center text-center" v-if="titheAggregate.data.length === 0 ">No Data Found</p>
+        </div>
       </div>
       <PageLoader v-else></PageLoader>
     </div>
