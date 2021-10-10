@@ -111,6 +111,13 @@
                 <td>{{ offering.serviceName }}</td>
                 <td>GHS {{ formatMoney(offering.amount) }}</td>
               </tr>
+              <tr class="thead-light" v-if="offerings.results.length !== 0">
+                <td></td>
+                <td></td>
+                <td><h6>GHS {{
+                    formatMoney(Array.from(offerings.results, x => x.amount).reduce((a, b) => a + b, 0))
+                  }}</h6></td>
+              </tr>
               </tbody>
             </table>
             <div v-if="!isOfferingLoading">
@@ -135,6 +142,12 @@
             <tr v-for="(tithe,index) in titheAggregate.data" :key="index">
               <td>{{ tithe.userFamilyName }}</td>
               <td>{{ formatMoney(tithe.totalAmount) }}</td>
+            </tr>
+            <tr class="thead-light" v-if="titheAggregate.data.length !== 0">
+              <td></td>
+              <td><h6>GHS {{
+                  formatMoney(Array.from(titheAggregate.data, x => x.totalAmount).reduce((a, b) => a + b, 0))
+                }}</h6></td>
             </tr>
             </tbody>
           </table>
