@@ -26,8 +26,8 @@
             </div>
             <div class="col-8 text-start">
               <ul class="list-unstyled">
-                <li><h6>{{loggedInUser.data.name}}</h6></li>
-                <li><p>{{getCurrentRole(loggedInUser.data.roleId)}}</p></li>
+                <li><h6>{{ loggedInUser.data.name }}</h6></li>
+                <li><p>{{ getCurrentRole(loggedInUser.data.roleId) }}</p></li>
               </ul>
             </div>
           </div>
@@ -43,52 +43,52 @@
 </template>
 
 <script>
-  import {mapGetters} from 'vuex'
-  import {profileImageBaseUrl} from "../resources/constants";
-  import Manager from "./roleNavs/manager";
-  import Worker from "./roleNavs/worker";
-  import Member from "./roleNavs/member";
+import {mapGetters} from 'vuex'
+import {profileImageBaseUrl} from "../resources/constants";
+import Manager from "./roleNavs/manager";
+import Worker from "./roleNavs/worker";
+import Member from "./roleNavs/member";
 
-  export default {
-    name: "AdminHeader",
-    components: {Member, Worker, Manager},
-    computed: {
-      ...mapGetters(['isAuthenticated', 'loggedInUser'])
+export default {
+  name: "AdminHeader",
+  components: {Member, Worker, Manager},
+  computed: {
+    ...mapGetters(['isAuthenticated', 'loggedInUser'])
+  },
+  data() {
+    return {
+      roles: []
+    }
+  },
+  mounted() {
+    this.getRoles()
+  },
+  methods: {
+    isLoggedIn() {
+      return !(this.$route.fullPath.includes("login") || this.$route.fullPath.includes("register"))
     },
-    data() {
-      return {
-        roles: []
+    getProfileImage(image) {
+      if (image) {
+        return `${profileImageBaseUrl}/${image}`
       }
+      return require(`~/assets/imgs/user.svg`)
     },
-    mounted() {
-      this.getRoles()
+    getRoles() {
+      this.$axios.get('roles').then(response => {
+        this.roles = response.data.data
+      }).catch(error => {
+      })
     },
-    methods: {
-      isLoggedIn() {
-        return !(this.$route.fullPath.includes("login") || this.$route.fullPath.includes("register"))
-      },
-      getProfileImage(image) {
-        if (image) {
-          return `${profileImageBaseUrl}/${image}`
-        }
-        return "~assets/imgs/user.svg"
-      },
-      getRoles() {
-        this.$axios.get('roles').then(response => {
-          this.roles = response.data.data
-        }).catch(error => {
-        })
-      },
-      getCurrentRole(currentRoleId) {
-        let role = this.roles.filter(role => role.id === currentRoleId)
+    getCurrentRole(currentRoleId) {
+      let role = this.roles.filter(role => role.id === currentRoleId)
 
-        if (role.length === 0) {
-          return "N/A"
-        }
-        return role[0].name
+      if (role.length === 0) {
+        return "N/A"
       }
+      return role[0].name
     }
   }
+}
 </script>
 
 <style scoped>

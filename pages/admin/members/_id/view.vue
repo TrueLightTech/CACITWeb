@@ -10,11 +10,11 @@
             </div>
             <div class="col-md-8">
               <ul class="list-unstyled">
-                <li><h5 class="my-1">{{member.name}}</h5></li>
-                <li><p class="my-1">{{member.phoneNumber}}</p></li>
-                <li><p class="my-1">{{member.gender}}</p></li>
-                <li><p class="my-2">{{member.dataOfBirth}}</p></li>
-                <li><p class="my-2">{{member.churchFamilyName}}</p></li>
+                <li><h5 class="my-1">{{ member.name }}</h5></li>
+                <li><p class="my-1">{{ member.phoneNumber }}</p></li>
+                <li><p class="my-1">{{ member.gender }}</p></li>
+                <li><p class="my-2">{{ member.dataOfBirth }}</p></li>
+                <li><p class="my-2">{{ member.churchFamilyName }}</p></li>
                 <li>
                   <ul class="list-item mx-0 px-0">
                     <li class="list-unstyled mx-0">
@@ -62,65 +62,69 @@
 </template>
 
 <script>
-  import {profileImageBaseUrl} from "../../../../resources/constants";
-  import {ChurchMember} from "../../../../network/Member";
-  import {mapGetters} from 'vuex';
+import {profileImageBaseUrl} from "../../../../resources/constants";
+import {ChurchMember} from "../../../../network/Member";
+import {mapGetters} from 'vuex';
 
 
-  export default {
-    name: "view",
-    beforeMount() {
-      this.getMember(this.$route.params.id)
-    },
-    data() {
-      return {
-        pageRefresh: false,
-        toDeleteId: '',
-        member: ChurchMember
-      }
-    },
-    computed: {
-      ...mapGetters(['isAuthenticated', 'loggedInUser'])
-    },
-    methods: {
-      getMember(id) {
-        this.pageRefresh = true
-        this.$axios.get(`churchmembers/${id}`).then(response => {
-          this.member = Object.assign(this.member, response.data.data)
-          this.member.dataOfBirth = this.member.dataOfBirth.split('T')[0]
-          this.member.profilePicture = this.getProfileImage(this.member.profilePicture)
-          // this.churchFamilies = response.data.data
+export default {
+  name: "view",
+  beforeMount() {
+    this.getMember(this.$route.params.id)
+  },
+  data() {
+    return {
+      pageRefresh: false,
+      toDeleteId: '',
+      member: ChurchMember
+    }
+  },
+  computed: {
+    ...mapGetters(['isAuthenticated', 'loggedInUser'])
+  },
+  methods: {
+    getMember(id) {
+      this.pageRefresh = true
+      this.$axios.get(`churchmembers/${id}`).then(response => {
+        this.member = Object.assign(this.member, response.data.data)
+        this.member.dataOfBirth = this.member.dataOfBirth.split('T')[0]
+        this.member.profilePicture = this.getProfileImage(this.member.profilePicture)
+        // this.churchFamilies = response.data.data
 
-          this.pageRefresh = false
-        }).catch(error => {
-          this.member.profilePicture = this.getProfileImage('')
-          this.pageRefresh = false
-        })
-      },
-      getProfileImage(image) {
-        if (image) {
+        this.pageRefresh = false
+      }).catch(error => {
+        this.member.profilePicture = this.getProfileImage('')
+        this.pageRefresh = false
+      })
+    },
+    getProfileImage(image) {
+      if (image) {
+        if (image.includes('user.svg')) {
+          return require(`~/assets/imgs/user.svg`)
+        } else {
           return `${profileImageBaseUrl}/${image}`
         }
-        return require(`~/assets/imgs/user.svg`)
-      },
-      deleteMember(id) {
-        this.$axios.delete(`churchmembers/${id}`).then(response => {
-          this.$toast.info("User successfully deleted.")
-          this.$router.push('/admin/manage')
+      }
+      return require(`~/assets/imgs/user.svg`)
+    },
+    deleteMember(id) {
+      this.$axios.delete(`churchmembers/${id}`).then(response => {
+        this.$toast.info("User successfully deleted.")
+        this.$router.push('/admin/manage')
 
-        }).catch(error => {
-        })
-      },
-      checkUserToDelete(id) {
-        this.toDeleteId = id
-      },
-      modalState(data) {
-        if (data.toString().toLowerCase() === 'positive') {
-          this.deleteMember(this.$route.params.id)
-        }
+      }).catch(error => {
+      })
+    },
+    checkUserToDelete(id) {
+      this.toDeleteId = id
+    },
+    modalState(data) {
+      if (data.toString().toLowerCase() === 'positive') {
+        this.deleteMember(this.$route.params.id)
       }
     }
   }
+}
 </script>
 
 <style scoped>

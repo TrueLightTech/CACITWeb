@@ -34,10 +34,10 @@
             </thead>
             <tbody>
             <tr v-for="(offering,index) in offerings.results" :key="index">
-              <th scope="row">{{index +1}}</th>
-              <td>{{offering.name}}</td>
-              <td>{{offering.amount}}</td>
-              <td>{{offering.serviceName}}</td>
+              <th scope="row">{{ index + 1 }}</th>
+              <td>{{ offering.name }}</td>
+              <td>{{ formatMoney(offering.amount) }}</td>
+              <td>{{ offering.serviceName }}</td>
               <td class="text-end">
                 <div class="btn-group">
                   <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown"
@@ -62,6 +62,9 @@
             </tr>
             </tbody>
           </table>
+          <div v-if="!isLoading">
+            <p v-if="offerings.results.length === 0" class="align-self-center text-center">No data found</p>
+          </div>
         </div>
         <page-loader v-else></page-loader>
 
@@ -78,9 +81,9 @@
           </div>
           <div class="modal-body text-center">
             <ul class="list-unstyled">
-              <li><h3>{{this.title}}</h3></li>
+              <li><h3>{{ this.title }}</h3></li>
               <li><p>
-                {{this.message}}
+                {{ this.message }}
               </p></li>
             </ul>
           </div>
@@ -124,7 +127,7 @@
                   <select v-model="serviceId" class="form-select form-control-lg"
                           aria-label="Default select example">
                     <option :value="service.id"
-                            v-for="service in services.data">{{service.name}}
+                            v-for="service in services.data">{{ service.name }}
                     </option>
                   </select>
                 </li>
@@ -143,127 +146,131 @@
 </template>
 
 <script>
-  import {mapGetters} from 'vuex'
-  import {OfferingList, ServiceList} from "../network/Member";
+import {mapGetters} from 'vuex'
+import {OfferingList, ServiceList} from "../network/Member";
+import {numberWithCommas} from "../resources/constants";
 
-  export default {
-    name: "Offerings",
-    props: ['isActive'],
-    watch: {
-      isActive: function (newVal, oldVal) { // watch it
-        if (newVal) {
-          this.fetchFamilies()
-          this.getServices()
-        }
+export default {
+  name: "Offerings",
+  props: ['isActive'],
+  watch: {
+    isActive: function (newVal, oldVal) { // watch it
+      if (newVal) {
+        this.fetchFamilies()
+        this.getServices()
       }
-    },
-    beforeMount() {
-      this.fetchFamilies()
-      this.getServices()
-    },
-    mounted() {
-      this.getServices()
-    },
-    data() {
-      return {
-        title: "Are you sure?",
-        message: 'You are about to delete this Offering.',
-        isLoading: false,
-        isServiceLoaded: false,
-        services: ServiceList,
-        offeringName: '',
-        amount: '',
-        offeringId: '',
-        serviceId: '',
-        toDeleteId: '',
-        familyDescription: '',
-        offerings: OfferingList
-      }
-    },
-    methods: {
-      clearFields() {
-        this.offeringName = ''
-        this.amount = ''
-        this.serviceId = ''
-        this.offeringId = ''
-      },
-      edit(data) {
-        this.offeringId = data.id
-        this.offeringName = data.name
-        this.amount = data.amount
-        this.serviceId = data.serviceId
-      },
-      saveFamily() {
-        const requestBody = {
-          name: this.offeringName,
-          amount: parseFloat(this.amount),
-          serviceId: this.serviceId,
-          serviceName: this.services.data.filter(service => service.id === this.serviceId)[0].name
-        }
-
-        if (this.offeringId.length === 0) {
-          this.$axios.post(`offerings`, requestBody).then(response => {
-            this.$toast.success("Successfully added")
-            this.isLoading = false
-            this.clearFields()
-            this.fetchFamilies()
-          }).catch(error => {
-            this.$toast.success(error.response.data.message)
-            this.isLoading = false
-          })
-        } else {
-          this.$axios.put(`offerings/${this.offeringId}`, requestBody).then(response => {
-            this.$toast.success("Successfully updated")
-            this.isLoading = false
-            this.fetchFamilies()
-            this.clearFields()
-          }).catch(error => {
-            this.$toast.success(error.response.data.message)
-            this.isLoading = false
-          })
-        }
-
-      },
-      fetchFamilies() {
-        this.isLoading = true
-        this.$axios.get(`offerings`).then(response => {
-          this.services = Object.assign(OfferingList, response.data.data)
-          this.isLoading = false
-        }).catch(error => {
-          this.isLoading = false
-        })
-      },
-      checkToDelete(id) {
-        this.toDeleteId = id
-      },
-      deleteService(id) {
-        this.$axios.delete(`offerings/${id}`).then(response => {
-          this.fetchFamilies()
-          this.$toast.info("Offering successfully deleted.")
-        }).catch(error => {
-          console.log(error)
-        })
-      },
-      positiveButton() {
-        this.deleteService(this.toDeleteId)
-      },
-      negativeButton() {
-        // this.$emit("onclick", "negative")
-      },
-      getServices() {
-        this.isServiceLoaded = true
-        this.$axios.get(`services`).then(response => {
-          this.isServiceLoaded = false
-          this.services = Object.assign(this.services, response.data)
-        }).catch(error => {
-          this.isServiceLoaded = false
-        })
-      }
-    },
-    computed: {
-      ...mapGetters(['isAuthenticated', 'loggedInUser'])
     }
+  },
+  beforeMount() {
+    this.fetchFamilies()
+    this.getServices()
+  },
+  mounted() {
+    this.getServices()
+  },
+  data() {
+    return {
+      title: "Are you sure?",
+      message: 'You are about to delete this Offering.',
+      isLoading: false,
+      isServiceLoaded: false,
+      services: ServiceList,
+      offeringName: '',
+      amount: '',
+      offeringId: '',
+      serviceId: '',
+      toDeleteId: '',
+      familyDescription: '',
+      offerings: OfferingList
+    }
+  },
+  methods: {
+    formatMoney(value) {
+      return numberWithCommas(value)
+    },
+    clearFields() {
+      this.offeringName = ''
+      this.amount = ''
+      this.serviceId = ''
+      this.offeringId = ''
+    },
+    edit(data) {
+      this.offeringId = data.id
+      this.offeringName = data.name
+      this.amount = data.amount
+      this.serviceId = data.serviceId
+    },
+    saveFamily() {
+      const requestBody = {
+        name: this.offeringName,
+        amount: parseFloat(this.amount),
+        serviceId: this.serviceId,
+        serviceName: this.services.data.filter(service => service.id === this.serviceId)[0].name
+      }
+
+      if (this.offeringId.length === 0) {
+        this.$axios.post(`offerings`, requestBody).then(response => {
+          this.$toast.success("Successfully added")
+          this.isLoading = false
+          this.clearFields()
+          this.fetchFamilies()
+        }).catch(error => {
+          this.$toast.success(error.response.data.message)
+          this.isLoading = false
+        })
+      } else {
+        this.$axios.put(`offerings/${this.offeringId}`, requestBody).then(response => {
+          this.$toast.success("Successfully updated")
+          this.isLoading = false
+          this.fetchFamilies()
+          this.clearFields()
+        }).catch(error => {
+          this.$toast.success(error.response.data.message)
+          this.isLoading = false
+        })
+      }
+
+    },
+    fetchFamilies() {
+      this.isLoading = true
+      this.$axios.get(`offerings`).then(response => {
+        this.services = Object.assign(OfferingList, response.data.data)
+        this.isLoading = false
+      }).catch(error => {
+        this.isLoading = false
+      })
+    },
+    checkToDelete(id) {
+      this.toDeleteId = id
+    },
+    deleteService(id) {
+      this.$axios.delete(`offerings/${id}`).then(response => {
+        this.fetchFamilies()
+        this.$toast.info("Offering successfully deleted.")
+      }).catch(error => {
+        console.log(error)
+      })
+    },
+    positiveButton() {
+      this.deleteService(this.toDeleteId)
+    },
+    negativeButton() {
+      // this.$emit("onclick", "negative")
+    },
+    getServices() {
+      this.isServiceLoaded = true
+      this.$axios.get(`services`).then(response => {
+        this.isServiceLoaded = false
+        this.services = Object.assign(this.services, response.data)
+      }).catch(error => {
+        this.isServiceLoaded = false
+      })
+    }
+  },
+  computed: {
+    ...mapGetters(['isAuthenticated', 'loggedInUser'])
   }
+}
 </script>
 
 <style scoped>

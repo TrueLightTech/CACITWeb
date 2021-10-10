@@ -34,9 +34,9 @@
             </thead>
             <tbody>
             <tr v-for="(group,index) in groups.data" :key="index">
-              <th scope="row">{{index +1}}</th>
-              <td>{{group.name}}</td>
-              <td>{{group.description}}</td>
+              <th scope="row">{{ index + 1 }}</th>
+              <td>{{ group.name }}</td>
+              <td>{{ group.description }}</td>
               <td class="text-end">
                 <div class="btn-group">
                   <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown"
@@ -60,6 +60,10 @@
             </tr>
             </tbody>
           </table>
+
+          <div v-if="!isLoading">
+            <p v-if="groups.data.length === 0" class="align-self-center text-center">No data found</p>
+          </div>
         </div>
         <page-loader v-else></page-loader>
       </div>
@@ -75,9 +79,9 @@
           </div>
           <div class="modal-body text-center">
             <ul class="list-unstyled">
-              <li><h3>{{this.title}}</h3></li>
+              <li><h3>{{ this.title }}</h3></li>
               <li><p>
-                {{this.message}}
+                {{ this.message }}
               </p></li>
             </ul>
           </div>
@@ -125,111 +129,111 @@
 </template>
 
 <script>
-  import {GroupList, ServiceList} from "../network/Member";
-  import {mapGetters} from 'vuex'
+import {GroupList, ServiceList} from "../network/Member";
+import {mapGetters} from 'vuex'
 
 
-  export default {
-    name: "ChurchGroup",
-    props: ['isActive'],
-    watch: {
-      isActive: function (newVal, oldVal) { // watch it
-        if (newVal) {
-          this.fetchGroups()
-        }
+export default {
+  name: "ChurchGroup",
+  props: ['isActive'],
+  watch: {
+    isActive: function (newVal, oldVal) { // watch it
+      if (newVal) {
+        this.fetchGroups()
       }
-    },
-    beforeMount() {
-      this.fetchGroups()
-    },
-    data() {
-      return {
-        title: "Are you sure?",
-        message: 'You are about to delete this group.',
-        groupId: '',
-        groupName: '',
-        groupDescription: '',
-        toDeleteId: '',
-        isLoading: false,
-        groups: GroupList
-      }
-    },
-    methods: {
-      clearFields() {
-        this.groupName = ''
-        this.groupId = ''
-        this.groupDescription = ''
-      },
-      edit(group) {
-        this.groupId = group.id
-        this.groupName = group.name
-        this.groupDescription = group.description
-      },
-      fetchGroups() {
-        this.isLoading = true
-        this.$axios.get(`churchgroups`).then(response => {
-          this.groups = Object.assign(GroupList, response.data)
-
-          this.isLoading = false
-        }).catch(error => {
-          this.isLoading = false
-        })
-      },
-      checkToDelete(id) {
-        this.toDeleteId = id
-      },
-      saveGroup() {
-        const requestBody = {
-          name: this.groupName,
-          description: this.groupDescription
-        }
-
-        if (this.groupId.length === 0) {
-          if (this.groupName.length !== 0 && this.groupDescription.length !== 0) {
-            this.$axios.post(`churchgroups/me`, requestBody).then(response => {
-              this.$toast.success("Successfully recorded")
-              this.fetchGroups()
-              this.clearFields()
-              this.isLoading = false
-            }).catch(error => {
-              this.$toast.success(error.response.data.message)
-              this.isLoading = false
-            })
-          }
-        } else {
-          if (this.groupName.length !== 0 && this.groupDescription.length !== 0) {
-            this.$axios.put(`churchgroups/${this.groupId}`, requestBody).then(response => {
-              this.$toast.success("Successfully updated")
-              this.fetchGroups()
-              this.clearFields()
-              this.isLoading = false
-            }).catch(error => {
-              this.$toast.success(error.response.data.message)
-              this.isLoading = false
-            })
-          }
-        }
-
-      },
-      deleteGroup(id) {
-        this.$axios.delete(`churchgroups/${id}`).then(response => {
-          this.fetchGroups()
-          this.$toast.info("User successfully deleted.")
-        }).catch(error => {
-          console.log(error)
-        })
-      },
-      positiveButton() {
-        this.deleteGroup(this.toDeleteId)
-      },
-      negativeButton() {
-        // this.$emit("onclick", "negative")
-      }
-    },
-    computed: {
-      ...mapGetters(['isAuthenticated', 'loggedInUser'])
     }
+  },
+  beforeMount() {
+    this.fetchGroups()
+  },
+  data() {
+    return {
+      title: "Are you sure?",
+      message: 'You are about to delete this group.',
+      groupId: '',
+      groupName: '',
+      groupDescription: '',
+      toDeleteId: '',
+      isLoading: false,
+      groups: GroupList
+    }
+  },
+  methods: {
+    clearFields() {
+      this.groupName = ''
+      this.groupId = ''
+      this.groupDescription = ''
+    },
+    edit(group) {
+      this.groupId = group.id
+      this.groupName = group.name
+      this.groupDescription = group.description
+    },
+    fetchGroups() {
+      this.isLoading = true
+      this.$axios.get(`churchgroups`).then(response => {
+        this.groups = Object.assign(GroupList, response.data)
+
+        this.isLoading = false
+      }).catch(error => {
+        this.isLoading = false
+      })
+    },
+    checkToDelete(id) {
+      this.toDeleteId = id
+    },
+    saveGroup() {
+      const requestBody = {
+        name: this.groupName,
+        description: this.groupDescription
+      }
+
+      if (this.groupId.length === 0) {
+        if (this.groupName.length !== 0 && this.groupDescription.length !== 0) {
+          this.$axios.post(`churchgroups/me`, requestBody).then(response => {
+            this.$toast.success("Successfully recorded")
+            this.fetchGroups()
+            this.clearFields()
+            this.isLoading = false
+          }).catch(error => {
+            this.$toast.success(error.response.data.message)
+            this.isLoading = false
+          })
+        }
+      } else {
+        if (this.groupName.length !== 0 && this.groupDescription.length !== 0) {
+          this.$axios.put(`churchgroups/${this.groupId}`, requestBody).then(response => {
+            this.$toast.success("Successfully updated")
+            this.fetchGroups()
+            this.clearFields()
+            this.isLoading = false
+          }).catch(error => {
+            this.$toast.success(error.response.data.message)
+            this.isLoading = false
+          })
+        }
+      }
+
+    },
+    deleteGroup(id) {
+      this.$axios.delete(`churchgroups/${id}`).then(response => {
+        this.fetchGroups()
+        this.$toast.info("User successfully deleted.")
+      }).catch(error => {
+        console.log(error)
+      })
+    },
+    positiveButton() {
+      this.deleteGroup(this.toDeleteId)
+    },
+    negativeButton() {
+      // this.$emit("onclick", "negative")
+    }
+  },
+  computed: {
+    ...mapGetters(['isAuthenticated', 'loggedInUser'])
   }
+}
 </script>
 
 <style scoped>
