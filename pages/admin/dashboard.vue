@@ -4,7 +4,7 @@
       <div class="col-sm-10 col-md-10 col-lg-10 col-xl-8">
 
         <div class="d-flex justify-content-between">
-          <h6>Hi,{{ loggedInUser.data.name }}</h6>
+          <h6>Total Monies Received Today</h6>
 
           <div v-if="loggedInUser.data.roleId === '1'">
             <NuxtLink to="/admin/accounting">
@@ -124,7 +124,16 @@
           </div>
 
           <div v-if="!isLoading" class="col-md-12">
-            <h5 class="mt-5">Announcements</h5>
+           <div class="d-flex justify-content-between mt-5 mb-2">
+             <h5>Announcements</h5>
+
+             <div v-if="loggedInUser.data.roleId === '1'">
+               <NuxtLink to="/admin/announcements">
+                 <span class="badge bg-primary">View more</span>
+               </NuxtLink>
+             </div>
+
+           </div>
             <ul class="list-group mb-3">
               <li v-for="(announcement,index) in announcements.results" :key="index"
                   class="list-group-item align-items-center">
@@ -286,7 +295,7 @@ export default {
         this.isAccountingLoading = false
       })
     },
-    fetchAnnouncement(page = 1, pageSize = 10) {
+    fetchAnnouncement(page = 1, pageSize = 5) {
       this.currentPage = page
       this.isLoading = true
 

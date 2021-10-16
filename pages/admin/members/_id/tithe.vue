@@ -222,7 +222,7 @@ export default {
         const requestBody = {
           userId: this.user.id,
           year: this.year + "",
-          signature: this.loggedInUser.data.name,
+          signature: this.loggedInUser.data.id,
           serviceId: this.serviceId,
           serviceName: this.services.data.filter(service => service.id === this.serviceId)[0].name,
           month: this.month,

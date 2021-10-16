@@ -110,8 +110,11 @@ export default {
     },
     strategies: {
       local: {
+        cookie: true,
         token: {
-          property: 'data.token'
+          property: 'data.token',
+          expires: 100,
+          maxAge: 86400 // seconds - 1 day
         },
         user: {
           property: false
@@ -120,7 +123,8 @@ export default {
           login: {url: 'auth/login', method: 'post'},
           user: {url: 'useraccounts/me', method: 'get'},
           logout: false
-        }
+        },
+        localStorage: false,
       }
     }
   }

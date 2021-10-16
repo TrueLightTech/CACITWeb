@@ -33,9 +33,9 @@
             </thead>
             <tbody>
             <tr v-for="(family,index) in families.data" :key="index">
-              <th scope="row">{{index +1}}</th>
-              <td>{{family.name}}</td>
-              <td>{{family.description}}</td>
+              <th scope="row">{{ index + 1 }}</th>
+              <td>{{ family.name }}</td>
+              <td>{{ family.description }}</td>
               <td class="text-end">
                 <div class="btn-group">
                   <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown"
@@ -76,9 +76,9 @@
           </div>
           <div class="modal-body text-center">
             <ul class="list-unstyled">
-              <li><h3>{{this.title}}</h3></li>
+              <li><h3>{{ this.title }}</h3></li>
               <li><p>
-                {{this.message}}
+                {{ this.message }}
               </p></li>
             </ul>
           </div>
@@ -126,52 +126,53 @@
 </template>
 
 <script>
-  import {mapGetters} from 'vuex'
-  import {ChurchFamilyList, ServiceList} from "../network/Member";
+import {mapGetters} from 'vuex'
+import {ChurchFamilyList, ServiceList} from "../network/Member";
 
-  export default {
-    name: "ChurchFamily",
-    props: ['isActive'],
-    watch: {
-      isActive: function (newVal, oldVal) { // watch it
-        if (newVal) {
-          this.fetchFamilies()
-        }
+export default {
+  name: "ChurchFamily",
+  props: ['isActive'],
+  watch: {
+    isActive: function (newVal, oldVal) { // watch it
+      if (newVal) {
+        this.fetchFamilies()
       }
+    }
+  },
+  beforeMount() {
+    this.fetchFamilies()
+  },
+  data() {
+    return {
+      title: "Are you sure?",
+      message: 'You are about to delete this family.',
+      isLoading: false,
+      familyName: '',
+      familyId: '',
+      toDeleteId: '',
+      familyDescription: '',
+      families: ChurchFamilyList
+    }
+  },
+  methods: {
+    clearFields() {
+      this.familyName = ''
+      this.familyId = ''
+      this.familyDescription = ''
     },
-    beforeMount() {
-      this.fetchFamilies()
+    edit(data) {
+      this.familyId = data.id
+      this.familyName = data.name
+      this.familyDescription = data.description
     },
-    data() {
-      return {
-        title: "Are you sure?",
-        message: 'You are about to delete this family.',
-        isLoading: false,
-        familyName: '',
-        familyId: '',
-        toDeleteId: '',
-        familyDescription: '',
-        families: ChurchFamilyList
+    saveFamily() {
+      const requestBody = {
+        name: this.familyName,
+        description: this.familyDescription
       }
-    },
-    methods: {
-      clearFields() {
-        this.familyName = ''
-        this.familyId = ''
-        this.familyDescription = ''
-      },
-      edit(data) {
-        this.familyId = data.id
-        this.familyName = data.name
-        this.familyDescription = data.description
-      },
-      saveFamily() {
-        const requestBody = {
-          name: this.familyName,
-          description: this.familyDescription
-        }
 
-        if (this.familyId.length === 0) {
+      if (this.familyId.length === 0) {
+        if (this.familyName.length !== 0 && this.familyDescription !== 0) {
           this.$axios.post(`churchfamilies`, requestBody).then(response => {
             this.$toast.success("Successfully added")
             this.isLoading = false
@@ -181,7 +182,9 @@
             this.$toast.success(error.response.data.message)
             this.isLoading = false
           })
-        } else {
+        }
+      } else {
+        if (this.familyName.length !== 0 && this.familyDescription !== 0) {
           this.$axios.put(`churchfamilies/${this.familyId}`, requestBody).then(response => {
             this.$toast.success("Successfully updated")
             this.isLoading = false
@@ -193,38 +196,40 @@
           })
         }
 
-      },
-      fetchFamilies() {
-        this.isLoading = true
-        this.$axios.get(`churchfamilies`).then(response => {
-          this.families = Object.assign(ChurchFamilyList, response.data)
-          this.isLoading = false
-        }).catch(error => {
-          this.isLoading = false
-        })
-      },
-      checkToDelete(id) {
-        this.toDeleteId = id
-      },
-      deleteService(id) {
-        this.$axios.delete(`churchfamilies/${id}`).then(response => {
-          this.fetchFamilies()
-          this.$toast.info("Family successfully deleted.")
-        }).catch(error => {
-          console.log(error)
-        })
-      },
-      positiveButton() {
-        this.deleteService(this.toDeleteId)
-      },
-      negativeButton() {
-        // this.$emit("onclick", "negative")
       }
+
     },
-    computed: {
-      ...mapGetters(['isAuthenticated', 'loggedInUser'])
+    fetchFamilies() {
+      this.isLoading = true
+      this.$axios.get(`churchfamilies`).then(response => {
+        this.families = Object.assign(ChurchFamilyList, response.data)
+        this.isLoading = false
+      }).catch(error => {
+        this.isLoading = false
+      })
+    },
+    checkToDelete(id) {
+      this.toDeleteId = id
+    },
+    deleteService(id) {
+      this.$axios.delete(`churchfamilies/${id}`).then(response => {
+        this.fetchFamilies()
+        this.$toast.info("Family successfully deleted.")
+      }).catch(error => {
+        console.log(error)
+      })
+    },
+    positiveButton() {
+      this.deleteService(this.toDeleteId)
+    },
+    negativeButton() {
+      // this.$emit("onclick", "negative")
     }
+  },
+  computed: {
+    ...mapGetters(['isAuthenticated', 'loggedInUser'])
   }
+}
 </script>
 
 <style scoped>
