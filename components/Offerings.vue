@@ -22,6 +22,16 @@
     <div class="row justify-content-center">
       <div class="col-md-12">
         <div v-if="!isLoading">
+          <div class="input-group text-end float-end w-50 mb-3">
+            <span class="input-group-text" id="basic-addon1" style="background-color: #f8f8f8;">
+              <i class="fa fa-search" style="color:#cdcdcd;"></i>
+            </span>
+            <input type="text" v-model="searchQuery" @keyup="searchByName()" class="form-control"
+                   placeholder="Search offering by name"
+                   aria-label="Username"
+                   aria-describedby="basic-addon1">
+
+          </div>
           <table class="table table-hover table-responsive">
             <thead>
             <tr>
@@ -147,7 +157,7 @@
 
 <script>
 import {mapGetters} from 'vuex'
-import {OfferingList, ServiceList} from "../network/Member";
+import {MemberList, OfferingList, ServiceList} from "../network/Member";
 import {numberWithCommas} from "../resources/constants";
 
 export default {
@@ -177,6 +187,7 @@ export default {
       services: ServiceList,
       offeringName: '',
       amount: '',
+      searchQuery: '',
       offeringId: '',
       serviceId: '',
       toDeleteId: '',
@@ -238,6 +249,18 @@ export default {
         this.isLoading = false
       }).catch(error => {
         this.isLoading = false
+      })
+    },
+    searchByName() {
+
+      let filterBy = ''
+      filterBy = `Name=${this.searchQuery}`
+
+      this.$axios.get(`offerings?${filterBy}`).then(response => {
+        this.services = Object.assign(OfferingList, response.data.data)
+
+      }).catch(error => {
+        // this.isLoading = false
       })
     },
     checkToDelete(id) {

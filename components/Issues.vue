@@ -32,6 +32,16 @@
     <div class="row justify-content-center">
       <div class="col-md-12">
         <div v-if="!isLoading">
+          <div class="input-group text-end float-end w-50 mb-3">
+            <span class="input-group-text" id="basic-addon1" style="background-color: #f8f8f8;">
+              <i class="fa fa-search" style="color:#cdcdcd;"></i>
+            </span>
+            <input type="text" v-model="searchQuery" @keyup="searchByName()" class="form-control"
+                   placeholder="Search Issue by username"
+                   aria-label="Username"
+                   aria-describedby="basic-addon1">
+
+          </div>
           <table class="table table-hover table-responsive">
             <thead>
             <tr>
@@ -70,6 +80,9 @@
             </tr>
             </tbody>
           </table>
+          <div v-if="!isLoading">
+            <p v-if="issues.results.length === 0" class="align-self-center text-center">No data found</p>
+          </div>
         </div>
         <page-loader v-else></page-loader>
 
@@ -107,7 +120,7 @@
 
 <script>
   import {mapGetters} from 'vuex'
-  import {IssuesList} from "../network/Member";
+  import {IssuesList, OfferingList} from "../network/Member";
 
   export default {
     name: "Issues",
@@ -129,6 +142,7 @@
         isLoading: false,
         serviceName: '',
         toDeleteId: '',
+        searchQuery: '',
         isResolved: false,
         serviceDescription: '',
         issues: IssuesList
@@ -174,6 +188,18 @@
         }).catch(error => {
           this.$toast.success(error.response.data.message)
           this.isLoading = false
+        })
+      },
+      searchByName() {
+
+        let filterBy = ''
+        filterBy = `UserName=${this.searchQuery}`
+
+        this.$axios.get(`issues?IsResolved=${this.isResolved}&${filterBy}`).then(response => {
+          this.issues = Object.assign(IssuesList, response.data.data)
+
+        }).catch(error => {
+          // this.isLoading = false
         })
       },
       fetchServices() {
