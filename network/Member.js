@@ -23,6 +23,20 @@ export const ChurchMember = {
   updatedAt: null
 }
 
+export const IndividualTithe = {
+  userFamilyId: "",
+  userFamilyName: "",
+  userName: "",
+  amountPaid:0,
+  serviceId: "",
+  serviceName: "",
+  signature: ""
+}
+
+export const IndividualTitheList = {
+  results: [IndividualTithe]
+}
+
 export const Tithe = {
   titheId: null,
   week1: 0,

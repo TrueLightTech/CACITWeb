@@ -65,22 +65,24 @@
 
       <div class="row justify-content-center">
         <div class="col-md-8" v-if="!isAccountingLoading">
-          <table class="table table-bordered border-primary mb-5">
-            <thead>
-            <tr>
-              <th scope="col"><h4>Total</h4></th>
-              <th scope="col"><h4>Total Offering</h4></th>
-              <th scope="col"><h4>Total Tithe</h4></th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr>
-              <td>GHS {{ formatMoney(accountTotals.total) }}</td>
-              <td>GHS {{ formatMoney(accountTotals.offeringSum) }}</td>
-              <td>GHS {{ formatMoney(accountTotals.titheSum) }}</td>
-            </tr>
-            </tbody>
-          </table>
+          <div class="table-responsive">
+            <table class="table table-bordered border-primary mb-5">
+              <thead>
+              <tr>
+                <th scope="col"><h4>Total</h4></th>
+                <th scope="col"><h4>Total Offering</h4></th>
+                <th scope="col"><h4>Total Tithe</h4></th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr>
+                <td>GHS {{ formatMoney(accountTotals.total) }}</td>
+                <td>GHS {{ formatMoney(accountTotals.offeringSum) }}</td>
+                <td>GHS {{ formatMoney(accountTotals.titheSum) }}</td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
         <PageLoader v-else></PageLoader>
 
@@ -131,26 +133,61 @@
 
         <div v-if="!isTitheLoading" class="col-md-8">
           <h4 class="mb-4">List of All Tithe By Family</h4>
-          <table class="table table-bordered border-primary mb-5">
-            <thead>
-            <tr>
-              <th scope="col"><h4>Family</h4></th>
-              <th scope="col"><h4>Amount</h4></th>
-            </tr>
-            </thead>
-            <tbody v-if="!isTitheLoading">
-            <tr v-for="(tithe,index) in titheAggregate.data" :key="index">
-              <td>{{ tithe.userFamilyName }}</td>
-              <td>{{ formatMoney(tithe.totalAmount) }}</td>
-            </tr>
-            <tr class="thead-light" v-if="titheAggregate.data.length !== 0">
-              <td></td>
-              <td><h6>GHS {{
-                  formatMoney(Array.from(titheAggregate.data, x => x.totalAmount).reduce((a, b) => a + b, 0))
-                }}</h6></td>
-            </tr>
-            </tbody>
-          </table>
+          <i v-if="isIndividualTitheClicked" @click="goBack()" class="fas fa-long-arrow-alt-left fa-2x mb-2"
+             style="cursor: pointer;"></i>
+          <div class="table-responsive">
+            <table v-if="!isIndividualTitheClicked" class="table table-bordered border-primary mb-5">
+              <thead>
+              <tr>
+                <th scope="col"><h4>Family</h4></th>
+                <th scope="col"><h4>Amount</h4></th>
+                <th scope="col"><h4>Action</h4></th>
+              </tr>
+              </thead>
+              <tbody v-if="!isTitheLoading">
+              <tr v-for="(tithe,index) in titheAggregate.data" :key="index">
+                <td>{{ tithe.userFamilyName }}
+                </td>
+                <td>{{ formatMoney(tithe.totalAmount) }}</td>
+                <td>
+                  <button @click="fetchTitheMembers(tithe.userFamilyId)" class="btn btn-primary btn-sm">View
+                    more
+                  </button>
+                </td>
+              </tr>
+              <tr class="thead-light" v-if="titheAggregate.data.length !== 0">
+                <td></td>
+                <td><h6>GHS {{
+                    formatMoney(Array.from(titheAggregate.data, x => x.totalAmount).reduce((a, b) => a + b, 0))
+                  }}</h6></td>
+              </tr>
+              </tbody>
+            </table>
+            <table v-else class="table table-bordered border-primary mb-5">
+              <thead>
+              <tr>
+                <th scope="col"><h4>Name</h4></th>
+                <th scope="col"><h4>Service Name</h4></th>
+                <th scope="col"><h4>Amount</h4></th>
+              </tr>
+              </thead>
+              <tbody v-if="!isLoadingIndividualTithe">
+              <tr v-for="(tithe,index) in individualTithe.results" :key="index">
+                <td>{{ tithe.userName }}</td>
+                <td>{{ tithe.serviceName }}</td>
+                <td>{{ formatMoney(tithe.amountPaid) }}</td>
+              </tr>
+              <tr class="thead-light" v-if="titheAggregate.data.length !== 0">
+                <td></td>
+                <td></td>
+                <td><h6>GHS {{
+                    formatMoney(Array.from(individualTithe.results, x => x.amountPaid).reduce((a, b) => a + b, 0))
+                  }}</h6></td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+
           <div v-if="!isTitheLoading">
             <p class="align-self-center text-center" v-if="titheAggregate.data.length === 0 ">No Data Found</p>
           </div>
@@ -164,7 +201,7 @@
 <script>
 import {
   ChurchFamilyList,
-  DashboardAccountingTotal,
+  DashboardAccountingTotal, IndividualTitheList,
   OfferingList,
   ServiceList,
   TitheAggregateList
@@ -191,11 +228,14 @@ export default {
       titheAggregate: TitheAggregateList,
       offerings: OfferingList,
       isAccountingLoading: false,
+      isLoadingIndividualTithe: false,
       isFamiliesLoading: false,
       isOfferingLoading: false,
       isTitheLoading: false,
       selectedTotalsFilterService: 'All',
+      individualTithe: IndividualTitheList,
       totalFilterByServiceId: '',
+      isIndividualTitheClicked: false,
       totalsDateRange: {
         startDate: `${moment().format('YYYY-MM-DD')}`,
         endDate: `${moment().format('YYYY-MM-DD')}`,
@@ -220,6 +260,9 @@ export default {
     this.fetchTitheAggregate()
   },
   methods: {
+    goBack() {
+      this.isIndividualTitheClicked = false
+    },
     formatMoney(value) {
       return numberWithCommas(value)
     },
@@ -283,6 +326,7 @@ export default {
       })
     },
     filterByFamilyId(value) {
+      this.isIndividualTitheClicked = false
       this.selectedFamily = value.id
       if (!value) {
         this.selectedFamilyName = 'All'
@@ -292,6 +336,7 @@ export default {
       this.fetchTitheAggregate()
     },
     filterByService(value) {
+      this.isIndividualTitheClicked = false
       this.selectedService = value.id
       if (!value) {
         this.selectedServiceName = 'All'
@@ -318,8 +363,6 @@ export default {
       }
 
       this.$axios.get(`/accounting/tithe-aggregate?StartDate=${this.totalsDateRange.startDate}&EndDate=${this.totalsDateRange.endDate}${filter}${filterService}`).then(response => {
-        console.log(response.data.data)
-        // this.titheAggregate = []
         this.titheAggregate = Object.assign(this.titheAggregate, response.data.data)
         console.log(response.data.data)
         console.log(this.titheAggregate)
@@ -327,6 +370,17 @@ export default {
         this.isTitheLoading = false
       }).catch(error => {
         this.isTitheLoading = false
+      })
+    },
+    fetchTitheMembers(familyId) {
+      this.isLoadingIndividualTithe = true
+      this.$axios.get(`/accounting/members-tithe?FamilyId=${familyId}&StartDate=${this.totalsDateRange.startDate}&EndDate=${this.totalsDateRange.endDate}`).then(response => {
+        this.individualTithe = Object.assign(this.individualTithe, response.data.data)
+        this.isLoadingIndividualTithe = false
+        this.isIndividualTitheClicked = true
+
+      }).catch(error => {
+        this.isLoadingIndividualTithe = false
       })
 
     },

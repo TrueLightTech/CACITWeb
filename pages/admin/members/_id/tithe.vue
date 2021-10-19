@@ -226,33 +226,35 @@ export default {
           serviceId: this.serviceId,
           serviceName: this.services.data.filter(service => service.id === this.serviceId)[0].name,
           month: this.month,
-          amountPaid: 0.0,
+          amountPaid: parseFloat(this.amountPaid),
+          week: this.week
         }
 
-        requestBody[`week${this.week}`] = parseFloat(this.amountPaid)
+        this.$axios.post(`tithes`, requestBody).then(response => {
+          this.tithe.titheId = response.data.data[this.month]["titheId"]
+          this.$toast.success("Successfully recorded")
+          this.isLoading = false
+          this.amountPaid = 0.0
+          this.serviceId = ''
+        }).catch(error => {
+          this.$toast.success(error.response.data.message)
+          this.isLoading = false
+        })
 
-        if (this.tithe.titheId == null) {
-          this.$axios.post(`tithes`, requestBody).then(response => {
-            this.tithe.titheId = response.data.data[this.month]["titheId"]
-            this.$toast.success("Successfully recorded")
-            this.isLoading = false
-            this.amountPaid = 0.0
-            this.serviceId = ''
-          }).catch(error => {
-            this.$toast.success(error.response.data.message)
-            this.isLoading = false
-          })
-        } else {
-          this.$axios.put(`tithes/${this.tithe.titheId}`, requestBody).then(response => {
-            this.$toast.success("Successfully recorded")
-            this.isLoading = false
-            this.amountPaid = 0.0
-            this.serviceId = ''
-          }).catch(error => {
-            this.$toast.success(error.response.data.message)
-            this.isLoading = false
-          })
-        }
+
+        // if (this.tithe.titheId == null) {
+        //
+        // } else {
+        //   this.$axios.put(`tithes/${this.tithe.titheId}`, requestBody).then(response => {
+        //     this.$toast.success("Successfully recorded")
+        //     this.isLoading = false
+        //     this.amountPaid = 0.0
+        //     this.serviceId = ''
+        //   }).catch(error => {
+        //     this.$toast.success(error.response.data.message)
+        //     this.isLoading = false
+        //   })
+        // }
 
 
       }
