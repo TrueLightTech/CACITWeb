@@ -4,10 +4,16 @@
       <div class="col-sm-10 col-md-10 col-lg-10 col-xl-8">
 
         <div class="d-flex justify-content-between">
-          <h6>Total Monies Received Today</h6>
+          <h6 v-if="loggedInUser.data.roleId === '1'">Total Monies Received Today</h6>
+          <h6 v-else>Hello, {{ loggedInUser.data.name }}</h6>
 
           <div v-if="loggedInUser.data.roleId === '1'">
             <NuxtLink to="/admin/accounting">
+              <span class="badge bg-primary">View more</span>
+            </NuxtLink>
+          </div>
+          <div v-if="loggedInUser.data.roleId === '2'">
+            <NuxtLink to="/admin/records">
               <span class="badge bg-primary">View more</span>
             </NuxtLink>
           </div>
@@ -123,17 +129,57 @@
             </div>
           </div>
 
+          <div class="col" v-if="loggedInUser.data.roleId === '2'">
+            <div class="row justify-content-center" v-if="!isAccountingLoading">
+              <div class="col-md-6 my-2 h-100">
+                <div class="card h-100">
+                  <div class="card-body h-100">
+                    <ul class="list-unstyled text-center">
+                      <li>
+                        <h6>GHS</h6>
+                      </li>
+                      <li>
+                        <h1>{{ formatMoney(accountTotals.titheSum) }}</h1>
+                      </li>
+                      <li>
+                        <p>Total Tithe Received </p>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6 my-2 h-100">
+                <div class="card h-100">
+                  <div class="card-body h-100">
+
+                    <ul class="list-unstyled text-center w-100">
+                      <li v-if="!isMembersLoading">
+                        <h1>{{ totalMembersCount }}</h1>
+                      </li>
+                      <li v-else>
+                        <h1>0</h1>
+                      </li>
+                      <li>
+                        <p>Members</p>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div v-if="!isLoading" class="col-md-12">
-           <div class="d-flex justify-content-between mt-5 mb-2">
-             <h5>Announcements</h5>
+            <div class="d-flex justify-content-between mt-5 mb-2">
+              <h5>Announcements</h5>
 
-             <div v-if="loggedInUser.data.roleId === '1'">
-               <NuxtLink to="/admin/announcements">
-                 <span class="badge bg-primary">View more</span>
-               </NuxtLink>
-             </div>
+              <div v-if="loggedInUser.data.roleId === '1'">
+                <NuxtLink to="/admin/announcements">
+                  <span class="badge bg-primary">View more</span>
+                </NuxtLink>
+              </div>
 
-           </div>
+            </div>
             <ul class="list-group mb-3">
               <li v-for="(announcement,index) in announcements.results" :key="index"
                   class="list-group-item align-items-center">
@@ -179,16 +225,6 @@
               </ul>
             </nav>
 
-            <!--            <div-->
-            <!--              class="d-flex justify-content-center align-middle align-self-center align-content-center align-items-center mt-5">-->
-            <!--              <ul class="list-unstyled  justify-content-center text-center">-->
-            <!--                <li class="my-2">-->
-            <!--                  <img src="~assets/imgs/empty_state.svg" :style="{width: '340px'}"-->
-            <!--                       class="img-fluid  align-self-center align-middle"/>-->
-            <!--                </li>-->
-            <!--                <li class="mt-4"><h4>Nothing Found Here</h4></li>-->
-            <!--              </ul>-->
-            <!--            </div>-->
           </div>
           <page-loader v-else></page-loader>
         </div>
@@ -218,13 +254,15 @@ export default {
   },
   beforeMount() {
 
-    // console.log(formatNumber)
-
     this.fetchAnnouncement()
-    this.getAccounting()
     this.getUnresolvedIssuesCount()
     this.fetchFamilies()
     this.getMembersCount()
+    if (this.loggedInUser.data.roleId === '1') {
+      this.getAccounting()
+    } else if (this.loggedInUser.data.roleId === '2') {
+      this.getAccountingForFamilyManager()
+    }
   },
   data() {
     return {
@@ -252,11 +290,15 @@ export default {
     },
     getMembersCount(family = "") {
       let famId = ""
+      if (this.loggedInUser.data.roleId === '2') {
+        famId = this.loggedInUser.data.churchFamilyId
+      }
+
       if (family.length !== 0) {
         famId = family.id
         this.selectedFamilyName = family.name
       } else {
-        famId = ""
+        // famId = ""
         this.selectedFamilyName = "All"
       }
       this.isMembersLoading = true
@@ -288,6 +330,16 @@ export default {
     getAccounting() {
       this.isAccountingLoading = true
       this.$axios.get(`accounting/total`).then(response => {
+        this.accountTotals = Object.assign(DashboardAccountingTotal, response.data.data)
+
+        this.isAccountingLoading = false
+      }).catch(error => {
+        this.isAccountingLoading = false
+      })
+    },
+    getAccountingForFamilyManager() {
+      this.isAccountingLoading = true
+      this.$axios.get(`accounting/tithe-total?ChurchFamilyId=${this.loggedInUser.data.churchFamilyId}`).then(response => {
         this.accountTotals = Object.assign(DashboardAccountingTotal, response.data.data)
 
         this.isAccountingLoading = false
