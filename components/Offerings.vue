@@ -39,6 +39,7 @@
               <th scope="col">Name</th>
               <th scope="col">Amount (GHS)</th>
               <th scope="col">Service Name</th>
+              <th scope="col">Assigned to:</th>
               <th class="text-end" scope="col">Actions</th>
             </tr>
             </thead>
@@ -48,6 +49,7 @@
               <td>{{ offering.name }}</td>
               <td>{{ formatMoney(offering.amount) }}</td>
               <td>{{ offering.serviceName }}</td>
+              <td>{{ offering.assignFamilyName }}</td>
               <td class="text-end">
                 <div class="btn-group">
                   <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown"
@@ -59,6 +61,11 @@
                         @click="edit(offering)"
                         data-bs-toggle="modal" data-bs-target="#staticBackdrop4">
                       <NuxtLink class="dropdown-item" :to="''">Edit</NuxtLink>
+                    </li>
+                    <li v-if="loggedInUser.data.roleId === '1'"
+                        @click="edit(offering)"
+                        data-bs-toggle="modal" data-bs-target="#staticBackdrop10">
+                      <NuxtLink class="dropdown-item" :to="''">Assign offering to family</NuxtLink>
                     </li>
                     <li v-if="loggedInUser.data.roleId === '1'">
                       <a @click="checkToDelete(offering.id)" class="dropdown-item text-danger" style="cursor: pointer;"
@@ -152,12 +159,58 @@
       </div>
     </div>
 
+    <div class="modal fade" id="staticBackdrop10" data-bs-keyboard="false" tabindex="-1"
+         aria-labelledby="staticBackdropLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="staticBackdropLabel">Assign Offering to Family</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <form>
+              <ul class="list-unstyled">
+                <li>
+                  <div class="mb-3">
+                    <label for="recipient-name" class="col-form-label">Name</label>
+                    <input type="text" v-model="offeringName" class="form-control disabled" id="recipient-name"
+                           disabled>
+                  </div>
+                </li>
+                <li>
+                  <div class="mb-3">
+                    <label for="recipient-amount" class="col-form-label">Amount</label>
+                    <input type="text" v-model="amount" class="form-control disabled" id="recipient-amount" disabled>
+                  </div>
+                </li>
+                <li class="my-3" v-if="!isFamilyLoaded">
+                  <label class="mb-2 text-start">Select Family</label>
+                  <select v-model="familyId" class="form-select form-control-lg"
+                          aria-label="Default select example">
+                    <option :value="family.id"
+                            v-for="family in families.data">{{ family.name }}
+                    </option>
+                  </select>
+                </li>
+              </ul>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button @click="assignToFamily()" type="button" data-bs-dismiss="modal" class="btn btn-primary">Save
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
   </div>
 </template>
 
 <script>
 import {mapGetters} from 'vuex'
-import {MemberList, OfferingList, ServiceList} from "../network/Member";
+import {ChurchFamilyList, MemberList, OfferingList, ServiceList} from "../network/Member";
 import {numberWithCommas} from "../resources/constants";
 
 export default {
@@ -166,14 +219,16 @@ export default {
   watch: {
     isActive: function (newVal, oldVal) { // watch it
       if (newVal) {
-        this.fetchFamilies()
+        this.fetchOfferings()
         this.getServices()
+        this.fetchFamilies()
       }
     }
   },
   beforeMount() {
     this.fetchFamilies()
     this.getServices()
+    this.fetchOfferings()
   },
   mounted() {
     this.getServices()
@@ -184,32 +239,64 @@ export default {
       message: 'You are about to delete this Offering.',
       isLoading: false,
       isServiceLoaded: false,
+      isFamilyLoaded: false,
       services: ServiceList,
       offeringName: '',
       amount: '',
       searchQuery: '',
       offeringId: '',
       serviceId: '',
+      familyId: '',
       toDeleteId: '',
       familyDescription: '',
-      offerings: OfferingList
+      offerings: OfferingList,
+      families: ChurchFamilyList
     }
   },
   methods: {
     formatMoney(value) {
       return numberWithCommas(value)
     },
+    fetchFamilies() {
+      this.isFamilyLoaded = true
+      this.$axios.get(`churchfamilies`).then(response => {
+        this.families = Object.assign(ChurchFamilyList, response.data)
+        this.isFamilyLoaded = false
+      }).catch(error => {
+        this.isFamilyLoaded = false
+      })
+    },
     clearFields() {
       this.offeringName = ''
       this.amount = ''
       this.serviceId = ''
       this.offeringId = ''
+      this.familyId = ''
     },
     edit(data) {
       this.offeringId = data.id
       this.offeringName = data.name
       this.amount = data.amount
       this.serviceId = data.serviceId
+    },
+    assignToFamily() {
+
+      if (this.familyId.length !== 0) {
+        let requestBody = {
+          familyId: this.familyId
+        }
+        this.$axios.put(`offerings/assign-family/${this.offeringId}`, requestBody).then(response => {
+          this.$toast.success("Successfully updated")
+          this.isLoading = false
+          this.fetchOfferings()
+          this.clearFields()
+        }).catch(error => {
+          this.$toast.success(error.response.data.message)
+          this.isLoading = false
+        })
+
+      }
+
     },
     saveFamily() {
       const requestBody = {
@@ -224,7 +311,7 @@ export default {
           this.$toast.success("Successfully added")
           this.isLoading = false
           this.clearFields()
-          this.fetchFamilies()
+          this.fetchOfferings()
         }).catch(error => {
           this.$toast.success(error.response.data.message)
           this.isLoading = false
@@ -233,7 +320,7 @@ export default {
         this.$axios.put(`offerings/${this.offeringId}`, requestBody).then(response => {
           this.$toast.success("Successfully updated")
           this.isLoading = false
-          this.fetchFamilies()
+          this.fetchOfferings()
           this.clearFields()
         }).catch(error => {
           this.$toast.success(error.response.data.message)
@@ -242,7 +329,7 @@ export default {
       }
 
     },
-    fetchFamilies() {
+    fetchOfferings() {
       this.isLoading = true
       this.$axios.get(`offerings`).then(response => {
         this.services = Object.assign(OfferingList, response.data.data)
@@ -268,7 +355,7 @@ export default {
     },
     deleteService(id) {
       this.$axios.delete(`offerings/${id}`).then(response => {
-        this.fetchFamilies()
+        this.fetchOfferings()
         this.$toast.info("Offering successfully deleted.")
       }).catch(error => {
         console.log(error)

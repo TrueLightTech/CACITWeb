@@ -52,6 +52,7 @@ export const Offering = {
   amount: 0,
   serviceId: "",
   serviceName: "",
+  assignFamilyName:"",
   createdAt: ""
 }
 
