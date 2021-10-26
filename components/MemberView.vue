@@ -265,7 +265,7 @@
           if (this.isAccount) {
             url = "useraccounts/me"
           } else {
-            url = `churchmembers/${this.id}`
+            url = `churchmembers/update-user/${this.id}`
           }
 
           if (this.isAccount === true || this.isAccount === false) {
