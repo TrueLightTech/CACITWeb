@@ -53,6 +53,7 @@ export const Offering = {
   serviceId: "",
   serviceName: "",
   assignFamilyName:"",
+  userName:"",
   createdAt: ""
 }
 

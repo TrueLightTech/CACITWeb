@@ -49,7 +49,7 @@
               <td>{{ offering.name }}</td>
               <td>{{ formatMoney(offering.amount) }}</td>
               <td>{{ offering.serviceName }}</td>
-              <td>{{ offering.assignFamilyName }}</td>
+              <td> {{ cleanString(offering.assignFamilyName, offering.userName) }}</td>
               <td class="text-end">
                 <div class="btn-group">
                   <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown"
@@ -66,6 +66,11 @@
                         @click="edit(offering)"
                         data-bs-toggle="modal" data-bs-target="#staticBackdrop10">
                       <NuxtLink class="dropdown-item" :to="''">Assign offering to family</NuxtLink>
+                    </li>
+                    <li v-if="loggedInUser.data.roleId === '1'"
+                        @click="edit(offering)"
+                        data-bs-toggle="modal" data-bs-target="#staticBackdrop11">
+                      <NuxtLink class="dropdown-item" :to="''">Assign offering to member</NuxtLink>
                     </li>
                     <li v-if="loggedInUser.data.roleId === '1'">
                       <a @click="checkToDelete(offering.id)" class="dropdown-item text-danger" style="cursor: pointer;"
@@ -205,6 +210,52 @@
     </div>
 
 
+    <div class="modal fade" id="staticBackdrop11" data-bs-keyboard="false" tabindex="-1"
+         aria-labelledby="staticBackdropLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="staticBackdropLabel">Assign Offering to Member</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <form>
+              <ul class="list-unstyled">
+                <li>
+                  <div class="mb-3">
+                    <label for="recipient-name" class="col-form-label">Name</label>
+                    <input type="text" v-model="offeringName" class="form-control disabled" id="recipient-name"
+                           disabled>
+                  </div>
+                </li>
+                <li>
+                  <div class="mb-3">
+                    <label for="recipient-amount" class="col-form-label">Amount</label>
+                    <input type="text" v-model="amount" class="form-control disabled" id="recipient-amount" disabled>
+                  </div>
+                </li>
+                <li class="my-3" v-if="!isFamilyLoaded">
+                  <label class="mb-2 text-start">Select Member</label>
+
+                  <input v-model="membersQuery" @keyup="getMembers()" class="form-control">
+                  <ul v-if="!this.isMembersLoading" :class="showSuggestions">
+                    <li @click="selectedMember(member)" v-for="(member,index) in members.results"
+                        :value="member.name" :key="index"><a class="dropdown-item" href="#">{{ member.name }}</a></li>
+                  </ul>
+                </li>
+              </ul>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button @click="assignToMember()" type="button" data-bs-dismiss="modal" class="btn btn-primary">Save
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
   </div>
 </template>
 
@@ -240,13 +291,18 @@ export default {
       isLoading: false,
       isServiceLoaded: false,
       isFamilyLoaded: false,
+      isMembersLoading: false,
       services: ServiceList,
       offeringName: '',
+      members: MemberList,
+      showSuggestions: 'dropdown-menu',
       amount: '',
       searchQuery: '',
+      membersQuery: '',
       offeringId: '',
       serviceId: '',
       familyId: '',
+      userId: '',
       toDeleteId: '',
       familyDescription: '',
       offerings: OfferingList,
@@ -272,12 +328,23 @@ export default {
       this.serviceId = ''
       this.offeringId = ''
       this.familyId = ''
+      this.userId = ''
+      this.membersQuery = ''
     },
     edit(data) {
       this.offeringId = data.id
       this.offeringName = data.name
       this.amount = data.amount
       this.serviceId = data.serviceId
+    },
+    cleanString(first, second) {
+      if (first && second) {
+        return [first, second].join(', ')
+      } else if (first || second) {
+        return first
+      }
+
+      return ''
     },
     assignToFamily() {
 
@@ -296,7 +363,24 @@ export default {
         })
 
       }
+    },
+    assignToMember() {
 
+      if (this.userId.length !== 0) {
+        let requestBody = {
+          userId: this.userId
+        }
+        this.$axios.put(`offerings/assign-user/${this.offeringId}`, requestBody).then(response => {
+          this.$toast.success("Successfully updated")
+          this.isLoading = false
+          this.fetchOfferings()
+          this.clearFields()
+        }).catch(error => {
+          this.$toast.success(error.response.data.message)
+          this.isLoading = false
+        })
+
+      }
     },
     saveFamily() {
       const requestBody = {
@@ -328,6 +412,29 @@ export default {
         })
       }
 
+    },
+    selectedMember(member) {
+      this.userId = member.id
+      this.membersQuery = member.name
+      this.showSuggestions = 'dropdown-menu'
+    },
+    getMembers() {
+      let filterBy = `Name=${this.membersQuery}`
+
+      if (this.membersQuery.length === 0) {
+        this.showSuggestions = 'dropdown-menu'
+      } else {
+        this.showSuggestions = 'dropdown-menu d-block'
+      }
+
+      this.isMembersLoading = true
+      this.$axios.get(`churchmembers?${filterBy}`).then(response => {
+        this.members = Object.assign(MemberList, response.data.data)
+        this.isMembersLoading = false
+        // this.showSuggestions = 'dropdown-menu d-block'
+      }).catch(error => {
+        this.isMembersLoading = false
+      })
     },
     fetchOfferings() {
       this.isLoading = true
@@ -376,9 +483,11 @@ export default {
         this.isServiceLoaded = false
       })
     }
-  },
+  }
+  ,
   computed: {
-    ...mapGetters(['isAuthenticated', 'loggedInUser'])
+    ...
+      mapGetters(['isAuthenticated', 'loggedInUser'])
   }
 }
 </script>
