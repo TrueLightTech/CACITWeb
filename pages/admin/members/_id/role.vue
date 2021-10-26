@@ -69,7 +69,7 @@
     methods: {
       getMember(id) {
         this.pageRefresh = true
-        this.$axios.get(`churchmembers/${id}`).then(response => {
+        this.$axios.get(`churchmembers/user/${id}`).then(response => {
           this.update = Object.assign(this.update, response.data.data)
           this.update.dataOfBirth = this.update.dataOfBirth.split('T')[0]
 

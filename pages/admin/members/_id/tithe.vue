@@ -184,7 +184,7 @@ export default {
     },
     getMember(id) {
       this.pageRefresh = true
-      this.$axios.get(`churchmembers/${id}`).then(response => {
+      this.$axios.get(`churchmembers/user/${id}`).then(response => {
         this.user = Object.assign(this.user, response.data.data)
         this.user.dataOfBirth = this.user.dataOfBirth.split('T')[0]
 

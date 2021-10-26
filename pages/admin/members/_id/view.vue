@@ -19,13 +19,13 @@
                   <ul class="list-item mx-0 px-0">
                     <li class="list-unstyled mx-0">
                       <div class="" role="group" aria-label="Basic example">
-                        <NuxtLink :to="'/admin/members/'+member.phoneNumber">
+                        <NuxtLink :to="'/admin/members/'+member.id">
                           <button type="button" class="btn btn-primary">Update</button>
                         </NuxtLink>
-                        <NuxtLink :to="'/admin/members/'+member.phoneNumber+'/tithe'">
+                        <NuxtLink :to="'/admin/members/'+member.id+'/tithe'">
                           <button type="button" class="btn btn-outline-primary">Record Tithe</button>
                         </NuxtLink>
-                        <NuxtLink :to="'/admin/members/'+member.phoneNumber+'/role'"
+                        <NuxtLink :to="'/admin/members/'+member.id+'/role'"
                                   v-if="loggedInUser.data.roleId === '1'">
                           <button type="button" class="btn btn-secondary">Assign Role</button>
                         </NuxtLink>
@@ -85,7 +85,7 @@ export default {
   methods: {
     getMember(id) {
       this.pageRefresh = true
-      this.$axios.get(`churchmembers/${id}`).then(response => {
+      this.$axios.get(`churchmembers/user/${id}`).then(response => {
         this.member = Object.assign(this.member, response.data.data)
         this.member.dataOfBirth = this.member.dataOfBirth.split('T')[0]
         this.member.profilePicture = this.getProfileImage(this.member.profilePicture)

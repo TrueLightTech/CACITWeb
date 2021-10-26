@@ -185,8 +185,7 @@
       },
       isInputFieldsValid() {
         const isValid = (currentValue) => currentValue.length !== 0;
-        const inputArray = [this.update.name, this.update.phoneNumber,
-          this.update.gender];
+        const inputArray = [this.update.name,this.update.gender];
         return inputArray.every(isValid)
       },
       activateButton() {
@@ -212,7 +211,7 @@
       },
       getMember(id) {
         this.pageRefresh = true
-        this.$axios.get(`churchmembers/${id}`).then(response => {
+        this.$axios.get(`churchmembers/user/${id}`).then(response => {
           this.update = Object.assign(this.update, response.data.data)
           this.update.dataOfBirth = this.update.dataOfBirth.split('T')[0]
           this.update.profilePicture = this.getProfileImage(this.update.profilePicture)

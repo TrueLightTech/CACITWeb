@@ -54,7 +54,7 @@
                 </NuxtLink>
               </td>
               <td>
-                <NuxtLink :to="'members/'+member.phoneNumber+'/view'">
+                <NuxtLink :to="'members/'+member.id+'/view'">
                   {{ member.name }}
                 </NuxtLink>
               </td>
@@ -68,14 +68,14 @@
                   </button>
                   <ul class="dropdown-menu">
                     <li v-if="loggedInUser.data.roleId === '1'">
-                      <NuxtLink class="dropdown-item" :to="'members/'+member.phoneNumber+'/role'">Assign role</NuxtLink>
+                      <NuxtLink class="dropdown-item" :to="'members/'+member.id+'/role'">Assign role</NuxtLink>
                     </li>
                     <li>
-                      <NuxtLink class="dropdown-item" :to="'members/'+member.phoneNumber+'/tithe'">Record Tithe
+                      <NuxtLink class="dropdown-item" :to="'members/'+member.id+'/tithe'">Record Tithe
                       </NuxtLink>
                     </li>
                     <li>
-                      <NuxtLink class="dropdown-item" :to="'members/'+member.phoneNumber">Update User</NuxtLink>
+                      <NuxtLink class="dropdown-item" :to="'members/'+member.id">Update User</NuxtLink>
                     </li>
                     <li v-if="loggedInUser.data.roleId === '1'">
                       <a class="dropdown-item text-danger" style="cursor: pointer;" data-bs-toggle="modal"
