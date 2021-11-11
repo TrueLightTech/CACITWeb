@@ -6,14 +6,14 @@
 
         <ul class="list-unstyled">
           <li>
-            <h3>Church Family</h3>
+            <h3>Offering Type</h3>
           </li>
         </ul>
 
         <div>
-          <button @click="clearFields()" type="button" data-bs-toggle="modal" data-bs-target="#staticBackdrop1"
+          <button @click="clearFields()" type="button" data-bs-toggle="modal" data-bs-target="#staticBackdrop20"
                   class="btn btn-primary"><i
-            class="fas fa-plus-circle"></i> Add Family
+            class="fas fa-plus-circle"></i> Add Offering Type
           </button>
         </div>
       </div>
@@ -32,10 +32,10 @@
             </tr>
             </thead>
             <tbody>
-            <tr v-for="(family,index) in families.data" :key="index">
+            <tr v-for="(offeringType,index) in offeringTypes.data" :key="index">
               <th scope="row">{{ index + 1 }}</th>
-              <td>{{ family.name }}</td>
-              <td>{{ family.description }}</td>
+              <td>{{ offeringType.name }}</td>
+              <td>{{ offeringType.description }}</td>
               <td class="text-end">
                 <div class="btn-group">
                   <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown"
@@ -44,14 +44,15 @@
                   </button>
                   <ul class="dropdown-menu">
                     <li v-if="loggedInUser.data.roleId === '1'"
-                        @click="edit(family)"
-                        data-bs-toggle="modal" data-bs-target="#staticBackdrop1">
+                        @click="edit(offeringType)"
+                        data-bs-toggle="modal" data-bs-target="#staticBackdrop20">
                       <NuxtLink class="dropdown-item" :to="''">Edit</NuxtLink>
                     </li>
                     <li v-if="loggedInUser.data.roleId === '1'">
-                      <a @click="checkToDelete(family.id)" class="dropdown-item text-danger" style="cursor: pointer;"
+                      <a @click="checkToDelete(offeringType.id)" class="dropdown-item text-danger"
+                         style="cursor: pointer;"
                          data-bs-toggle="modal"
-                         data-bs-target="#exampleModal1">Delete
+                         data-bs-target="#exampleModal17">Delete
                       </a>
                     </li>
                   </ul>
@@ -60,15 +61,17 @@
             </tr>
             </tbody>
           </table>
+          <div v-if="!isLoading">
+            <p v-if="offeringTypes.data.length === 0" class="align-self-center text-center">No data found</p>
+          </div>
         </div>
         <page-loader v-else></page-loader>
-
       </div>
     </div>
 
 
     <!-- Modal -->
-    <div class="modal fade" id="exampleModal1" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal fade" id="exampleModal17" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered modal-sm">
         <div class="modal-content">
           <div class="modal-header">
@@ -94,23 +97,23 @@
 
 
     <!-- Modal -->
-    <div class="modal fade" id="staticBackdrop1" data-bs-keyboard="false" tabindex="-1"
+    <div class="modal fade" id="staticBackdrop20" data-bs-keyboard="false" tabindex="-1"
          aria-labelledby="staticBackdropLabel" aria-hidden="true">
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title" id="staticBackdropLabel">Add Family</h5>
+            <h5 class="modal-title" id="staticBackdropLabel">Add Offering Type</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
             <form>
               <div class="mb-3">
                 <label for="recipient-name" class="col-form-label">Name</label>
-                <input type="text" v-model="familyName" class="form-control" id="recipient-name">
+                <input type="text" v-model="offeringName" class="form-control" id="recipient-name">
               </div>
               <div class="mb-3">
                 <label for="message-text" class="col-form-label">Description</label>
-                <textarea v-model="familyDescription" class="form-control" id="message-text"></textarea>
+                <textarea v-model="offeringTypeDescription" class="form-control" id="message-text"></textarea>
               </div>
             </form>
           </div>
@@ -126,70 +129,70 @@
 </template>
 
 <script>
-import {mapGetters} from 'vuex'
-import {ChurchFamilyList} from "../network/Member";
+import {OfferingType} from "../network/Member";
+import {mapGetters} from "vuex";
 
 export default {
-  name: "ChurchFamily",
+  name: "OfferingType",
   props: ['isActive'],
   watch: {
     isActive: function (newVal, oldVal) { // watch it
       if (newVal) {
-        this.fetchFamilies()
+        this.fetchOfferingTypes()
       }
     }
   },
   beforeMount() {
-    this.fetchFamilies()
+    this.fetchOfferingTypes()
   },
   data() {
     return {
       title: "Are you sure?",
       message: 'You are about to delete this family.',
       isLoading: false,
-      familyName: '',
-      familyId: '',
+      offeringName: '',
+      offeringTypeId: '',
       toDeleteId: '',
-      familyDescription: '',
-      families: ChurchFamilyList
+      offeringTypeDescription: '',
+      offeringTypes: OfferingType
     }
   },
   methods: {
     clearFields() {
-      this.familyName = ''
-      this.familyId = ''
-      this.familyDescription = ''
+      this.offeringName = ''
+      this.offeringTypeId = ''
+      this.offeringTypeDescription = ''
     },
     edit(data) {
-      this.familyId = data.id
-      this.familyName = data.name
-      this.familyDescription = data.description
+      this.offeringTypeId = data.id
+      this.offeringName = data.name
+      this.offeringTypeDescription = data.description
     },
     saveFamily() {
       const requestBody = {
-        name: this.familyName,
-        description: this.familyDescription
+        name: this.offeringName,
+        description: this.offeringTypeDescription
       }
 
-      if (this.familyId.length === 0) {
-        if (this.familyName.length !== 0 && this.familyDescription !== 0) {
-          this.$axios.post(`churchfamilies`, requestBody).then(response => {
+      if (this.offeringTypeId.length === 0) {
+        if (this.offeringName.length !== 0 && this.offeringTypeDescription !== 0) {
+          this.$axios.post(`offeringtype`, requestBody).then(response => {
             this.$toast.success("Successfully added")
             this.isLoading = false
             this.clearFields()
-            this.fetchFamilies()
+            this.fetchOfferingTypes()
           }).catch(error => {
             this.$toast.success(error.response.data.message)
             this.isLoading = false
           })
         }
       } else {
-        if (this.familyName.length !== 0 && this.familyDescription !== 0) {
-          this.$axios.put(`churchfamilies/${this.familyId}`, requestBody).then(response => {
+        if (this.offeringName.length !== 0 && this.offeringTypeDescription !== 0) {
+          this.$axios.put(`offeringtype/${this.offeringTypeId}`, requestBody).then(response => {
             this.$toast.success("Successfully updated")
             this.isLoading = false
             this.clearFields()
-            this.fetchFamilies()
+            this.fetchOfferingTypes()
           }).catch(error => {
             this.$toast.success(error.response.data.message)
             this.isLoading = false
@@ -199,10 +202,10 @@ export default {
       }
 
     },
-    fetchFamilies() {
+    fetchOfferingTypes() {
       this.isLoading = true
-      this.$axios.get(`churchfamilies`).then(response => {
-        this.families = Object.assign(ChurchFamilyList, response.data)
+      this.$axios.get(`offeringtype`).then(response => {
+        this.families = Object.assign(OfferingType, response.data)
         this.isLoading = false
       }).catch(error => {
         this.isLoading = false
@@ -212,9 +215,9 @@ export default {
       this.toDeleteId = id
     },
     deleteService(id) {
-      this.$axios.delete(`churchfamilies/${id}`).then(response => {
-        this.fetchFamilies()
-        this.$toast.info("Family successfully deleted.")
+      this.$axios.delete(`offeringtype/${id}`).then(response => {
+        this.fetchOfferingTypes()
+        this.$toast.info("Offering Type successfully deleted.")
       }).catch(error => {
         console.log(error)
       })
@@ -229,6 +232,7 @@ export default {
   computed: {
     ...mapGetters(['isAuthenticated', 'loggedInUser'])
   }
+
 }
 </script>
 

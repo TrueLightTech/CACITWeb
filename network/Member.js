@@ -27,7 +27,7 @@ export const IndividualTithe = {
   userFamilyId: "",
   userFamilyName: "",
   userName: "",
-  amountPaid:0,
+  amountPaid: 0,
   serviceId: "",
   serviceName: "",
   signature: ""
@@ -52,8 +52,8 @@ export const Offering = {
   amount: 0,
   serviceId: "",
   serviceName: "",
-  assignFamilyName:"",
-  userName:"",
+  assignFamilyName: "",
+  userName: "",
   createdAt: ""
 }
 
@@ -107,6 +107,10 @@ export const GroupList = {
 }
 
 export const ChurchFamilyList = {
+  data: [ServiceItem]
+}
+
+export const OfferingType = {
   data: [ServiceItem]
 }
 

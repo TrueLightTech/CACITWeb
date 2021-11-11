@@ -17,12 +17,13 @@
             </button>
           </li>
           <li class="nav-item" role="presentation" v-if="loggedInUser.data.roleId === '1'">
-            <button @click="onTabClicked('offerings')" class="nav-link" id="pills-contact-tab" data-bs-toggle="pill" data-bs-target="#pills-contact"
+            <button @click="onTabClicked('offerings')" class="nav-link" id="pills-contact-tab" data-bs-toggle="pill"
+                    data-bs-target="#pills-contact"
                     type="button" role="tab" aria-controls="pills-contact" aria-selected="false">Offerings
             </button>
           </li>
           <li class="nav-item d-none" role="presentation" v-if="loggedInUser.data.roleId === '1'">
-            <button  class="nav-link" id="pills-users-tab" data-bs-toggle="pill" data-bs-target="#pills-users"
+            <button class="nav-link" id="pills-users-tab" data-bs-toggle="pill" data-bs-target="#pills-users"
                     type="button" role="tab" aria-controls="pills-contact" aria-selected="false">Users
             </button>
           </li>
@@ -41,6 +42,10 @@
                      @click="onTabClicked('families')"
                      id="pills-family-tab" data-bs-toggle="pill" data-bs-target="#pills-family"
                      href="#">Church Family</a></li>
+              <li><a class="dropdown-item"
+                     @click="onTabClicked('offering-type')"
+                     id="pills-offering-tab" data-bs-toggle="pill" data-bs-target="#pills-offering-type"
+                     href="#">Offering Type</a></li>
             </ul>
           </li>
         </ul>
@@ -71,6 +76,9 @@
           <div class="tab-pane fade" id="pills-services" role="tabpanel" aria-labelledby="pills-services-tab">
             <Services :is-active="isServicesActive"></Services>
           </div>
+          <div class="tab-pane fade" id="pills-offering-type" role="tabpanel" aria-labelledby="pills-offering-tab">
+            <OfferingType :is-active="isOfferingTypeActive"></OfferingType>
+          </div>
         </div>
       </div>
     </div>
@@ -81,87 +89,89 @@
 
 <script>
 
-  import {mapGetters} from 'vuex'
+import {mapGetters} from 'vuex'
 
-  import Members from "../../components/Members";
-  import ChurchFamily from "../../components/ChurchFamily";
-  import Users from "../../components/Users";
-  import Issues from "../../components/Issues";
+import Members from "../../components/Members";
+import ChurchFamily from "../../components/ChurchFamily";
+import Users from "../../components/Users";
+import Issues from "../../components/Issues";
+import OfferingType from "../../components/OfferingType";
 
-  export default {
-    name: "manage",
-    data() {
-      return {
-        isMembersActive: false,
-        isIssuesActive: false,
-        isOfferingsActive: false,
-        isChurchGroupsActive: false,
-        isServicesActive: false,
-        isFamilyGroupActive: false
+export default {
+  name: "manage",
+  data() {
+    return {
+      isMembersActive: false,
+      isIssuesActive: false,
+      isOfferingsActive: false,
+      isChurchGroupsActive: false,
+      isServicesActive: false,
+      isOfferingTypeActive: false,
+      isFamilyGroupActive: false
+    }
+  },
+  methods: {
+    onTabClicked(type) {
+      switch (type) {
+        case 'issues':
+          this.isIssuesActive = true
+          this.isMembersActive = false
+          this.isServicesActive = false
+          this.isFamilyGroupActive = false
+          this.isChurchGroupsActive = false
+          this.isOfferingsActive = false
+          break;
+        case 'members':
+          this.isIssuesActive = false
+          this.isMembersActive = true
+          this.isServicesActive = false
+          this.isFamilyGroupActive = false
+          this.isChurchGroupsActive = false
+          this.isOfferingsActive = false
+          break;
+        case 'families':
+          this.isIssuesActive = false
+          this.isMembersActive = false
+          this.isServicesActive = false
+          this.isFamilyGroupActive = true
+          this.isChurchGroupsActive = false
+          this.isOfferingsActive = false
+          break;
+        case 'services':
+          this.isIssuesActive = false
+          this.isMembersActive = false
+          this.isServicesActive = true
+          this.isFamilyGroupActive = false
+          this.isChurchGroupsActive = false
+          this.isOfferingsActive = false
+          break;
+        case 'church-groups':
+          this.isIssuesActive = false
+          this.isMembersActive = false
+          this.isServicesActive = false
+          this.isFamilyGroupActive = false
+          this.isChurchGroupsActive = true
+          this.isOfferingsActive = false
+          break;
+        case 'offerings':
+          this.isIssuesActive = false
+          this.isMembersActive = false
+          this.isServicesActive = false
+          this.isFamilyGroupActive = false
+          this.isChurchGroupsActive = false
+          this.isOfferingsActive = true
+          break;
+        default:
+          this.isIssuesActive = false
+          break;
       }
     },
-    methods: {
-      onTabClicked(type) {
-        switch (type) {
-          case 'issues':
-            this.isIssuesActive = true
-            this.isMembersActive = false
-            this.isServicesActive = false
-            this.isFamilyGroupActive = false
-            this.isChurchGroupsActive = false
-            this.isOfferingsActive = false
-            break;
-          case 'members':
-            this.isIssuesActive = false
-            this.isMembersActive = true
-            this.isServicesActive = false
-            this.isFamilyGroupActive = false
-            this.isChurchGroupsActive = false
-            this.isOfferingsActive = false
-            break;
-          case 'families':
-            this.isIssuesActive = false
-            this.isMembersActive = false
-            this.isServicesActive = false
-            this.isFamilyGroupActive = true
-            this.isChurchGroupsActive = false
-            this.isOfferingsActive = false
-            break;
-          case 'services':
-            this.isIssuesActive = false
-            this.isMembersActive = false
-            this.isServicesActive = true
-            this.isFamilyGroupActive = false
-            this.isChurchGroupsActive = false
-            this.isOfferingsActive = false
-            break;
-          case 'church-groups':
-            this.isIssuesActive = false
-            this.isMembersActive = false
-            this.isServicesActive = false
-            this.isFamilyGroupActive = false
-            this.isChurchGroupsActive = true
-            this.isOfferingsActive = false
-            break;
-          case 'offerings':
-            this.isIssuesActive = false
-            this.isMembersActive = false
-            this.isServicesActive = false
-            this.isFamilyGroupActive = false
-            this.isChurchGroupsActive = false
-            this.isOfferingsActive = true
-            break;
-          default:
-            this.isIssuesActive = false
-            break;
-        }
-      },
-    },
-    components: {Issues, Users, ChurchFamily, Members},
-    computed: {
-      ...mapGetters(['isAuthenticated', 'loggedInUser'])
-    }
+  },
+  components: {OfferingType, Issues, Users, ChurchFamily, Members},
+  computed: {
+    ...mapGetters(['isAuthenticated', 'loggedInUser'])
   }
+}
 </script>
 
 <style scoped>
