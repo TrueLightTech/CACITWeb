@@ -16,12 +16,12 @@
                     type="button" role="tab" aria-controls="pills-profile" aria-selected="false">Reported Issues
             </button>
           </li>
-          <li class="nav-item" role="presentation" v-if="loggedInUser.data.roleId === '1'">
-            <button @click="onTabClicked('offerings')" class="nav-link" id="pills-contact-tab" data-bs-toggle="pill"
-                    data-bs-target="#pills-contact"
-                    type="button" role="tab" aria-controls="pills-contact" aria-selected="false">Offerings
-            </button>
-          </li>
+<!--          <li class="nav-item" role="presentation" v-if="loggedInUser.data.roleId === '1'">-->
+<!--            <button @click="onTabClicked('offerings')" class="nav-link" id="pills-contact-tab" data-bs-toggle="pill"-->
+<!--                    data-bs-target="#pills-contact"-->
+<!--                    type="button" role="tab" aria-controls="pills-contact" aria-selected="false">Offerings-->
+<!--            </button>-->
+<!--          </li>-->
           <li class="nav-item d-none" role="presentation" v-if="loggedInUser.data.roleId === '1'">
             <button class="nav-link" id="pills-users-tab" data-bs-toggle="pill" data-bs-target="#pills-users"
                     type="button" role="tab" aria-controls="pills-contact" aria-selected="false">Users
@@ -61,9 +61,9 @@
           <div class="tab-pane fade" id="pills-profile" role="tabpanel" aria-labelledby="pills-profile-tab">
             <Issues :is-active="isIssuesActive"></Issues>
           </div>
-          <div class="tab-pane fade" id="pills-contact" role="tabpanel" aria-labelledby="pills-contact-tab">
-            <Offerings :is-active="isOfferingsActive"></Offerings>
-          </div>
+<!--          <div class="tab-pane fade" id="pills-contact" role="tabpanel" aria-labelledby="pills-contact-tab">-->
+<!--            <Offerings :is-active="isOfferingsActive"></Offerings>-->
+<!--          </div>-->
           <div class="tab-pane fade" id="pills-users" role="tabpanel" aria-labelledby="pills-users-tab">
             <Users></Users>
           </div>
