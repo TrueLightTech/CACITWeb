@@ -239,7 +239,8 @@
 
                   <input v-model="membersQuery" @keyup="getMembers()" class="form-control">
                   <ul v-if="!this.isMembersLoading" :class="showSuggestions">
-                    <li @click="selectedMember(member)" v-for="(member,index) in members.results"
+                    <li @click="selectedMember(member)"
+                        v-for="(member,index) in members.results"
                         :value="member.name" :key="index"><a class="dropdown-item" href="#">{{ member.name }}</a></li>
                   </ul>
                 </li>

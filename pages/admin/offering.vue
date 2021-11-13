@@ -1,7 +1,7 @@
 <template>
   <div class="container mt-10">
     <div class="row justify-content-center">
-      <div class="col-lg-8">
+      <div class="col-lg-10">
         <div>
           <div class="row justify-content-center">
             <div class="col-md-12 text-left d-flex justify-content-between mb-3">
@@ -42,6 +42,7 @@
                     <th scope="col">Name</th>
                     <th scope="col">Amount (GHS)</th>
                     <th scope="col">Service Name</th>
+                    <th scope="col">Offering Type</th>
                     <th scope="col">Assigned to:</th>
                     <th class="text-end" scope="col">Actions</th>
                   </tr>
@@ -52,6 +53,7 @@
                     <td>{{ offering.name }}</td>
                     <td>{{ formatMoney(offering.amount) }}</td>
                     <td>{{ offering.serviceName }}</td>
+                    <td>{{ offering.offeringTypeName }}</td>
                     <td> {{ cleanString(offering.assignFamilyName, offering.userName) }}</td>
                     <td class="text-end">
                       <div class="btn-group">
@@ -149,6 +151,15 @@
                           <label for="recipient-amount" class="col-form-label">Amount</label>
                           <input type="text" v-model="amount" class="form-control" id="recipient-amount">
                         </div>
+                      </li>
+                      <li class="my-3" v-if="!isOfferingTypeLoaded">
+                        <label class="mb-2 text-start">Select Offering Type</label>
+                        <select v-model="offeringTypeId" class="form-select form-control-lg"
+                                aria-label="Default select example">
+                          <option :value="offeringType.id"
+                                  v-for="offeringType in offeringTypes.data">{{ offeringType.name }}
+                          </option>
+                        </select>
                       </li>
                       <li class="my-3" v-if="!isServiceLoaded">
                         <label class="mb-2 text-start">Select Service</label>
@@ -248,10 +259,10 @@
 
                         <input v-model="membersQuery" @keyup="getMembers()" class="form-control">
                         <ul v-if="!this.isMembersLoading" :class="showSuggestions">
-<!--                          <li @click="selectedMember(member)"-->
-<!--                              v-for="(member,index) in members.results"-->
-<!--                              :value="member.name" :key="index"><a class="dropdown-item" href="#">{{ member.name }}</a>-->
-<!--                          </li>-->
+                          <li v-if="members.results.length !== 0" @click="selectedMember(member)"
+                              v-for="(member,index) in members.results"
+                              :value="member.name" :key="index"><a class="dropdown-item" href="#">{{ member.name }}</a>
+                          </li>
                         </ul>
                       </li>
                     </ul>
@@ -275,7 +286,7 @@
 
 <script>
 
-import {ChurchFamilyList, MemberList, OfferingList, ServiceList} from "../../network/Member";
+import {ChurchFamilyList, MemberList, OfferingList, OfferingType, ServiceList} from "../../network/Member";
 import {numberWithCommas} from "../../resources/constants";
 import {mapGetters} from "vuex";
 
@@ -286,9 +297,11 @@ export default {
     this.fetchFamilies()
     this.getServices()
     this.fetchOfferings()
+    this.getOfferingType()
   },
   mounted() {
-    this.getServices()
+    // this.getServices()
+    this.getMembers()
   },
   data() {
     return {
@@ -297,8 +310,10 @@ export default {
       isLoading: false,
       isServiceLoaded: false,
       isFamilyLoaded: false,
+      isOfferingTypeLoaded: false,
       isMembersLoading: false,
       services: ServiceList,
+      offeringTypes: OfferingType,
       offeringName: '',
       members: MemberList,
       showSuggestions: 'dropdown-menu',
@@ -306,6 +321,7 @@ export default {
       searchQuery: '',
       membersQuery: '',
       offeringId: '',
+      offeringTypeId: '',
       serviceId: '',
       familyId: '',
       userId: '',
@@ -393,10 +409,11 @@ export default {
         name: this.offeringName,
         amount: parseFloat(this.amount),
         serviceId: this.serviceId,
+        offeringTypeId: this.offeringTypeId,
         serviceName: this.services.data.filter(service => service.id === this.serviceId)[0].name
       }
 
-      if (this.offeringId.length === 0) {
+      if (this.offeringId.length === 0 && (this.offeringTypeId.length !== 0 && this.serviceId.length !== 0)) {
         this.$axios.post(`offerings`, requestBody).then(response => {
           this.$toast.success("Successfully added")
           this.isLoading = false
@@ -445,7 +462,7 @@ export default {
     fetchOfferings() {
       this.isLoading = true
       this.$axios.get(`offerings`).then(response => {
-        this.services = Object.assign(OfferingList, response.data.data)
+        this.offerings = Object.assign(OfferingList, response.data.data)
         this.isLoading = false
       }).catch(error => {
         this.isLoading = false
@@ -457,7 +474,7 @@ export default {
       filterBy = `Name=${this.searchQuery}`
 
       this.$axios.get(`offerings?${filterBy}`).then(response => {
-        this.services = Object.assign(OfferingList, response.data.data)
+        this.offerings = Object.assign(OfferingList, response.data.data)
 
       }).catch(error => {
         // this.isLoading = false
@@ -487,6 +504,15 @@ export default {
         this.services = Object.assign(this.services, response.data)
       }).catch(error => {
         this.isServiceLoaded = false
+      })
+    },
+    getOfferingType() {
+      this.isOfferingTypeLoaded = true
+      this.$axios.get(`offeringtype`).then(response => {
+        this.isOfferingTypeLoaded = false
+        this.offeringTypes = Object.assign(this.offeringTypes, response.data)
+      }).catch(error => {
+        this.isOfferingTypeLoaded = false
       })
     }
   }
