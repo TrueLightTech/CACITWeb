@@ -170,6 +170,26 @@
                           </option>
                         </select>
                       </li>
+                      <li class="my-3" v-if="!isFamilyLoaded">
+                        <label class="mb-2 text-start">Select Family</label>
+                        <select v-model="familyId" class="form-select form-control-lg"
+                                aria-label="Default select example">
+                          <option :value="family.id"
+                                  v-for="family in families.data">{{ family.name }}
+                          </option>
+                        </select>
+                      </li>
+                      <li class="my-3" v-if="!isFamilyLoaded">
+                        <label class="mb-2 text-start">Select Member</label>
+
+                        <input v-model="membersQuery" @keyup="getMembers()" class="form-control">
+                        <ul v-if="!this.isMembersLoading" :class="showSuggestions">
+                          <li v-if="members.results.length !== 0" @click="selectedMember(member)"
+                              v-for="(member,index) in members.results"
+                              :value="member.name" :key="index"><a class="dropdown-item" href="#">{{ member.name }}</a>
+                          </li>
+                        </ul>
+                      </li>
                     </ul>
                   </form>
                 </div>
@@ -410,7 +430,9 @@ export default {
         amount: parseFloat(this.amount),
         serviceId: this.serviceId,
         offeringTypeId: this.offeringTypeId,
-        serviceName: this.services.data.filter(service => service.id === this.serviceId)[0].name
+        serviceName: this.services.data.filter(service => service.id === this.serviceId)[0].name,
+        userId: this.userId,
+        assignFamilyId: this.familyId
       }
 
       if (this.offeringId.length === 0 && (this.offeringTypeId.length !== 0 && this.serviceId.length !== 0)) {
