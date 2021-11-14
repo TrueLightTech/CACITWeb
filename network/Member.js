@@ -99,6 +99,25 @@ export const OfferingList = {
   results: [Offering]
 }
 
+export const OfferingAltList = {
+  data: [OfferingTypes]
+}
+
+export const OfferingTypes = {
+  offeringTypeId: "",
+  offeringTypeName: "",
+  data: [OffType]
+}
+
+export const OffType = {
+  assignFamilyId: "",
+  assignFamilyName: "",
+  serviceId: "",
+  serviceName: "",
+  amount: 0,
+  doW: 0
+}
+
 export const IssuesList = {
   results: [Issue]
 }

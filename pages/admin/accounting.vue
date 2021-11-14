@@ -98,32 +98,33 @@
 
         <div class="col-md-8 mb-5" v-if="!isOfferingLoading">
           <h4 class="mb-4">List of All Offerings</h4>
-          <div class="table-responsive">
+          <div class="table-responsive" v-for="(offering,index) in offerings" :key="index">
+            <h5 class="my-2">{{ offering.offeringTypeName }}</h5>
             <table class="table table-bordered border-primary">
               <thead>
               <tr>
-                <th scope="col"><h4>Name</h4></th>
                 <th scope="col"><h4>Service</h4></th>
+                <th scope="col"><h4>Family Name</h4></th>
                 <th scope="col"><h4>Amount</h4></th>
               </tr>
               </thead>
               <tbody>
-              <tr v-for="(offering,index) in offerings.results">
-                <td>{{ offering.name }}</td>
-                <td>{{ offering.serviceName }}</td>
-                <td>GHS {{ formatMoney(offering.amount) }}</td>
+              <tr v-for="(off,index) in offering.data" :key="index">
+                <td>{{ off.serviceName }}</td>
+                <td>{{ off.assignFamilyName }}</td>
+                <td>GHS {{ formatMoney(off.amount) }}</td>
               </tr>
-              <tr class="thead-light" v-if="offerings.results.length !== 0">
+              <tr class="thead-light" v-if="offering.data.length !== 0">
                 <td></td>
                 <td></td>
                 <td><h6>GHS {{
-                    formatMoney(Array.from(offerings.results, x => x.amount).reduce((a, b) => a + b, 0))
+                    formatMoney(Array.from(offering.data, x => x.amount).reduce((a, b) => a + b, 0))
                   }}</h6></td>
               </tr>
               </tbody>
             </table>
             <div v-if="!isOfferingLoading">
-              <p class="align-self-center text-center mt-5" v-if="offerings.results.length === 0 ">No Data Found</p>
+              <p class="align-self-center text-center mt-5" v-if="offerings.length === 0 ">No Data Found</p>
             </div>
 
           </div>
@@ -157,9 +158,9 @@
               </tr>
               <tr class="thead-light" v-if="titheAggregate.data.length !== 0">
                 <td></td>
-                <td><h6>GHS {{
-                    formatMoney(Array.from(titheAggregate.data, x => x.totalAmount).reduce((a, b) => a + b, 0))
-                  }}</h6></td>
+                <td><h6>GHS
+                  {{ formatMoney(Array.from(titheAggregate.data, x => x.totalAmount).reduce((a, b) => a + b, 0)) }}</h6>
+                </td>
               </tr>
               </tbody>
             </table>
@@ -201,7 +202,7 @@
 <script>
 import {
   ChurchFamilyList,
-  DashboardAccountingTotal, IndividualTitheList,
+  DashboardAccountingTotal, IndividualTitheList, OfferingAltList,
   OfferingList,
   ServiceList,
   TitheAggregateList
@@ -226,7 +227,7 @@ export default {
       families: ChurchFamilyList,
       accountTotals: DashboardAccountingTotal,
       titheAggregate: TitheAggregateList,
-      offerings: OfferingList,
+      offerings: OfferingAltList,
       isAccountingLoading: false,
       isLoadingIndividualTithe: false,
       isFamiliesLoading: false,
@@ -318,8 +319,8 @@ export default {
         filter = `&ServiceId=${this.selectedService}`
       }
 
-      this.$axios.get(`offerings?StartDate=${this.totalsDateRange.startDate}&EndDate=${this.totalsDateRange.endDate}${filter}`).then(response => {
-        this.offerings = Object.assign(OfferingList, response.data.data)
+      this.$axios.get(`accounting/offeringtypes?StartDate=${this.totalsDateRange.startDate}&EndDate=${this.totalsDateRange.endDate}${filter}`).then(response => {
+        this.offerings = Object.assign(OfferingAltList.data, response.data)
         this.isOfferingLoading = false
       }).catch(error => {
         this.isOfferingLoading = false
@@ -364,8 +365,8 @@ export default {
 
       this.$axios.get(`/accounting/tithe-aggregate?StartDate=${this.totalsDateRange.startDate}&EndDate=${this.totalsDateRange.endDate}${filter}${filterService}`).then(response => {
         this.titheAggregate = Object.assign(this.titheAggregate, response.data.data)
-        console.log(response.data.data)
-        console.log(this.titheAggregate)
+        // console.log(response.data.data)
+        // console.log(this.titheAggregate)
 
         this.isTitheLoading = false
       }).catch(error => {
