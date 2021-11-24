@@ -98,7 +98,7 @@
 
         <div class="col-md-8 mb-5" v-if="!isOfferingLoading">
           <h4 class="mb-4">List of All Offerings</h4>
-          <div class="table-responsive" v-for="(offering,index) in offerings" :key="index">
+          <div class="table-responsive" v-for="(offering,index) in offerings.data" :key="index">
             <h5 class="my-2">{{ offering.offeringTypeName }}</h5>
             <table class="table table-bordered border-primary">
               <thead>
@@ -123,10 +123,9 @@
               </tr>
               </tbody>
             </table>
-            <div v-if="!isOfferingLoading">
-              <p class="align-self-center text-center mt-5" v-if="offerings.length === 0 ">No Data Found</p>
-            </div>
-
+          </div>
+          <div v-if="!isOfferingLoading">
+            <p class="align-self-center text-center mt-5" v-if="offerings.data.length === 0 ">No Data Found</p>
           </div>
         </div>
         <PageLoader v-else></PageLoader>
@@ -322,6 +321,9 @@ export default {
       this.$axios.get(`accounting/offeringtypes?StartDate=${this.totalsDateRange.startDate}&EndDate=${this.totalsDateRange.endDate}${filter}`).then(response => {
         this.offerings = Object.assign(OfferingAltList.data, response.data)
         this.isOfferingLoading = false
+
+        console.log(this.offerings.data);
+
       }).catch(error => {
         this.isOfferingLoading = false
       })
