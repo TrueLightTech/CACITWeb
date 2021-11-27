@@ -318,7 +318,12 @@ export default {
         filter = `&ServiceId=${this.selectedService}`
       }
 
-      this.$axios.get(`accounting/offeringtypes?StartDate=${this.totalsDateRange.startDate}&EndDate=${this.totalsDateRange.endDate}${filter}`).then(response => {
+      let filterFamilyId = ""
+      if (this.selectedFamily) {
+        filterFamilyId = `&FamilyId=${this.selectedFamily}`
+      }
+
+      this.$axios.get(`accounting/offeringtypes?StartDate=${this.totalsDateRange.startDate}&EndDate=${this.totalsDateRange.endDate}${filter}${filterFamilyId}`).then(response => {
         this.offerings = Object.assign(OfferingAltList.data, response.data)
         this.isOfferingLoading = false
 
@@ -337,6 +342,7 @@ export default {
         this.selectedFamilyName = value.name
       }
       this.fetchTitheAggregate()
+      this.fetchOfferings()
     },
     filterByService(value) {
       this.isIndividualTitheClicked = false
@@ -367,8 +373,6 @@ export default {
 
       this.$axios.get(`/accounting/tithe-aggregate?StartDate=${this.totalsDateRange.startDate}&EndDate=${this.totalsDateRange.endDate}${filter}${filterService}`).then(response => {
         this.titheAggregate = Object.assign(this.titheAggregate, response.data.data)
-        // console.log(response.data.data)
-        // console.log(this.titheAggregate)
 
         this.isTitheLoading = false
       }).catch(error => {
