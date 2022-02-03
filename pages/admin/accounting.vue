@@ -357,6 +357,7 @@ export default {
       }
       this.getAccounting()
       this.fetchOfferings()
+      this.fetchTitheAggregate()
     },
     fetchTitheAggregate() {
       this.isTitheLoading = true

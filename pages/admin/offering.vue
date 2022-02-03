@@ -190,12 +190,16 @@
                           </li>
                         </ul>
                       </li>
+                      <li>
+                        <label class="mb-2 text-start">Date</label>
+                        <input type="date" v-model="offeringDate" class="form-control">
+                      </li>
                     </ul>
                   </form>
                 </div>
                 <div class="modal-footer">
                   <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                  <button @click="saveFamily()" type="button" data-bs-dismiss="modal" class="btn btn-primary">Save
+                  <button @click="saveOffering()" type="button" data-bs-dismiss="modal" class="btn btn-primary">Save
                   </button>
                 </div>
               </div>
@@ -337,6 +341,7 @@ export default {
       offeringName: '',
       members: MemberList,
       showSuggestions: 'dropdown-menu',
+      offeringDate: '',
       amount: '',
       searchQuery: '',
       membersQuery: '',
@@ -424,7 +429,7 @@ export default {
 
       }
     },
-    saveFamily() {
+    saveOffering() {
       const requestBody = {
         name: this.offeringName,
         amount: parseFloat(this.amount),
@@ -432,8 +437,11 @@ export default {
         offeringTypeId: this.offeringTypeId,
         serviceName: this.services.data.filter(service => service.id === this.serviceId)[0].name,
         userId: this.userId,
-        assignFamilyId: this.familyId
+        assignFamilyId: this.familyId,
+        createdAt: this.offeringDate
       }
+
+      console.log(requestBody)
 
       if (this.offeringId.length === 0 && (this.offeringTypeId.length !== 0 && this.serviceId.length !== 0)) {
         this.$axios.post(`offerings`, requestBody).then(response => {
