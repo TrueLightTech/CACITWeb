@@ -44,6 +44,7 @@
                     <th scope="col">Service Name</th>
                     <th scope="col">Offering Type</th>
                     <th scope="col">Assigned to:</th>
+                    <th scope="col">Date</th>
                     <th class="text-end" scope="col">Actions</th>
                   </tr>
                   </thead>
@@ -55,6 +56,7 @@
                     <td>{{ offering.serviceName }}</td>
                     <td>{{ offering.offeringTypeName }}</td>
                     <td> {{ cleanString(offering.assignFamilyName, offering.userName) }}</td>
+                    <td>{{ $moment(offering.createdAt).format('Do MMM YY') }}</td>
                     <td class="text-end">
                       <div class="btn-group">
                         <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown"
@@ -341,7 +343,7 @@ export default {
       offeringName: '',
       members: MemberList,
       showSuggestions: 'dropdown-menu',
-      offeringDate: '',
+      offeringDate: null,
       amount: '',
       searchQuery: '',
       membersQuery: '',
@@ -377,12 +379,14 @@ export default {
       this.familyId = ''
       this.userId = ''
       this.membersQuery = ''
+      this.offeringDate = null
     },
     edit(data) {
       this.offeringId = data.id
       this.offeringName = data.name
       this.amount = data.amount
       this.serviceId = data.serviceId
+      this.offeringDate = data.createdAt
     },
     cleanString(first, second) {
       if (first && second) {
@@ -440,8 +444,6 @@ export default {
         assignFamilyId: this.familyId,
         createdAt: this.offeringDate
       }
-
-      console.log(requestBody)
 
       if (this.offeringId.length === 0 && (this.offeringTypeId.length !== 0 && this.serviceId.length !== 0)) {
         this.$axios.post(`offerings`, requestBody).then(response => {
