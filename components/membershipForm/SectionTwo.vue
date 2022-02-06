@@ -110,6 +110,9 @@
                       <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
                       <span class="visually-hidden">Loading...</span>
                     </button>
+                    <button @click="deleteChildRecord(index)" type="button" class="btn btn-outline-danger"><i
+                      class="far fa-trash-alt"></i></button>
+
                   </div>
                 </td>
               </tr>
@@ -194,6 +197,11 @@ export default {
         childDateOfBirth: this.memberInfo.childInformation[index].childDateOfBirth,
         telephoneNumber: this.memberInfo.childInformation[index].telephoneNumber
       }
+      this.deactivate(index)
+    },
+    deleteChildRecord(index) {
+      let theIndex = this.memberInfo.childInformation.indexOf(this.memberInfo.childInformation[index])
+      this.memberInfo.childInformation.splice(theIndex, 1)
       this.deactivate(index)
     },
     updateRecord() {

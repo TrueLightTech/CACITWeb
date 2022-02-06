@@ -112,7 +112,7 @@
                     <ul class="list-unstyled">
                       <li><label>Date of Birth</label></li>
                       <li>
-                        <p>{{ memberInfoSectionOne.dateOfBirth }}</p>
+                        <p>{{ $moment(memberInfoSectionOne.dateOfBirth).format('Do MMMM YYYY') }}</p>
                       </li>
                     </ul>
                   </div>
@@ -206,7 +206,7 @@
                     <ul class="list-unstyled">
                       <li><label>Year of Baptism</label></li>
                       <li>
-                        <p>{{ memberInfoSectionOne.dateOfBaptism }}</p>
+                        <p>{{ $moment(memberInfoSectionOne.dateOfBaptism).format('Do MMMM YYYY') }}</p>
                       </li>
                     </ul>
                   </div>
@@ -347,7 +347,7 @@
                     <tr v-for="(child,index) in memberInfoSectionTwo.childInformation">
                       <th scope="row">{{ index + 1 }}</th>
                       <td>{{ child.nameOfChild }}</td>
-                      <td>{{ child.childDateOfBirth }}</td>
+                      <td>{{ $moment(child.childDateOfBirth).format('Do MMMM YYYY') }}</td>
                       <td>{{ child.telephoneNumber }}</td>
                     </tr>
                     </tbody>
