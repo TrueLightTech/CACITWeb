@@ -173,9 +173,6 @@ export default {
       this.$axios.put(`churchmembers/userdetails/${this.id}`, this.memberInfo).then(response => {
         this.$toast.success("Successfully updated")
         this.isLoading = false
-        window.setInterval(function () {
-          window.location.reload();
-        }, 500)
       }).catch(error => {
         this.$toast.success(error.response.data.message)
         this.isLoading = false
