@@ -130,6 +130,10 @@ label {
   color: #222222;
 }
 
+hr {
+  margin: 2rem 0;
+}
+
 .vue-daterange-picker {
   width: max-content;
   padding: 2px 0;

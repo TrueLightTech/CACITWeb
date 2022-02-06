@@ -13,7 +13,7 @@
                 <li><h5 class="my-1">{{ member.name }}</h5></li>
                 <li><p class="my-1">{{ member.phoneNumber }}</p></li>
                 <li><p class="my-1">{{ member.gender }}</p></li>
-                <li><p class="my-2">{{ member.dataOfBirth }}</p></li>
+                <li><p class="my-2">{{ $moment(member.dataOfBirth).format('Do MMMM YYYY') }}</p></li>
                 <li><p class="my-2">{{ member.churchFamilyName }}</p></li>
                 <li>
                   <ul class="list-item mx-0 px-0">

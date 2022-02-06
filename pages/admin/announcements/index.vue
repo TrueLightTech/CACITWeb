@@ -89,13 +89,10 @@
 </template>
 
 <script>
-  // import {AnnouncementList} from "../../network/Announcement";
-  // import {profileImageBaseUrl} from "../../resources/constants";
 
   import {profileImageBaseUrl} from "../../../resources/constants";
   import {AnnouncementList} from "../../../network/Announcement";
   import {mapGetters} from 'vuex'
-  import {MemberList} from "../../../network/Member";
 
 
   export default {

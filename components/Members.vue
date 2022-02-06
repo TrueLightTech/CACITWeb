@@ -68,6 +68,10 @@
                   </button>
                   <ul class="dropdown-menu">
                     <li v-if="loggedInUser.data.roleId === '1'">
+                      <NuxtLink class="dropdown-item" :to="'members/'+member.id+'/membership-form'">Membership Form
+                      </NuxtLink>
+                    </li>
+                    <li v-if="loggedInUser.data.roleId === '1'">
                       <NuxtLink class="dropdown-item" :to="'members/'+member.id+'/role'">Assign role</NuxtLink>
                     </li>
                     <li>
@@ -148,9 +152,9 @@ export default {
     searchByName() {
 
       let filterBy = ''
-      if(!isNaN(this.searchQuery)){
+      if (!isNaN(this.searchQuery)) {
         filterBy = `Number=${this.searchQuery}`
-      }else{
+      } else {
         filterBy = `Name=${this.searchQuery}`
       }
 

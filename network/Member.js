@@ -146,3 +146,75 @@ export const ServiceItem = {
   description: ""
 }
 
+export const MembershipFormOne = {
+  userId: "",
+  fullName: "",
+  surname: "",
+  firstName: "",
+  otherNames: "",
+  dateOfBirth: null,
+  gender: "",
+  nationality: "",
+  town: "",
+  region: "",
+  maritalStatus: "",
+  contactAddress: "",
+  firstTelephoneNumber: "",
+  secondTelephoneNumber: "",
+  emailAddress: "",
+  permanentResidentialAddress: "",
+  dateOfBaptism: null,
+  churchOfBaptism: "",
+  educationLevel: "",
+  memberProfession: "",
+  memberOccupation: "",
+  spokenLanguage: [],
+  writtenLanguage: [],
+  hobbies: "",
+}
+
+export const MembershipFormTwo = {
+  userId: "",
+  spouseSurname: "",
+  spouseFirstName: "",
+  spouseOtherName: "",
+  spouseFirstTelephoneNumber: "",
+  spouseSecondTelephoneNumber: "",
+  childInformation: [
+    {
+      nameOfChild: "",
+      childDateOfBirth: null,
+      telephoneNumber: ""
+    }
+  ],
+  //Signature
+  userSignature: "",
+  // userSignatureDate: "",
+  // createdAt: "",
+  familyLeaderName: "",
+  familyLeaderSignature: "",
+  // familyLeaderSignatureDate: ""
+}
+
+export const MembershipFormThree = {
+  userId: "string",
+  fatherFullname: "",
+  fatherSurname: "",
+  fatherFirstName: "",
+  fatherLastName: "",
+  fatherOtherName: "",
+  isBiologicalFather: true,
+  isFatherAlive: true,
+  motherFullname: "",
+  motherSurname: "",
+  motherFirstName: "",
+  motherLastName: "",
+  motherOtherName: "",
+  isBiologicalMother: true,
+  isMotherAlive: true,
+  nextOfKinFullname: null,
+  memberNextOfKinRelationship: null,
+  nextOfKinFirstTelephoneNumber: null,
+  nextOfKinSecondTelephoneNumber: null
+}
+
