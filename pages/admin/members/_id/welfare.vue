@@ -347,16 +347,31 @@ export default {
         description: this.description
       }
 
-      this.$axios.post(`welfaretransactions`, requestBody).then(response => {
-        this.$toast.success("Successfully added")
-        this.isLoading = false
-        this.getWelfares();
-        this.getWelfareTotals();
-        this.clearFields();
-      }).catch(error => {
-        this.$toast.success(error.response.data.message)
-        this.isLoading = false
-      })
+      if (this.amount > 0.0) {
+        if (this.isChurch && this.description.length !== 0) {
+          this.$axios.post(`welfaretransactions`, requestBody).then(response => {
+            this.$toast.success("Successfully added")
+            this.isLoading = false
+            this.getWelfares();
+            this.getWelfareTotals();
+            this.clearFields();
+          }).catch(error => {
+            this.$toast.success(error.response.data.message)
+            this.isLoading = false
+          })
+        } else if (this.isSelf) {
+          this.$axios.post(`welfaretransactions`, requestBody).then(response => {
+            this.$toast.success("Successfully added")
+            this.isLoading = false
+            this.getWelfares();
+            this.getWelfareTotals();
+            this.clearFields();
+          }).catch(error => {
+            this.$toast.success(error.response.data.message)
+            this.isLoading = false
+          })
+        }
+      }
     },
     getWelfareTotals() {
       this.isLoadingTotal = true
