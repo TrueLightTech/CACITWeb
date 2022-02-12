@@ -72,6 +72,9 @@
                       </NuxtLink>
                     </li>
                     <li v-if="loggedInUser.data.roleId === '1'">
+                      <NuxtLink class="dropdown-item" :to="'members/'+member.id+'/welfare'">Welfare</NuxtLink>
+                    </li>
+                    <li v-if="loggedInUser.data.roleId === '1'">
                       <NuxtLink class="dropdown-item" :to="'members/'+member.id+'/role'">Assign role</NuxtLink>
                     </li>
                     <li>

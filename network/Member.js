@@ -218,3 +218,37 @@ export const MembershipFormThree = {
   nextOfKinSecondTelephoneNumber: null
 }
 
+export const WelfareTotals = {
+  message: "",
+  code: "",
+  data: {
+    welfareBySelf: 0.0,
+    welfareByChurch: 0.0
+  }
+}
+
+export const WelfareList = {
+  message: "Successfully created",
+  code: "200",
+  data: {
+    results: [
+      {
+        id: "",
+        userId: "",
+        transactionType: "",
+        transactionAmount: 0.0,
+        year: "",
+        isWelfarePaidBySelf: true,
+        isWelfarePaidByChurch: false,
+        description: "",
+        receivedBy: "",
+        createdAt: ""
+      }
+    ],
+    pageIndex: 0,
+    totalPages: 1,
+    pageSize: 10,
+    totalCount: 1
+  }
+}
+
