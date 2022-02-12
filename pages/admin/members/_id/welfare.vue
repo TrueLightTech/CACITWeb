@@ -334,7 +334,7 @@ export default {
     },
     clearFields() {
       this.amount = 0.0;
-      this.year = '2022';
+      this.year = date.getFullYear() + "";
     },
     recordWelfare() {
       const requestBody = {
@@ -371,7 +371,7 @@ export default {
     },
     getWelfares() {
       this.isWelfareLoading = true
-      this.$axios.get(`welfaretransactions?UserId=${this.id}&IsWelfarePaidBySelf=${this.isSelf}&IsWelfarePaidByChurch=${this.isChurch}&Year=${this.year}`).then(response => {
+      this.$axios.get(`welfaretransactions?UserId=${this.id}&IsWelfarePaidBySelf=${this.isSelf}&IsWelfarePaidByChurch=${this.isChurch}&Year=${this.year}&PageSize=20`).then(response => {
         this.welfare = Object.assign(WelfareList, response.data)
         this.isWelfareLoading = false
       }).catch(error => {
