@@ -16,7 +16,7 @@
                   data-bs-target="#staticBackdrop67"><i
             class="fas fa-plus-circle"></i> Add Welfare
           </button>
-          <button @click="isSelected(false)" type="button" class="btn btn-danger" data-bs-toggle="modal"
+          <button @click="isSelected(false)" type="button" class="btn btn-warning" data-bs-toggle="modal"
                   data-bs-target="#staticBackdrop67"><i class="fas fa-plus-circle"></i> Award Welfare
           </button>
           <div class="btn-group">
@@ -375,7 +375,7 @@ export default {
     },
     getWelfareTotals() {
       this.isLoadingTotal = true
-      this.$axios.get(`welfaretransactions/total?userId=${this.id}`).then(response => {
+      this.$axios.get(`welfaretransactions/total?userId=${this.id}&year=${this.year}`).then(response => {
         this.welfareTotals = Object.assign(WelfareTotals, response.data)
         this.isLoadingTotal = false
       }).catch(error => {
