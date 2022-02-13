@@ -288,6 +288,7 @@ export default {
     deleteService(id) {
       this.$axios.delete(`welfaretransactions/${id}`).then(response => {
         this.getWelfares()
+        this.getWelfareTotals()
         this.$toast.info("Welfare successfully deleted.")
       }).catch(error => {
         console.log(error)
