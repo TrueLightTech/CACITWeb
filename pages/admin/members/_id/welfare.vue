@@ -35,11 +35,18 @@
       </div>
     </div>
 
+
     <div class="container">
+      <div class="row justify-content-around" v-if="!isLoadingMember">
+        <div class="col-md-12 col-lg-8 col-lx-8 text-left justify-content-between mb-3">
+          <hr>
+          <h4>{{ member.name }}</h4>
+        </div>
+      </div>
       <div class="row justify-content-around">
         <div class="col-md-12 col-lg-8 col-lx-8 text-center justify-content-between mb-3">
           <div v-if="!isLoadingTotal" class="row justify-content-center text-center mb-3">
-            <div class="col-md-6">
+            <div class="col-md-6 my-2">
               <div class="card">
                 <div class="card-body text-center">
                   <ul class="list-unstyled">
@@ -50,7 +57,7 @@
                 </div>
               </div>
             </div>
-            <div class="col-md-6">
+            <div class="col-md-6 my-2">
               <div class="card">
                 <div class="card-body">
                   <ul class="list-unstyled">
@@ -245,7 +252,7 @@
 </template>
 
 <script>
-import {WelfareList, WelfareTotals} from "../../../../network/Member";
+import {ChurchMember, WelfareList, WelfareTotals} from "../../../../network/Member";
 import PageLoader from "../../../../components/PageLoader";
 import {mapGetters} from "vuex";
 import {numberWithCommas} from "../../../../resources/constants";
@@ -260,6 +267,7 @@ export default {
     this.id = this.$route.params.id;
     this.getWelfares();
     this.getWelfareTotals();
+    this.getMemberDetails();
   },
   data() {
     return {
@@ -270,6 +278,8 @@ export default {
       year: date.getFullYear() + "",
       description: '',
       toDeleteId: '',
+      isLoadingMember: false,
+      member: ChurchMember,
       isWelfareLoading: false,
       isLoadingTotal: false,
       welfare: WelfareList,
@@ -382,6 +392,17 @@ export default {
       }).catch(error => {
         // this.$toast.success(error.response.data.message)
         this.isLoadingTotal = false
+      })
+
+    },
+    getMemberDetails() {
+      this.isLoadingMember = true
+      this.$axios.get(`churchmembers/user/${this.id}`).then(response => {
+        this.member = Object.assign(ChurchMember, response.data.data)
+        this.isLoadingMember = false
+      }).catch(error => {
+        // this.$toast.success(error.response.data.message)
+        this.isLoadingMember = false
       })
 
     },
