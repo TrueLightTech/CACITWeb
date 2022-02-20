@@ -92,6 +92,20 @@
                   </tr>
                   </tbody>
                 </table>
+                <nav aria-label="Page navigation example">
+                  <ul class="pagination justify-content-end">
+                    <li class="page-item">
+                      <a @click="fetchMoreOfferings(currentPage - 1)" class="page-link" href="#" tabindex="-1"
+                         aria-disabled="true">Previous</a>
+                    </li>
+                    <li v-for="index in numberOfPages" :key="index" class="page-item">
+                      <a @click="fetchMoreOfferings(index)" class="page-link" href="#">{{ index }}</a>
+                    </li>
+                    <li class="page-item">
+                      <a @click="fetchMoreOfferings(currentPage+1)" class="page-link" href="#">Next</a>
+                    </li>
+                  </ul>
+                </nav>
                 <div v-if="!isLoading">
                   <p v-if="offerings.results.length === 0" class="align-self-center text-center">No data found</p>
                 </div>
@@ -315,6 +329,7 @@
 import {ChurchFamilyList, MemberList, OfferingList, OfferingType, ServiceList} from "../../network/Member";
 import {numberWithCommas} from "../../resources/constants";
 import {mapGetters} from "vuex";
+import {AnnouncementList} from "../../network/Announcement";
 
 
 export default {
@@ -322,7 +337,7 @@ export default {
   beforeMount() {
     this.fetchFamilies()
     this.getServices()
-    this.fetchOfferings()
+    this.fetchMoreOfferings()
     this.getOfferingType()
   },
   mounted() {
@@ -340,6 +355,8 @@ export default {
       isMembersLoading: false,
       services: ServiceList,
       offeringTypes: OfferingType,
+      numberOfPages: 0,
+      currentPage: 0,
       offeringName: '',
       members: MemberList,
       showSuggestions: 'dropdown-menu',
@@ -406,7 +423,7 @@ export default {
         this.$axios.put(`offerings/assign-family/${this.offeringId}`, requestBody).then(response => {
           this.$toast.success("Successfully updated")
           this.isLoading = false
-          this.fetchOfferings()
+          this.fetchMoreOfferings()
           this.clearFields()
         }).catch(error => {
           this.$toast.success(error.response.data.message)
@@ -424,7 +441,7 @@ export default {
         this.$axios.put(`offerings/assign-user/${this.offeringId}`, requestBody).then(response => {
           this.$toast.success("Successfully updated")
           this.isLoading = false
-          this.fetchOfferings()
+          this.fetchMoreOfferings()
           this.clearFields()
         }).catch(error => {
           this.$toast.success(error.response.data.message)
@@ -450,7 +467,7 @@ export default {
           this.$toast.success("Successfully added")
           this.isLoading = false
           this.clearFields()
-          this.fetchOfferings()
+          this.fetchMoreOfferings()
         }).catch(error => {
           this.$toast.success(error.response.data.message)
           this.isLoading = false
@@ -459,7 +476,7 @@ export default {
         this.$axios.put(`offerings/${this.offeringId}`, requestBody).then(response => {
           this.$toast.success("Successfully updated")
           this.isLoading = false
-          this.fetchOfferings()
+          this.fetchMoreOfferings()
           this.clearFields()
         }).catch(error => {
           this.$toast.success(error.response.data.message)
@@ -491,10 +508,15 @@ export default {
         this.isMembersLoading = false
       })
     },
-    fetchOfferings() {
+    fetchMoreOfferings(page = 1, pageSize = 10) {
+      this.currentPage = page
       this.isLoading = true
-      this.$axios.get(`offerings`).then(response => {
+
+      this.$axios.get(`offerings?Page=${page}&PageSize=${pageSize}`).then(response => {
         this.offerings = Object.assign(OfferingList, response.data.data)
+        this.numberOfPages = this.offerings.totalPages
+        this.totalCount = this.offerings.totalCount
+
         this.isLoading = false
       }).catch(error => {
         this.isLoading = false
@@ -517,7 +539,7 @@ export default {
     },
     deleteService(id) {
       this.$axios.delete(`offerings/${id}`).then(response => {
-        this.fetchOfferings()
+        this.fetchMoreOfferings()
         this.$toast.info("Offering successfully deleted.")
       }).catch(error => {
         console.log(error)

@@ -72,6 +72,7 @@
                 <th scope="col"><h4>Total</h4></th>
                 <th scope="col"><h4>Total Offering</h4></th>
                 <th scope="col"><h4>Total Tithe</h4></th>
+                <th scope="col"><h4>Total Welfare</h4></th>
               </tr>
               </thead>
               <tbody>
@@ -79,6 +80,7 @@
                 <td>GHS {{ formatMoney(accountTotals.total) }}</td>
                 <td>GHS {{ formatMoney(accountTotals.offeringSum) }}</td>
                 <td>GHS {{ formatMoney(accountTotals.titheSum) }}</td>
+                <td>GHS {{ formatMoney(accountTotals.welfareSum) }}</td>
               </tr>
               </tbody>
             </table>

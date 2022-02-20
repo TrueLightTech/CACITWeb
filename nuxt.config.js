@@ -75,7 +75,6 @@ export default {
       }
     ]
   },
-
   axios: {
     // retry: {retries: 5},
     headers: {

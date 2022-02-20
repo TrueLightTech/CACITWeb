@@ -71,6 +71,7 @@ export const Announcement = {
 export const DashboardAccountingTotal = {
   titheSum: 0.0,
   offeringSum: 0.0,
+  welfareSum: 0.0,
   total: 0.0
 }
 
@@ -96,7 +97,11 @@ export const TitheAggregateList = {
 }
 
 export const OfferingList = {
-  results: [Offering]
+  results: [Offering],
+  pageIndex: 0,
+  pageSize: 10,
+  totalCount: 16,
+  totalPages: 2
 }
 
 export const OfferingAltList = {
