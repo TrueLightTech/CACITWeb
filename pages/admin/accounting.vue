@@ -97,7 +97,6 @@
           </div>
         </div>
 
-
         <div class="col-md-8 mb-5" v-if="!isOfferingLoading">
           <h4 class="mb-4">List of All Offerings</h4>
           <div class="table-responsive" v-for="(offering,index) in offerings.data" :key="index">
@@ -128,6 +127,43 @@
           </div>
           <div v-if="!isOfferingLoading">
             <p class="align-self-center text-center mt-5" v-if="offerings.data.length === 0 ">No Data Found</p>
+          </div>
+        </div>
+        <PageLoader v-else></PageLoader>
+
+
+        <div class="col-md-8 mb-5" v-if="!isLoadingWelfareList">
+          <h4 class="mb-4">List of All Welfare</h4>
+          <div class="table-responsive">
+            <table class="table table-bordered border-primary">
+              <thead>
+              <tr>
+                <th scope="col"><h4>#</h4></th>
+                <th scope="col"><h4>Name</h4></th>
+                <th scope="col"><h4>Collectors Name</h4></th>
+                <th scope="col"><h4>Amount</h4></th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr v-for="(record,index) in welfare.results" :key="index">
+                <td>{{ index }}</td>
+                <td>{{ record.name }}</td>
+                <td>GHS {{ record.collectorName }}</td>
+                <td>{{ formatMoney(record.amount) }}</td>
+              </tr>
+              <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td><h6>GHS
+                  {{ formatMoney(Array.from(welfare.results, x => x.amount).reduce((a, b) => a + b, 0)) }}</h6>
+                </td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+          <div v-if="!isLoadingWelfareList">
+            <p class="align-self-center text-center mt-5" v-if="welfare.results.length === 0 ">No Data Found</p>
           </div>
         </div>
         <PageLoader v-else></PageLoader>
@@ -202,7 +238,7 @@
 
 <script>
 import {
-  ChurchFamilyList,
+  ChurchFamilyList, ChurchWelfareList,
   DashboardAccountingTotal, IndividualTitheList, OfferingAltList,
   OfferingList,
   ServiceList,
@@ -226,11 +262,13 @@ export default {
       services: ServiceList,
       isLoading: false,
       families: ChurchFamilyList,
+      welfare: ChurchWelfareList,
       accountTotals: DashboardAccountingTotal,
       titheAggregate: TitheAggregateList,
       offerings: OfferingAltList,
       isAccountingLoading: false,
       isLoadingIndividualTithe: false,
+      isLoadingWelfareList: false,
       isFamiliesLoading: false,
       isOfferingLoading: false,
       isTitheLoading: false,
@@ -260,6 +298,7 @@ export default {
     this.fetchFamilies()
     this.fetchOfferings()
     this.fetchTitheAggregate()
+    this.fetchMembersWelfare()
   },
   methods: {
     goBack() {
@@ -394,12 +433,25 @@ export default {
       })
 
     },
+    fetchMembersWelfare() {
+      this.isLoadingWelfareList = true
+      this.$axios.get(`/accounting/members-welfare?StartDate=${this.totalsDateRange.startDate}&EndDate=${this.totalsDateRange.endDate}&PageSize=1000`).then(response => {
+        this.welfare = Object.assign(this.welfare, response.data.data)
+        console.log(this.welfare.results)
+
+        this.isLoadingWelfareList = false
+      }).catch(error => {
+        this.isLoadingWelfareList = false
+      })
+
+    },
     datePickerCallback(date) {
       this.totalsDateRange.startDate = moment(date.startDate).format('YYYY-MM-DD')
       this.totalsDateRange.endDate = moment(date.endDate).format('YYYY-MM-DD')
       this.getAccounting()
       this.fetchOfferings()
       this.fetchTitheAggregate()
+      this.fetchMembersWelfare()
     },
   },
   components: {DateRangePicker},

@@ -135,6 +135,10 @@ export const ChurchFamilyList = {
   data: [ServiceItem]
 }
 
+export const ChurchWelfareList = {
+  results: [WelfareItem]
+}
+
 export const OfferingType = {
   data: [ServiceItem]
 }
@@ -149,6 +153,12 @@ export const ServiceItem = {
   id: "",
   name: "",
   description: ""
+}
+
+export const WelfareItem = {
+  amount: 0.0,
+  name: "",
+  collectorName: ""
 }
 
 export const MembershipFormOne = {
