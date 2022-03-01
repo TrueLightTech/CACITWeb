@@ -140,7 +140,7 @@
               <tr>
                 <th scope="col"><h4>#</h4></th>
                 <th scope="col"><h4>Name</h4></th>
-                <th scope="col"><h4>Collectors Name</h4></th>
+                <th scope="col"><h4>Received By</h4></th>
                 <th scope="col"><h4>Amount</h4></th>
               </tr>
               </thead>
@@ -148,7 +148,7 @@
               <tr v-for="(record,index) in welfare.results" :key="index">
                 <td>{{ index }}</td>
                 <td>{{ record.name }}</td>
-                <td>GHS {{ record.collectorName }}</td>
+                <td>{{ record.collectorName }}</td>
                 <td>{{ formatMoney(record.amount) }}</td>
               </tr>
               <tr>

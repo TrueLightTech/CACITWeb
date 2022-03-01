@@ -11,6 +11,9 @@
       <NuxtLink to="/admin/tithe" data-bs-dismiss="offcanvas" aria-label="Close"><h4>Tithe</h4></NuxtLink>
     </li>
     <li class="my-5">
+      <NuxtLink to="/admin/welfare" data-bs-dismiss="offcanvas" aria-label="Close"><h4>Welfare</h4></NuxtLink>
+    </li>
+    <li class="my-5">
       <NuxtLink to="/admin/offering" data-bs-dismiss="offcanvas" aria-label="Close"><h4>Offering</h4></NuxtLink>
     </li>
     <li class="my-5">
@@ -30,15 +33,15 @@
 </template>
 
 <script>
-  export default {
-    name: "manager",
-    methods: {
-      async logout() {
-        await this.$auth.logout();
-        this.$toast.success("Logged out")
-      },
-    }
+export default {
+  name: "manager",
+  methods: {
+    async logout() {
+      await this.$auth.logout();
+      this.$toast.success("Logged out")
+    },
   }
+}
 </script>
 
 <style scoped>
