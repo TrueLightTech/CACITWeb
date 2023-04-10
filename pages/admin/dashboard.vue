@@ -217,7 +217,11 @@
                      aria-disabled="true">Previous</a>
                 </li>
                 <li v-for="index in numberOfPages" :key="index" class="page-item">
-                  <a @click="fetchAnnouncement(index)" class="page-link" href="#">{{ index }}</a>
+                  <a v-if="index < currentPage + 5" @click="fetchAnnouncement(index)"
+                     class="page-link" href="#">{{ index }}</a>
+                  <!--                  <a>...</a>-->
+                  <a v-if="index > numberOfPages - 5" @click="fetchAnnouncement(index)" class="page-link"
+                     href="#">{{ index }}</a>
                 </li>
                 <li class="page-item">
                   <a @click="fetchAnnouncement(currentPage+1)" class="page-link" href="#">Next</a>

@@ -109,11 +109,13 @@ export default {
     },
     strategies: {
       local: {
-        cookie: true,
+        // cookie: true,
         token: {
           property: 'data.token',
-          expires: 100,
-          maxAge: 86400 // seconds - 1 day
+          global: true,
+          type:'Bearer'
+          // expires: 100,
+          // maxAge: 86400 // seconds - 1 day
         },
         user: {
           property: false
