@@ -16,7 +16,7 @@ jobs:
 - job: Job_1
   displayName: Agent job 1
   pool:
-    vmImage: vs2017-win2016
+    vmImage: windows-latest
   steps:
   - checkout: self
   - task: Npm@1
