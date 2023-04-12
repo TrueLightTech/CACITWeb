@@ -16,9 +16,12 @@ jobs:
 - job: Job_1
   displayName: Agent job 1
   pool:
-    vmImage: ubuntu-20.04
+    vmImage: ubuntu-latest
   steps:
   - checkout: self
+  - task: NodeTool@0
+    inputs:
+      versionSpec: '14.x'
   - task: Npm@1
     displayName: npm install
     inputs:
