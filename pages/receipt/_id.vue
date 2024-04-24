@@ -105,6 +105,10 @@ export default {
 </script>
 
 <style scoped>
+
+body {
+  background-color: #e6f8ff;
+}
 .container {
   max-width: 600px;
   margin: 20px auto;
