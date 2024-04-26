@@ -6,12 +6,12 @@
 trigger:
   branches:
     include:
-    - refs/heads/dev
+    - refs/heads/develop
 resources:
   repositories:
   - repository: self
     type: git
-    ref: refs/heads/dev
+    ref: refs/heads/develop
 jobs:
 - job: Job_1
   displayName: Agent job 1
