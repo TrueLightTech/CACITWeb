@@ -104,7 +104,7 @@ export default {
   },
   generate: {
     routes: [
-      '/receipt'
+      '/receipt/1', '/receipt/2', '/receipt/3'
     ]
   },
   router: {
