@@ -102,11 +102,6 @@ export default {
       compact: true
     }
   },
-  generate: {
-    routes: [
-      '/receipt/1', '/receipt/2', '/receipt/3'
-    ]
-  },
   router: {
     middleware: ['auth']
   },

@@ -3,7 +3,7 @@
     <div v-if="!pageRefresh">
       <div class="receipt-header">
         <div class="mb-3">
-          <img src="~assets/imgs/caci_logo.png" class="img-fluid w-25 align-self-right"/>
+          <img src="../../assets/imgs/caci_logo.png" class="img-fluid w-25 align-self-right"/>
           <h4>CACI Taifa</h4>
         </div>
         <div class="receipt-information">
