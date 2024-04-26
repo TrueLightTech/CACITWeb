@@ -1,72 +1,113 @@
 <template>
   <div class="container">
-    Receipt not found
+    <div v-if="!pageRefresh">
+      <div class="receipt-header">
+        <div class="mb-3">
+          <img src="~assets/imgs/caci_logo.png" class="img-fluid w-25 align-self-right"/>
+          <h4>CACI Taifa</h4>
+        </div>
+        <div class="receipt-information">
+          <div class="info-item">
+            <small>Receipt #:</small>
+            <small>{{ receipt.receiptNumber }}</small>
+          </div>
+          <div class="info-item">
+            <small>Customer Name:</small>
+            <small>{{ receipt.memberName }}</small>
+          </div>
+          <div class="info-item">
+            <small>Group Family:</small>
+            <small>{{ receipt.familyGroupName }}</small>
+          </div>
+        </div>
+      </div>
+      <div class="receipt-content">
+        <table>
+          <tr>
+            <th>Month</th>
+            <th>Description</th>
+            <th>Amount</th>
+          </tr>
+          <tr v-for="t in receipt.transactions">
+            <td>{{ months[receipt.month] }}</td>
+            <td>{{ t.description }}</td>
+            <td>GHS{{ t.amount }}</td>
+          </tr>
+        </table>
+      </div>
+      <div class="receipt-total d-flex justify-content-between">
+        <p><strong>Signed:</strong> <span class="text-decoration-underline">{{ receipt.signature }}</span></p>
+        <p><strong>Total:</strong> GHS {{ receipt.total }}</p>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
-  import {mapGetters} from 'vuex'
+import {mapGetters} from 'vuex'
 
-  const months = {
-    Jan: "January",
-    Feb: "February",
-    Mar: "Mar",
-    Apr: "April",
-    May: "May",
-    Jun: "June",
-    Jul: "July",
-    Aug: "August",
-    Sep: "September",
-    Oct: "October",
-    Nov: "November",
-    Dec: "December"
-  }
+const months = {
+  Jan: "January",
+  Feb: "February",
+  Mar: "Mar",
+  Apr: "April",
+  May: "May",
+  Jun: "June",
+  Jul: "July",
+  Aug: "August",
+  Sep: "September",
+  Oct: "October",
+  Nov: "November",
+  Dec: "December"
+}
 
-  let receipt = {
-    receiptNumber: "",
-    memberNumber: "",
-    memberName: "",
-    familyGroupName: "",
-    total: "",
-    signature: "",
-    paymentDate: "",
-    transactions: [
-      {
-        description: "",
-        amount: "",
-        month: ""
-      }
-    ]
-  }
-  let id
+let receipt = {
+  receiptNumber: "",
+  memberNumber: "",
+  memberName: "",
+  familyGroupName: "",
+  total: "",
+  signature: "",
+  paymentDate: "",
+  transactions: [
+    {
+      description: "",
+      amount: "",
+      month: ""
+    }
+  ]
+}
+let id
 
-  export default {
-    name: "index",
-    auth: false,
-    computed: {
-      ...mapGetters(['isAuthenticated', 'loggedInUser'])
-    },
-    data() {
-      return {
-        pageRefresh: false,
-        receipt,
-        months
-      }
-    },
-    beforeMount() {
-      id = this.$route.params.id
-    },
-    methods: {
-      getReceipt(id) {
-        this.pageRefresh = true
-        this.$axios.get(`tithes/receipt/${id}`).then(response => {
-          this.receipt = Object.assign(this.receipt, response.data.data)
-          this.pageRefresh = false
-        }).catch(error => {
-          this.pageRefresh = false
-        })
-      }    }
+export default {
+  name: "index",
+  auth: false,
+  computed: {
+    ...mapGetters(['isAuthenticated', 'loggedInUser'])
+  },
+  data() {
+    return {
+      pageRefresh: false,
+      receipt,
+      months
+    }
+  },
+  beforeMount() {
+    id = this.$route.query.id
+    this.getReceipt(id)
+  },
+  methods: {
+    getReceipt(id) {
+      this.pageRefresh = true
+      this.$axios.get(`tithes/receipt/${id}`).then(response => {
+        this.receipt = Object.assign(this.receipt, response.data.data)
+        this.pageRefresh = false
+      }).catch(error => {
+        this.pageRefresh = false
+      })
+    }
   }
+}
 </script>
 
 <style scoped>
