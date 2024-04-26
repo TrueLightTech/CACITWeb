@@ -102,6 +102,11 @@ export default {
       compact: true
     }
   },
+  generate: {
+    routes: [
+      '/receipt'
+    ]
+  },
   router: {
     middleware: ['auth']
   },
