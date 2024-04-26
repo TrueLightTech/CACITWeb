@@ -1,41 +1,43 @@
 <template>
   <div class="container">
-    <div class="receipt-header">
-      <div class="mb-3">
-        <img src="~assets/imgs/caci_logo.png" class="img-fluid w-25 align-self-right"/>
-        <h4>CACI Taifa</h4>
+    <div v-if="!pageRefresh">
+      <div class="receipt-header">
+        <div class="mb-3">
+          <img src="~assets/imgs/caci_logo.png" class="img-fluid w-25 align-self-right"/>
+          <h4>CACI Taifa</h4>
+        </div>
+        <div class="receipt-information">
+          <div class="info-item">
+            <small>Receipt #:</small>
+            <small>{{ receipt.receiptNumber }}</small>
+          </div>
+          <div class="info-item">
+            <small>Customer Name:</small>
+            <small>{{ receipt.memberName }}</small>
+          </div>
+          <div class="info-item">
+            <small>Group Family:</small>
+            <small>{{ receipt.familyGroupName }}</small>
+          </div>
+        </div>
       </div>
-      <div class="receipt-information">
-        <div class="info-item">
-          <small>Receipt #:</small>
-          <small>{{ receipt?.receiptNumber }}</small>
-        </div>
-        <div class="info-item">
-          <small>Customer Name:</small>
-          <small>{{ receipt?.memberName }}</small>
-        </div>
-        <div class="info-item">
-          <small>Group Family:</small>
-          <small>{{ receipt?.familyGroupName }}</small>
-        </div>
+      <div class="receipt-content">
+        <table>
+          <tr>
+            <th>Month</th>
+            <th>Description</th>
+            <th>Amount</th>
+          </tr>
+          <tr v-for="t in receipt.transactions">
+            <td>{{ months[receipt.month] }}</td>
+            <td>{{ t.description }}</td>
+            <td>GHS{{ t.amount }}</td>
+          </tr>
+        </table>
       </div>
-    </div>
-    <div class="receipt-content">
-      <table>
-        <tr>
-          <th>Month</th>
-          <th>Description</th>
-          <th>Amount</th>
-        </tr>
-        <tr v-for="t in receipt?.transactions">
-          <td>{{ months[receipt?.month] }}</td>
-          <td>{{ t?.description }}</td>
-          <td>GHS{{ t?.amount }}</td>
-        </tr>
-      </table>
-    </div>
-    <div class="receipt-total">
-      <p><strong>Total:</strong> GHS {{ receipt?.total }}</p>
+      <div class="receipt-total">
+        <p><strong>Total:</strong> GHS {{ receipt.total }}</p>
+      </div>
     </div>
   </div>
 </template>
@@ -98,7 +100,8 @@ export default {
   data() {
     return {
       receipt,
-      months
+      months,
+      pageRefresh: false
     }
   }
 }
@@ -109,6 +112,7 @@ export default {
 body {
   background-color: #e6f8ff;
 }
+
 .container {
   max-width: 600px;
   margin: 20px auto;
