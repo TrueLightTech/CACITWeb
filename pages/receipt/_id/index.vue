@@ -35,7 +35,8 @@
           </tr>
         </table>
       </div>
-      <div class="receipt-total">
+      <div class="receipt-total d-flex justify-content-between">
+        <p><strong>Signed:</strong> <span class="text-decoration-underline">{{ receipt.signature }}</span></p>
         <p><strong>Total:</strong> GHS {{ receipt.total }}</p>
       </div>
     </div>
