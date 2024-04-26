@@ -84,7 +84,6 @@ export default {
   },
   mounted() {
   },
-  computed: {},
   methods: {
     getReceipt(id) {
       this.pageRefresh = true
