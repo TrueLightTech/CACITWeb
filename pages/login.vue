@@ -13,18 +13,18 @@
               </li>
               <li>
                 <div class="mb-3">
-                  <label for="exampleFormControlInput1" class="form-label">Phone number</label>
+                  <label for="phonNumber" class="form-label">Phone number</label>
                   <input type="text" v-model="login.phoneNumber" class="form-control form-control-lg"
-                         id="exampleFormControlInput1"
+                         id="phonNumber"
                          placeholder="">
                 </div>
               </li>
 
               <li>
                 <div class="mb-3">
-                  <label for="exampleFormControlInput1" class="form-label">Password</label>
+                  <label for="password" class="form-label">Password</label>
                   <input v-model="login.passCode" type="password" class="form-control form-control-lg"
-                         id="exampleFormControlInput1"
+                         id="password"
                          placeholder="">
                 </div>
               </li>
@@ -38,7 +38,7 @@
                                             aria-hidden="true"></span> LOADING ...</h6>
                 </button>
                 <small class="my-2 d-block">
-                  <NuxtLink to="/forgotpassword" class="bg-active active-bold">Forgot password?</NuxtLink>
+                  <NuxtLink to="/forgotpassword?step=start" class="bg-active active-bold">Forgot password?</NuxtLink>
                 </small>
               </li>
               <li class="mt-2">
