@@ -136,7 +136,7 @@ export default {
           const requestId = localStorage.getItem(`requestId:${this.login.phoneNumber}`)
 
           const payload = {
-            phoneNumber: this.login.phoneNumber,
+            number: this.login.phoneNumber,
             code: otpValue,
             requestId: requestId
           }
@@ -165,6 +165,7 @@ export default {
             }
           })
         } catch (e) {
+          console.log(e, 'error')
           this.isLoading = false
           this.$toast.error(e.response.data.message, {duration: 3000})
         }
