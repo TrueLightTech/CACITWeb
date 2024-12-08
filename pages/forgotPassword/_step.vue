@@ -30,6 +30,7 @@ export default {
     },
     isVerify() {
       const step = this.$route.query.step;
+      this.otp = ["", "", "", ""]
       return !step || step?.toLocaleLowerCase() === 'verify';
     },
     isResetScreen() {
@@ -165,7 +166,6 @@ export default {
             }
           })
         } catch (e) {
-          console.log(e, 'error')
           this.isLoading = false
           this.$toast.error(e.response.data.message, {duration: 3000})
         }
