@@ -1,4 +1,4 @@
-export const profileImageBaseUrl = "https://caciapi.fra1.digitaloceanspaces.com"
+export const profileImageBaseUrl = "https://caciapi.sfo3.digitaloceanspaces.com"
 
 const systemRoles = [
   {
