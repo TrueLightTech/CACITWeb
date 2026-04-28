@@ -1,134 +1,151 @@
 <template>
-  <div class="container-fluid">
-    <div class="row justify-content-center">
-      <div class="col-11 col-lg-4 col-xl-3 col-md-8 col-sm-10 g-0">
-        <div class="form-window card p-4 border-0 rounded-0 pt-5 overflow-auto">
-          <div class="card-body">
-            <form>
-              <ul class="list-unstyled">
-                <li class="mb-4">
-                  <h3>CACI Taifa</h3>
-                </li>
-                <li>
-                  <h5>Register</h5>
-                </li>
-                <li class="my-4">
-                  <div class="d-flex justify-content-center">
-                    <img :src="register.profilePicture" class="img-fluid w-25 rounded-circle">
-                  </div>
-                </li>
-                <li>
-                  <input type="file" accept="image/*" class="custom-file-input"
-                         aria-describedby="inputGroupFileAddon01" @change="imageUploaded($event)">
-                </li>
-                <li class="mt-4">
-                  <div class="mb-3">
-                    <label for="exampleFormControlInput1" class="form-label">Full name</label>
-                    <input type="text" class="form-control form-control-lg" id="exampleFormControlInput1"
-                           placeholder="" v-model="register.name">
-                  </div>
-                </li>
-                <li>
-                  <div class="mb-3 mt-2">
-                    <label for="exampleFormControlInput1" class="form-label">Phone number</label>
-                    <input type="text" class="form-control form-control-lg" id="exampleFormControlInput1"
-                           placeholder="" v-model="register.phoneNumber">
-                  </div>
-                </li>
-                <li>
-                  <div class="mb-3 mt-2">
-                    <label for="exampleFormControlInput1" class="form-label">Password</label>
-                    <input type="password" class="form-control form-control-lg" id="exampleFormControlInput1"
-                           placeholder="" v-model="register.passCode">
-                  </div>
-                </li>
-                <li>
-                  <div class="mb-3 mt-2">
-                    <label for="exampleFormControlInput1" class="form-label">Confirm Password</label>
-                    <input type="password" class="form-control form-control-lg" id="exampleFormControlInput1"
-                           placeholder="" v-model="register.confirmPassCode">
-                    <small class="text-danger" v-if="passwordsMatch()">Passwords do not match</small>
-                  </div>
-                </li>
-                <li>
-                  <div class="mb-3 mt-2">
-                    <label for="exampleFormControlInput1" class="form-label">Email address (Optional)</label>
-                    <input type="email" class="form-control form-control-lg" id="exampleFormControlInput1"
-                           placeholder="" v-model="register.emailAddress">
-                  </div>
-                </li>
-                <li>
-                  <div class="mb-3 mt-2 d-none">
-                    <label for="exampleFormControlInput1" class="form-label">Church Id</label>
-                    <input type="text" class="form-control form-control-lg" id="exampleFormControlInput1"
-                           placeholder="" v-model="register.churchId">
-                  </div>
-                </li>
-                <li class="d-none">
-                  <div class="mb-3">
-                    <label for="exampleFormControlInput1" class="form-label">Profile Image</label>
-                    <input type="file" class="form-control form-control-sm w-75" id="exampleFormControlInput1"
-                           placeholder="">
-                  </div>
-                </li>
-                <li>
-                  <div class="mb-3">
-                    <label for="dob">Date of Birth</label>
-                    <div class="mt-2">
-                      <input id="dob" type="date" class="form-control form-control-lg w-100"
-                             v-model="register.dataOfBirth">
-                    </div>
-                  </div>
-                </li>
-                <li class="my-3">
-                  <label for="gender">Gender</label>
-                  <select id="gender" class="form-select mt-2 form-control-lg" aria-label="Default select example"
-                          v-model="register.gender">
-                    <option selected value="Male">Male</option>
-                    <option value="Female">Female</option>
-                  </select>
-                </li>
-                <li class="my-3">
-                  <label class="mb-2">Church Groups</label>
-                  <select v-model="register.churchGroupId" class="form-select form-control-lg"
-                          aria-label="Default select example">
-                    <option :value="group.id" v-for="group in churchGroups" value="1">{{group.name}}</option>
-                  </select>
-                </li>
-                <li class="my-3">
-                  <label class="mb-2">Church Family</label>
-                  <select v-model="register.churchFamilyId" class="form-select form-control-lg"
-                          aria-label="Default select example">
-                    <option :value="family.id" v-for="family in churchFamilies" value="1">{{family.name}}</option>
-                  </select>
-                </li>
-                <li class="mt-4">
-                  <button v-if="!isLoading" type="button" :class="activateButton()"
-                          @click="signUp()">
-                    <h6 class="p-0 m-0">REGISTER NOW</h6>
-                  </button>
-                  <button v-else class="btn btn-primary btn-lg px-4 py-2 w-100" type="button" disabled>
-                    <h6 class="p-0 m-0"><span class="spinner-border spinner-border-sm" role="status"
-                                              aria-hidden="true"></span> LOADING ...</h6>
-                  </button>
-                </li>
-                <li class="mt-2">
-                  <small>Already have an account?, login
-                    <NuxtLink to="/login" class="bg-active active-bold">here</NuxtLink>
-                  </small>
-                </li>
-              </ul>
-            </form>
+  <main class="auth-page">
+    <section class="auth-shell auth-shell-wide" aria-labelledby="register-title">
+      <div class="brand-lockup" aria-hidden="true">
+        <img src="~assets/imgs/caci_logo.png" alt="CACI Taifa" />
+      </div>
+
+      <div class="auth-copy">
+        <h1 id="register-title">Create account</h1>
+        <p>Set up your CACI Taifa profile.</p>
+      </div>
+
+      <form class="auth-form" @submit.prevent="signUp">
+        <div class="profile-upload">
+          <img :src="register.profilePicture" alt="" />
+          <label class="upload-control" for="profilePicture">
+            Add profile photo
+            <input
+              id="profilePicture"
+              class="sr-only"
+              type="file"
+              accept="image/*"
+              aria-describedby="profilePictureHelp"
+              @change="imageUploaded($event)"
+            />
+          </label>
+        </div>
+
+        <div class="auth-grid">
+          <div class="field-group field-group-full">
+            <label for="fullName">Full name</label>
+            <b-form-input
+              id="fullName"
+              v-model.trim="register.name"
+              class="premium-input"
+              type="text"
+              autocomplete="name"
+              placeholder="Full name"
+            />
+          </div>
+
+          <div class="field-group">
+            <label for="phoneNumber">Phone number</label>
+            <b-form-input
+              id="phoneNumber"
+              v-model.trim="register.phoneNumber"
+              class="premium-input"
+              type="text"
+              inputmode="tel"
+              autocomplete="tel"
+              placeholder="Phone number"
+            />
+          </div>
+
+          <div class="field-group">
+            <label for="emailAddress">Email address</label>
+            <b-form-input
+              id="emailAddress"
+              v-model.trim="register.emailAddress"
+              class="premium-input"
+              type="email"
+              autocomplete="email"
+              placeholder="Optional"
+            />
+          </div>
+
+          <div class="field-group">
+            <label for="password">Password</label>
+            <b-form-input
+              id="password"
+              v-model="register.passCode"
+              class="premium-input"
+              type="password"
+              autocomplete="new-password"
+              placeholder="Password"
+            />
+          </div>
+
+          <div class="field-group">
+            <label for="confirmPassword">Confirm password</label>
+            <b-form-input
+              id="confirmPassword"
+              v-model="register.confirmPassCode"
+              class="premium-input"
+              type="password"
+              autocomplete="new-password"
+              placeholder="Confirm password"
+            />
+            <small class="form-note" v-if="passwordsMatch()">Passwords do not match</small>
+          </div>
+
+          <div class="field-group">
+            <label for="dob">Date of birth</label>
+            <b-form-input
+              id="dob"
+              v-model="register.dataOfBirth"
+              class="premium-input"
+              type="date"
+            />
+          </div>
+
+          <div class="field-group">
+            <label for="gender">Gender</label>
+            <select id="gender" v-model="register.gender" class="premium-select">
+              <option disabled value="">Select gender</option>
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+            </select>
+          </div>
+
+          <div class="field-group">
+            <label for="churchGroup">Church group</label>
+            <select id="churchGroup" v-model="register.churchGroupId" class="premium-select">
+              <option disabled value="">Select group</option>
+              <option :value="group.id" v-for="group in churchGroups" :key="group.id">{{ group.name }}</option>
+            </select>
+          </div>
+
+          <div class="field-group">
+            <label for="churchFamily">Church family</label>
+            <select id="churchFamily" v-model="register.churchFamilyId" class="premium-select">
+              <option disabled value="">Select family</option>
+              <option :value="family.id" v-for="family in churchFamilies" :key="family.id">{{ family.name }}</option>
+            </select>
+          </div>
+
+          <div class="field-group field-group-full d-none">
+            <label for="churchId">Church Id</label>
+            <b-form-input
+              id="churchId"
+              v-model="register.churchId"
+              class="premium-input"
+              type="text"
+            />
           </div>
         </div>
-      </div>
-      <div class="col-lg-8 col-xl-9 col-md-9 d-none d-lg-block d-xl-block g-0">
-        <div class="form-right-window d-flex justify-content-center">
-          <img src="~assets/imgs/caci_logo.png" class="img-fluid w-50 align-self-center"/>
-        </div>
-      </div>
-    </div>
-  </div>
+
+        <b-button class="primary-action" type="submit" :disabled="!isInputFieldsValid() || isLoading">
+          <span v-if="!isLoading">Create account</span>
+          <span v-else>Creating account</span>
+        </b-button>
+      </form>
+
+      <nav class="auth-links" aria-label="Account navigation">
+        <NuxtLink to="/login">Sign in instead</NuxtLink>
+      </nav>
+    </section>
+  </main>
 </template>
 
 <script>
@@ -176,6 +193,10 @@
       imageUploaded: function (e) {
         const selectedImage = e.target.files[0]
 
+        if (!selectedImage) {
+          return
+        }
+
         var re = /(\.jpg|\.jpeg|\.bmp|\.gif|\.png)$/i;
         if (!re.exec(selectedImage.name)) {
           alert("File extension not supported!");
@@ -188,13 +209,6 @@
         const inputArray = [this.register.name, this.register.phoneNumber, this.register.passCode,
           this.register.gender, this.register.profilePicture];
         return inputArray.every(isValid)
-      },
-      activateButton() {
-        if (this.isInputFieldsValid()) {
-          return "btn btn-primary btn-lg px-4 py-2 w-100"
-        } else {
-          return "btn btn-primary btn-lg px-4 py-2 w-100 disabled"
-        }
       },
       getChurchGroups() {
         this.$axios.get('churchgroups').then(response => {
@@ -232,7 +246,8 @@
             }
           } catch (e) {
             this.isLoading = false
-            this.$toast.error(e.response.data.message, {duration: 3000})
+            const message = e.response && e.response.data ? e.response.data.message : 'Unable to create account'
+            this.$toast.error(message, {duration: 3000})
           }
         }
       }
@@ -240,6 +255,4 @@
   }
 </script>
 
-<style scoped>
-
-</style>
+<style src="~/assets/auth.css"></style>

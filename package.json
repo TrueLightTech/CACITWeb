@@ -2,11 +2,14 @@
   "name": "caci_church_app",
   "version": "1.0.0",
   "private": true,
+  "engines": {
+    "node": "20.x"
+  },
   "scripts": {
     "dev": "nuxt",
-    "build": "nuxt build",
-    "start": "nuxt start",
-    "generate": "nuxt generate",
+    "build": "NODE_OPTIONS=--openssl-legacy-provider nuxt build",
+    "start": "nuxt start --hostname 0.0.0.0 --port ${PORT:-3000}",
+    "generate": "NODE_OPTIONS=--openssl-legacy-provider nuxt generate",
     "test": "jest"
   },
   "dependencies": {

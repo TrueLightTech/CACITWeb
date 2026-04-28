@@ -4,6 +4,9 @@ export default {
 
   // Target: https://go.nuxtjs.dev/config-target
   target: 'static',
+  env: {
+    IMAGE_BASE_URL: process.env.IMAGE_BASE_URL || "https://pub-78c3b0ef114642b8859d4d64c75e96c3.r2.dev"
+  },
 
   // Global page headers: https://go.nuxtjs.dev/config-head
   head: {
@@ -38,7 +41,8 @@ export default {
 
   // Global CSS: https://go.nuxtjs.dev/config-css
   css: [
-    '~/assets/main.css'
+    '~/assets/main.css',
+    '~/assets/admin.css'
   ],
 
   // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
@@ -91,9 +95,9 @@ export default {
     }
   },
   publicRuntimeConfig: {
+    IMAGE_BASE_URL: process.env.IMAGE_BASE_URL || "https://pub-78c3b0ef114642b8859d4d64c75e96c3.r2.dev",
     axios: {
-      // browserBaseURL: "http://157.230.6.252:8090/api/"
-      browserBaseURL: "https://live.api.cacitaifa.com/api/"
+      browserBaseURL: process.env.API_BASE_URL || "https://cacitapi-production.up.railway.app/api/"
     }
   },
   // Build Configuration: https://go.nuxtjs.dev/config-build

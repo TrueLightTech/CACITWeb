@@ -1,6 +1,4 @@
 <script>
-import is from "vue2-datepicker/locale/es/is";
-
 export default {
   name: "forfortPasswordStep",
   auth: false,
@@ -20,25 +18,41 @@ export default {
     }
   },
   computed: {
-    is() {
-      return is
+    currentStep() {
+      const step = this.$route.query.step || this.$route.params.step || 'start';
+      return String(step).toLocaleLowerCase();
     },
-    // Computed property to check the query parameter
     isStart() {
-      const step = this.$route.query.step;
-      return !step || step?.toLocaleLowerCase() === 'start';
+      return this.currentStep === 'start';
     },
     isVerify() {
-      const step = this.$route.query.step;
-      this.otp = ["", "", "", ""]
-      return !step || step?.toLocaleLowerCase() === 'verify';
+      return this.currentStep === 'verify';
     },
     isResetScreen() {
-      const step = this.$route.query.step;
-      return !step || step?.toLocaleLowerCase() === 'reset';
+      return this.currentStep === 'reset';
+    },
+    stepTitle() {
+      if (this.isVerify) {
+        return 'Enter verification code';
+      }
+
+      if (this.isResetScreen) {
+        return 'Reset password';
+      }
+
+      return 'Reset password';
+    },
+    stepSubtitle() {
+      if (this.isVerify) {
+        return 'Use the 4-digit code sent to your phone.';
+      }
+
+      if (this.isResetScreen) {
+        return 'Choose a new password for your account.';
+      }
+
+      return 'Enter your phone number to receive a code.';
     }
-  },
-  mounted() {
   },
   methods: {
     isInputFieldsValid() {
@@ -47,37 +61,12 @@ export default {
       const inputArray = [this.login.phoneNumber, this.login.password];
       return inputArray.every(isValid)
     },
-    activateButton() {
-      if (this.isInputFieldsValid()) {
-        return "btn btn-primary btn-lg px-4 py-2 w-100"
-      } else {
-        return "btn btn-primary btn-lg px-4 py-2 w-100 disabled"
-      }
-    },
-    activateSendOtpButton() {
-      if (this.login.phoneNumber) {
-        return "btn btn-primary btn-lg px-4 py-2 w-100"
-      } else {
-        return "btn btn-primary btn-lg px-4 py-2 w-100 disabled"
-      }
-    },
-    activateVerifyButton() {
-      const otpValue = this.otp.join("");
-      if (otpValue.length === this.otp.length) {
-        return "btn btn-primary btn-lg px-4 py-2 w-100"
-      } else {
-        return "btn btn-primary btn-lg px-4 py-2 w-100 disabled"
-      }
-    },
     passwordsMatch() {
       return this.login.password !== this.login.confirmPassCode;
     },
     async resetPassword() {
-      console.log(this.$route.query.phone, 'phone')
       this.login.phoneNumber = this.$route.query.phone
 
-      console.log(this.$route.query.phone, 'phone')
-      console.log(this.login.phoneNumber, 'phone')
       if (this.isInputFieldsValid()) {
         try {
           if (!this.passwordsMatch()) {
@@ -91,7 +80,8 @@ export default {
           }
         } catch (e) {
           this.isLoading = false
-          this.$toast.error(e.response.data.message, {duration: 3000})
+          const message = e.response && e.response.data ? e.response.data.message : 'Unable to reset password'
+          this.$toast.error(message, {duration: 3000})
         }
       }
 
@@ -111,17 +101,18 @@ export default {
           }
           this.$toast.success("OTP Sent !!")
           localStorage.setItem(`requestId:${this.login.phoneNumber}`, data.data.requestId);
+          this.otp = ["", "", "", ""]
           this.isLoading = false
           await this.$router.push({
-            path: '/forgotpassword',
+            path: '/forgotPassword/verify',
             query: {
-              step: 'verify',
               phone: this.login.phoneNumber
             }
           })
         } catch (e) {
           this.isLoading = false
-          this.$toast.error(e.response.data.message, {duration: 3000})
+          const message = e.response && e.response.data ? e.response.data.message : 'Unable to send OTP'
+          this.$toast.error(message, {duration: 3000})
         }
       }
 
@@ -147,27 +138,26 @@ export default {
             this.isLoading = false
             this.$toast.error(data.message, {duration: 3000})
             await this.$router.push({
-              path: '/forgotpassword',
+              path: '/forgotPassword/verify',
               query: {
-                step: 'verify',
                 phone: this.login.phoneNumber
               }
             })
             return
           }
           this.$toast.success("OTP Verified !!")
-          localStorage.clear(`requestId:${this.login.phoneNumber}`)
+          localStorage.removeItem(`requestId:${this.login.phoneNumber}`)
           this.isLoading = false
           await this.$router.push({
-            path: '/forgotpassword',
+            path: '/forgotPassword/reset',
             query: {
-              step: 'reset',
               phone: this.login.phoneNumber
             }
           })
         } catch (e) {
           this.isLoading = false
-          this.$toast.error(e.response.data.message, {duration: 3000})
+          const message = e.response && e.response.data ? e.response.data.message : 'Unable to verify OTP'
+          this.$toast.error(message, {duration: 3000})
         }
       }
 
@@ -175,20 +165,18 @@ export default {
     handleInput(event, index) {
       const value = event.target.value;
 
-      // Only allow numeric input
       if (!/^\d$/.test(value)) {
-        this.otp[index] = ""; // Clear invalid input
+        this.otp[index] = "";
         return;
       }
 
       if (index < this.otp.length - 1) {
         this.$nextTick(() => {
-          this.$refs.otpInput[index + 1].focus(); // Focus the next input
+          this.$refs.otpInput[index + 1].focus();
         });
       }
     },
     handleBackspace(event, index) {
-      // Move focus to the previous input if it exists
       if (!this.otp[index] && index > 0) {
         this.$refs.otpInput[index - 1].focus();
       }
@@ -210,142 +198,106 @@ export default {
 </script>
 
 <template>
-  <div class="container-fluid">
-    <div class="row justify-content-center">
-      <div class="col-11 col-lg-4 col-xl-3 col-md-8 col-sm-10 g-0">
-        <div class="form-window card p-4 border-0 rounded-0 pt-5">
-          <div class="card-body">
-            <ul class="list-unstyled">
-              <li class="mb-4">
-                <h3>CACI Taifa</h3>
-              </li>
-              <li>
-                <h5 class="mb-5" v-if="isStart">Forgot Password?</h5>
-                <h5 class="mb-5" v-if="isVerify">Enter OTP sent to your phone</h5>
-              </li>
-              <li>
-                <div class="mb-3" v-if="isStart">
-                  <label for="phoneNumber" class="form-label">Enter Phone number</label>
-                  <input type="text" v-model="login.phoneNumber" class="form-control form-control-lg"
-                         id="phoneNumber"
-                         placeholder="">
-
-                  <small class="my-2 d-block">
-                    <NuxtLink to="/login" class="bg-active active-bold">Back to Login</NuxtLink>
-                  </small>
-                </div>
-              </li>
-              <li>
-                <div v-if="isVerify">
-                  <div class="otp-container">
-                    <input
-                      :autocomplete="'off'"
-                      v-for="(digit, index) in otp"
-                      :key="index"
-                      type="text"
-                      maxlength="1"
-                      class="otp-input"
-                      v-model="otp[index]"
-                      :disabled="index > 0 && !otp[index - 1]"
-                      @input="handleInput($event, index)"
-                      @paste="handlePaste($event)"
-                      @keydown.backspace="handleBackspace($event, index)"
-                      ref="otpInput"
-                    />
-                  </div>
-                  <small class="my-2 d-block">
-                    <NuxtLink to="/forgotpassword?step=start" class="bg-active active-bold">Did not receive OTP?</NuxtLink>
-                  </small>
-                </div>
-              </li>
-              <li>
-                <div class="mb-3 mt-2" v-if="isResetScreen">
-                  <label for="password" class="form-label">Enter New Password</label>
-                  <input type="password" class="form-control form-control-lg" id="password"
-                         placeholder="" v-model="login.password">
-                </div>
-              </li>
-              <li>
-                <div class="mb-3 mt-2" v-if="isResetScreen">
-                  <label for="confirmPassword" class="form-label">Confirm Password</label>
-                  <input type="password" class="form-control form-control-lg" id="confirmPassword"
-                         placeholder="" v-model="login.confirmPassCode">
-                  <small class="text-danger" v-if="passwordsMatch()">Passwords do not match</small>
-
-                  <small class="my-2 d-block">
-                    <NuxtLink to="/login" class="bg-active active-bold">Back to Login</NuxtLink>
-                  </small>
-                </div>
-              </li>
-
-              <li class="my-4" v-if="isStart">
-                <button v-if="!isLoading" type="button"
-                        @click="sendOtp()"
-                        :class="activateSendOtpButton()">
-                  <h6 class="p-0 m-0">Send OTP</h6>
-                </button>
-                <button v-else class="btn btn-primary btn-lg px-4 py-2 w-100" type="button" disabled>
-                  <h6 class="p-0 m-0"><span class="spinner-border spinner-border-sm" role="status"
-                                            aria-hidden="true"></span> LOADING ...</h6>
-                </button>
-              </li>
-
-              <li class="my-4" v-if="isVerify">
-                <button v-if="!isLoading" type="button"
-                        @click="verifyOtp()"
-                        :class="activateVerifyButton()">
-                  <h6 class="p-0 m-0">Verify OTP</h6>
-                </button>
-                <button v-else class="btn btn-primary btn-lg px-4 py-2 w-100" type="button" disabled>
-                  <h6 class="p-0 m-0"><span class="spinner-border spinner-border-sm" role="status"
-                                            aria-hidden="true"></span> LOADING ...</h6>
-                </button>
-              </li>
-
-              <li class="my-4" v-if="isResetScreen">
-                <button v-if="!isLoading" type="button"
-                        @click="resetPassword()"
-                        :class="activateButton()">
-                  <h6 class="p-0 m-0">Reset Password</h6>
-                </button>
-                <button v-else class="btn btn-primary btn-lg px-4 py-2 w-100" type="button" disabled>
-                  <h6 class="p-0 m-0"><span class="spinner-border spinner-border-sm" role="status"
-                                            aria-hidden="true"></span> LOADING ...</h6>
-                </button>
-              </li>
-
-            </ul>
-          </div>
-        </div>
+  <main class="auth-page">
+    <section class="auth-shell" aria-labelledby="password-title">
+      <div class="brand-lockup" aria-hidden="true">
+        <img src="~assets/imgs/caci_logo.png" alt="CACI Taifa" />
       </div>
-      <div class="col-lg-8 col-xl-9 col-md-9 d-none d-lg-block d-xl-block g-0">
-        <div class="form-right-window d-flex justify-content-center">
-          <img alt="CACI_LOGO" src="~assets/imgs/login_form_image.svg" class="img-fluid w-50 align-self-center"/>
-        </div>
+
+      <div class="auth-copy">
+        <h1 id="password-title">{{ stepTitle }}</h1>
+        <p>{{ stepSubtitle }}</p>
       </div>
-    </div>
-  </div>
+
+      <b-form v-if="isStart" class="auth-form" @submit.prevent="sendOtp">
+        <div class="field-group">
+          <label for="phoneNumber">Phone number</label>
+          <b-form-input
+            id="phoneNumber"
+            v-model.trim="login.phoneNumber"
+            class="premium-input"
+            type="text"
+            inputmode="tel"
+            autocomplete="tel"
+            placeholder="Phone number"
+          />
+        </div>
+
+        <b-button class="primary-action" type="submit" :disabled="!login.phoneNumber || isLoading">
+          <span v-if="!isLoading">Send code</span>
+          <span v-else>Sending code</span>
+        </b-button>
+      </b-form>
+
+      <div v-if="isVerify" class="auth-form">
+        <div class="otp-container" aria-label="Verification code">
+          <input
+            :autocomplete="'off'"
+            v-for="(digit, index) in otp"
+            :key="index"
+            type="text"
+            maxlength="1"
+            class="otp-input"
+            v-model="otp[index]"
+            :aria-label="`Digit ${index + 1}`"
+            :disabled="index > 0 && !otp[index - 1]"
+            @input="handleInput($event, index)"
+            @paste="handlePaste($event)"
+            @keydown.backspace="handleBackspace($event, index)"
+            ref="otpInput"
+          />
+        </div>
+
+        <b-button
+          class="primary-action"
+          type="button"
+          :disabled="otp.join('').length !== otp.length || isLoading"
+          @click="verifyOtp()"
+        >
+          <span v-if="!isLoading">Verify code</span>
+          <span v-else>Verifying code</span>
+        </b-button>
+      </div>
+
+      <b-form v-if="isResetScreen" class="auth-form" @submit.prevent="resetPassword">
+        <div class="field-group">
+          <label for="password">New password</label>
+          <b-form-input
+            id="password"
+            v-model="login.password"
+            class="premium-input"
+            type="password"
+            autocomplete="new-password"
+            placeholder="New password"
+          />
+        </div>
+
+        <div class="field-group">
+          <label for="confirmPassword">Confirm password</label>
+          <b-form-input
+            id="confirmPassword"
+            v-model="login.confirmPassCode"
+            class="premium-input"
+            type="password"
+            autocomplete="new-password"
+            placeholder="Confirm password"
+          />
+          <small class="form-note" v-if="passwordsMatch()">Passwords do not match</small>
+        </div>
+
+        <b-button class="primary-action" type="submit" :disabled="!isInputFieldsValid() || isLoading">
+          <span v-if="!isLoading">Reset password</span>
+          <span v-else>Resetting password</span>
+        </b-button>
+      </b-form>
+
+      <nav class="auth-links" aria-label="Password reset navigation">
+        <NuxtLink v-if="isVerify" to="/forgotPassword/start">Send another code</NuxtLink>
+        <span v-if="isVerify" aria-hidden="true"></span>
+        <NuxtLink to="/login">Back to sign in</NuxtLink>
+      </nav>
+    </section>
+  </main>
 </template>
 
-<style scoped>
-.otp-container {
-  display: flex;
-  gap: 10px;
-  width: 100%;
-}
-
-.otp-input {
-  width: 50px;
-  flex: 1;
-  height: 50px;
-  text-align: center;
-  font-size: 1.5rem;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-}
-
-.otp-input:focus {
-  border-color: #007bff;
-  outline: none;
-}
-</style>
+<style src="~/assets/auth.css"></style>

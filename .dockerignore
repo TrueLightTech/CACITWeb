@@ -1,0 +1,7 @@
+node_modules
+.nuxt
+dist
+.cache
+.git
+npm-debug.log*
+yarn-error.log*

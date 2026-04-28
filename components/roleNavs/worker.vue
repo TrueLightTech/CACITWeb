@@ -1,46 +1,56 @@
 <template>
-  <ul class="list-unstyled">
-    <li class="my-5">
-      <NuxtLink to="/admin/dashboard" data-bs-dismiss="offcanvas" aria-label="Close"><h4>Home</h4></NuxtLink>
-    </li>
-    <li class="my-5">
-      <NuxtLink to="/admin/announcements" data-bs-dismiss="offcanvas" aria-label="Close"><h4>Announcements</h4>
+  <ul class="admin-menu-list">
+    <li>
+      <NuxtLink to="/admin/dashboard" class="admin-menu-link" active-class="is-active" data-bs-dismiss="offcanvas">
+        Dashboard
       </NuxtLink>
     </li>
-    <li class="my-5">
-      <NuxtLink to="/admin/tithe" data-bs-dismiss="offcanvas" aria-label="Close"><h4>Tithe</h4></NuxtLink>
+    <li>
+      <NuxtLink to="/admin/announcements" class="admin-menu-link" active-class="is-active" data-bs-dismiss="offcanvas">
+        Announcements
+      </NuxtLink>
     </li>
-    <li class="my-5">
-      <NuxtLink to="/admin/welfare" data-bs-dismiss="offcanvas" aria-label="Close"><h4>Welfare</h4></NuxtLink>
+    <li>
+      <NuxtLink to="/admin/tithe" class="admin-menu-link" active-class="is-active" data-bs-dismiss="offcanvas">
+        Tithe
+      </NuxtLink>
     </li>
-    <li class="my-5">
-      <NuxtLink to="/admin/report" data-bs-dismiss="offcanvas" aria-label="Close"><h4>Report An Issue</h4></NuxtLink>
+    <li>
+      <NuxtLink to="/admin/welfare" class="admin-menu-link" active-class="is-active" data-bs-dismiss="offcanvas">
+        Welfare
+      </NuxtLink>
     </li>
-    <li class="my-5">
-      <NuxtLink to="/admin/manage" data-bs-dismiss="offcanvas" aria-label="Close"><h4>Manage</h4></NuxtLink>
+    <li>
+      <NuxtLink to="/admin/report" class="admin-menu-link" active-class="is-active" data-bs-dismiss="offcanvas">
+        Report an Issue
+      </NuxtLink>
     </li>
-    <li class="my-5">
-      <NuxtLink to="/admin/account" data-bs-dismiss="offcanvas" aria-label="Close"><h4>My Profile</h4></NuxtLink>
+    <li>
+      <NuxtLink to="/admin/manage" class="admin-menu-link" active-class="is-active" data-bs-dismiss="offcanvas">
+        Manage
+      </NuxtLink>
     </li>
-    <li class="my-5">
-      <h4 :style="{'cursor':'pointer'}" @click="logout()" data-bs-dismiss="offcanvas" aria-label="Close">
-        Logout</h4>
+    <li>
+      <NuxtLink to="/admin/account" class="admin-menu-link" active-class="is-active" data-bs-dismiss="offcanvas">
+        My Profile
+      </NuxtLink>
+    </li>
+    <li>
+      <button class="admin-menu-link admin-menu-link-danger" type="button" @click="logout()" data-bs-dismiss="offcanvas">
+        Logout
+      </button>
     </li>
   </ul>
 </template>
 
 <script>
-  export default {
-    name: "worker",
-    methods: {
-      async logout() {
-        await this.$auth.logout();
-        this.$toast.success("Logged out")
-      },
-    }
+export default {
+  name: "worker",
+  methods: {
+    async logout() {
+      await this.$auth.logout();
+      this.$toast.success("Logged out")
+    },
   }
+}
 </script>
-
-<style scoped>
-
-</style>

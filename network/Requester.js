@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const BASEURL = "http://134.209.216.111:8090/api/";
+const BASEURL = "https://cacitapi-production.up.railway.app/api/";
 
 let instance = axios;
 // instance.defaults.headers.post['Content-Type'] = 'application/json';

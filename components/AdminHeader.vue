@@ -1,35 +1,45 @@
 <template>
-  <div v-if="isAuthenticated">
-    <nav class="navbar fixed-top navbar-light bg-light">
-      <div class="container d-flex justify-content-between">
-        <NuxtLink class="navbar-brand" to="/admin/dashboard"><h6>CACI Church APP</h6></NuxtLink>
-        <div class="d-flex justify-content-center align-content-center align-middle">
+  <div v-if="isAuthenticated" class="admin-shell-header">
+    <nav class="navbar fixed-top admin-navbar">
+      <div class="container admin-navbar-inner">
+        <NuxtLink class="admin-brand" to="/admin/dashboard">
+          <span class="admin-brand-mark">C</span>
+          <span class="admin-brand-copy">
+            <strong>CACI Taifa</strong>
+            <small>Church App</small>
+          </span>
+        </NuxtLink>
 
-          <img src="~assets/imgs/menu.svg" :style="{width:'25px', height:'25px', cursor:'pointer'}" class="img-fluid"
-               data-bs-toggle="offcanvas"
-               data-bs-target="#offcanvasWithBackdrop" aria-controls="offcanvasWithBackdrop"/>
-        </div>
+        <button
+          class="admin-menu-toggle"
+          type="button"
+          data-bs-toggle="offcanvas"
+          data-bs-target="#offcanvasWithBackdrop"
+          aria-controls="offcanvasWithBackdrop"
+          aria-label="Open menu"
+        >
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
       </div>
     </nav>
 
     <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasWithBackdrop"
          aria-labelledby="offcanvasWithBackdropLabel">
-      <div class="offcanvas-header">
+      <div class="offcanvas-header admin-drawer-header">
+        <div>
+          <span>Menu</span>
+          <h5 id="offcanvasWithBackdropLabel">Navigation</h5>
+        </div>
         <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-
       </div>
-      <div class="offcanvas-body text-center">
-        <div class="profile-header border-bottom-0 border-top-0 py-4">
-          <div class="row">
-            <div class="col-4">
-              <img :src="getProfileImage(loggedInUser.data.profilePicture)" class="img-fluid w-50 rounded-circle">
-            </div>
-            <div class="col-8 text-start">
-              <ul class="list-unstyled">
-                <li><h6>{{ loggedInUser.data.name }}</h6></li>
-                <li><p>{{ getCurrentRole(loggedInUser.data.roleId) }}</p></li>
-              </ul>
-            </div>
+      <div class="offcanvas-body admin-drawer-body">
+        <div class="admin-profile-card">
+          <img :src="getProfileImage(loggedInUser.data.profilePicture)" class="admin-profile-avatar">
+          <div class="admin-profile-copy">
+            <strong>{{ loggedInUser.data.name }}</strong>
+            <span>{{ getCurrentRole(loggedInUser.data.roleId) }}</span>
           </div>
         </div>
 
