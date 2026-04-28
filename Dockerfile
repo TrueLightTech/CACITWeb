@@ -8,7 +8,7 @@ COPY package*.json .npmrc ./
 RUN npm ci
 
 COPY . .
-RUN npm run build
+RUN npm run generate
 
 EXPOSE 3000
 
