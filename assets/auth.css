@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap");
 
 html,
 body,
@@ -9,6 +9,18 @@ body,
   overflow-x: hidden;
 }
 
+:root {
+  --primary-color: #4f46e5; /* Deep Indigo */
+  --primary-hover: #4338ca;
+  --bg-color: #f8fafc;
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+  --border-color: #e2e8f0;
+  --input-bg: #ffffff;
+  --shell-bg: rgba(255, 255, 255, 0.85);
+  --shell-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(0, 0, 0, 0.02);
+}
+
 .auth-page {
   min-height: 100vh;
   min-height: 100svh;
@@ -17,9 +29,13 @@ body,
   display: grid;
   place-items: center;
   padding: 32px 20px;
-  background: #fafafa;
-  color: #111827;
-  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: var(--bg-color);
+  background-image: 
+    radial-gradient(at 0% 0%, hsla(253,16%,7%,0.03) 0, transparent 50%), 
+    radial-gradient(at 50% 0%, hsla(225,39%,30%,0.03) 0, transparent 50%), 
+    radial-gradient(at 100% 0%, hsla(339,49%,30%,0.03) 0, transparent 50%);
+  color: var(--text-main);
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
 .auth-page,
@@ -28,63 +44,72 @@ body,
 }
 
 .auth-shell {
-  width: min(360px, calc(100vw - 40px));
-  max-width: 360px;
+  width: min(400px, calc(100vw - 32px));
+  max-width: 400px;
   min-width: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 34px 28px 28px;
-  border: 1px solid #eceff3;
+  padding: 40px 32px;
+  border: 1px solid rgba(255, 255, 255, 0.6);
   border-radius: 28px;
-  background: #ffffff;
-  box-shadow: 0 18px 60px rgba(17, 24, 39, 0.045);
+  background: var(--shell-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: var(--shell-shadow);
+  transform: translateY(0);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.auth-shell:hover {
+  box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.03);
 }
 
 .auth-shell-wide {
-  width: min(560px, calc(100vw - 40px));
-  max-width: 560px;
+  width: min(600px, calc(100vw - 32px));
+  max-width: 600px;
   align-items: stretch;
 }
 
 .brand-lockup {
-  width: 58px;
-  height: 58px;
+  width: 64px;
+  height: 64px;
   display: grid;
   place-items: center;
   align-self: center;
-  margin-bottom: 28px;
-  border: 1px solid #eef1f5;
-  border-radius: 18px;
-  background: linear-gradient(180deg, #ffffff 0%, #f7f9fc 100%);
+  margin-bottom: 24px;
+  border-radius: 20px;
+  background: #ffffff;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05), inset 0 2px 0 rgba(255,255,255,0.5);
+  border: 1px solid rgba(226, 232, 240, 0.8);
 }
 
 .brand-lockup img {
-  width: 42px;
-  height: 42px;
+  width: 46px;
+  height: 46px;
   object-fit: contain;
 }
 
 .auth-copy {
   width: 100%;
   text-align: center;
+  margin-bottom: 32px;
 }
 
 .auth-copy h1 {
   margin: 0;
-  color: #121826;
-  font-size: 1.72rem;
-  font-weight: 600;
-  line-height: 1.18;
-  letter-spacing: 0;
+  color: var(--text-main);
+  font-size: 1.8rem;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
 }
 
 .auth-copy p {
-  max-width: 30ch;
-  margin: 10px auto 30px;
-  color: #6b7280;
+  margin: 8px auto 0;
+  color: var(--text-muted);
   font-size: 0.95rem;
-  font-weight: 400;
+  font-weight: 500;
   line-height: 1.5;
 }
 
@@ -92,13 +117,13 @@ body,
   width: 100%;
   min-width: 0;
   display: grid;
-  gap: 12px;
+  gap: 16px;
 }
 
 .auth-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
+  gap: 16px;
 }
 
 .field-group {
@@ -113,8 +138,8 @@ body,
 
 .field-group label {
   margin: 0;
-  color: #657081;
-  font-size: 0.84rem;
+  color: var(--text-main);
+  font-size: 0.85rem;
   font-weight: 600;
   line-height: 1.2;
 }
@@ -123,74 +148,79 @@ body,
 .auth-page .premium-select {
   appearance: none;
   width: 100%;
-  height: 56px;
-  min-height: 56px;
-  border: 1px solid #e4e7ec;
-  border-radius: 16px;
-  background: #ffffff;
-  padding: 0 18px;
-  color: #121826;
-  font: 400 1rem/1.2 Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  height: 52px;
+  min-height: 52px;
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  background: var(--input-bg);
+  padding: 0 16px;
+  color: var(--text-main);
+  font: 500 1rem/1.2 'Plus Jakarta Sans', sans-serif;
   outline: none;
-  box-shadow: none;
-  transition: border-color 180ms ease, background-color 180ms ease;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .auth-page .premium-select {
   padding-right: 42px;
   background-image:
-    linear-gradient(45deg, transparent 50%, #7c8795 50%),
-    linear-gradient(135deg, #7c8795 50%, transparent 50%);
+    linear-gradient(45deg, transparent 50%, var(--text-muted) 50%),
+    linear-gradient(135deg, var(--text-muted) 50%, transparent 50%);
   background-position:
-    calc(100% - 22px) 50%,
-    calc(100% - 16px) 50%;
+    calc(100% - 20px) 50%,
+    calc(100% - 14px) 50%;
   background-size: 6px 6px, 6px 6px;
   background-repeat: no-repeat;
 }
 
 .auth-page .premium-input::placeholder {
-  color: #9aa3af;
+  color: #94a3b8;
+  font-weight: 400;
 }
 
 .auth-page .premium-input:focus,
 .auth-page .premium-select:focus,
 .otp-input:focus {
-  border-color: #9aa4b2;
+  border-color: var(--primary-color);
   background-color: #ffffff;
-  box-shadow: none;
+  box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
   outline: none;
 }
 
 .primary-action {
   appearance: none;
   width: 100%;
-  min-height: 56px;
-  margin-top: 10px;
+  min-height: 52px;
+  margin-top: 8px;
   border: 0;
-  border-radius: 16px;
-  background: #146efd;
+  border-radius: 14px;
+  background: var(--primary-color);
   color: #ffffff;
-  font: 600 1rem/1 Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font: 600 1rem/1 'Plus Jakarta Sans', sans-serif;
   cursor: pointer;
-  box-shadow: 0 12px 24px rgba(20, 110, 253, 0.16);
-  transition: background-color 180ms ease, transform 180ms ease, opacity 180ms ease;
+  box-shadow: 0 4px 14px rgba(79, 70, 229, 0.3);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .primary-action:not(:disabled):hover {
-  background: #0f63e8;
+  background: var(--primary-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(79, 70, 229, 0.4);
 }
 
 .primary-action:not(:disabled):active {
   transform: translateY(1px);
+  box-shadow: 0 2px 10px rgba(79, 70, 229, 0.3);
 }
 
 .auth-page .primary-action:disabled,
 .auth-page .primary-action.disabled {
-  background: #146efd;
-  color: #ffffff;
+  background: #cbd5e1;
+  color: #f1f5f9;
   cursor: not-allowed;
-  opacity: 0.6;
+  opacity: 1;
   box-shadow: none;
+  transform: none;
 }
 
 .auth-links {
@@ -199,19 +229,19 @@ body,
   align-items: center;
   justify-content: center;
   gap: 12px;
-  margin-top: 22px;
+  margin-top: 24px;
 }
 
 .auth-links a {
-  color: #626b78;
-  font-size: 0.92rem;
+  color: var(--text-muted);
+  font-size: 0.9rem;
   font-weight: 600;
   text-decoration: none;
-  transition: color 180ms ease;
+  transition: color 0.2s ease;
 }
 
 .auth-links a:hover {
-  color: #146efd;
+  color: var(--primary-color);
 }
 
 .auth-links span {
@@ -219,23 +249,24 @@ body,
   height: 4px;
   flex: 0 0 auto;
   border-radius: 999px;
-  background: #d6dbe2;
+  background: #cbd5e1;
 }
 
 .profile-upload {
   display: grid;
   justify-items: center;
   gap: 12px;
-  margin-bottom: 10px;
+  margin-bottom: 16px;
 }
 
 .profile-upload img {
-  width: 72px;
-  height: 72px;
-  border: 1px solid #eef1f5;
+  width: 80px;
+  height: 80px;
+  border: 2px solid #ffffff;
   border-radius: 50%;
-  background: #f7f9fc;
+  background: #f1f5f9;
   object-fit: cover;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
 }
 
 .upload-control {
@@ -243,45 +274,49 @@ body,
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0 14px;
-  border: 1px solid #e4e7ec;
+  padding: 0 16px;
+  border: 1px solid var(--border-color);
   border-radius: 999px;
-  color: #3d4653;
+  color: var(--text-main);
   background: #ffffff;
-  font: 600 0.86rem/1 Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font: 600 0.85rem/1 'Plus Jakarta Sans', sans-serif;
   cursor: pointer;
-  transition: border-color 180ms ease, color 180ms ease, background-color 180ms ease;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.02);
 }
 
 .upload-control:hover {
-  border-color: #cfd6df;
-  color: #146efd;
+  border-color: var(--text-muted);
+  color: var(--primary-color);
   background: #f8fafc;
 }
 
 .form-note {
-  margin: -2px 0 0;
-  color: #c2410c;
-  font-size: 0.82rem;
-  font-weight: 500;
+  margin: -4px 0 0;
+  color: #ef4444;
+  font-size: 0.8rem;
+  font-weight: 600;
 }
 
 .otp-container {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 10px;
+  gap: 12px;
   width: 100%;
+  margin-bottom: 8px;
 }
 
 .otp-input {
   width: 100%;
-  height: 58px;
-  border: 1px solid #e4e7ec;
+  height: 64px;
+  border: 1px solid var(--border-color);
   border-radius: 16px;
   background: #ffffff;
-  color: #121826;
+  color: var(--text-main);
   text-align: center;
-  font: 600 1.35rem/1 Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font: 700 1.5rem/1 'Plus Jakarta Sans', sans-serif;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+  transition: all 0.2s ease;
 }
 
 .sr-only {
@@ -298,31 +333,46 @@ body,
 
 @media (max-width: 1024px) {
   .auth-page {
-    place-items: start start;
-    padding-top: 48px;
+    place-items: start center;
+    padding-top: 64px;
     padding-bottom: 48px;
-  }
-
-  .auth-shell,
-  .auth-shell-wide {
-    width: min(280px, calc(100vw - 40px));
   }
 }
 
 @media (max-width: 560px) {
   .auth-page {
-    padding: 24px 18px;
+    padding: 24px 16px;
+    background: #ffffff;
+    align-items: center;
   }
 
   .auth-shell,
   .auth-shell-wide {
-    width: calc(100vw - 36px);
+    width: 100%;
     max-width: 100%;
-    padding: 30px 20px 24px;
-    border-radius: 24px;
+    padding: 0;
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+  
+  .auth-shell:hover {
+    box-shadow: none;
   }
 
   .auth-grid {
     grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  
+  .brand-lockup {
+    margin-bottom: 20px;
+  }
+  
+  .auth-copy h1 {
+    font-size: 1.6rem;
   }
 }
