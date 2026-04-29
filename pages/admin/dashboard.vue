@@ -493,12 +493,12 @@ export default {
 .metrics-grid {
   display: grid;
   gap: 16px;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   margin-bottom: 24px;
 }
 
 .family-manager-grid {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
 }
 
 .metric-card {
@@ -506,10 +506,10 @@ export default {
   border: 1px solid var(--admin-border, #e5e7eb);
   border-radius: 8px;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-  grid-column: span 2;
-  min-height: 160px;
-  padding: 24px;
+  padding: 16px;
   transition: border-color 0.15s ease;
+  display: flex;
+  flex-direction: column;
 }
 
 .metric-card:hover {
@@ -518,7 +518,7 @@ export default {
 
 .metric-card-featured,
 .metric-card-wide {
-  grid-column: span 3;
+  grid-column: span 1;
 }
 
 .metric-topline {
@@ -552,19 +552,20 @@ export default {
 .metric-value {
   color: var(--admin-text, #111827);
   display: block;
-  font-size: clamp(2rem, 4vw, 2.5rem);
+  font-size: 1.75rem;
   font-weight: 600;
   letter-spacing: -0.02em;
   line-height: 1;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
 }
 
 .metric-card p {
   color: var(--admin-muted, #6b7280);
-  font-size: 0.875rem;
+  font-size: 0.75rem;
   font-weight: 400;
-  line-height: 1.5;
+  line-height: 1.4;
   margin: 0;
+  margin-top: auto;
 }
 
 .metric-loading {
@@ -778,12 +779,6 @@ export default {
     background-position: -200% 0;
   }
 }
-
-@media (max-width: 991px) {
-  .metrics-grid,
-  .family-manager-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
 
   .metric-card,
   .metric-card-featured,
