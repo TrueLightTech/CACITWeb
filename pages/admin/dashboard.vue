@@ -780,12 +780,6 @@ export default {
   }
 }
 
-  .metric-card,
-  .metric-card-featured,
-  .metric-card-wide {
-    grid-column: span 1;
-  }
-}
 
 @media (max-width: 600px) {
   .dashboard-page {
