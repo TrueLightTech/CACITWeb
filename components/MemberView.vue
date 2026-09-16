@@ -327,11 +327,10 @@ export default {
           this.update.churchFamilyName = family[0].name
         }
 
-        await this.$axios.put(url, this.update, {
-          headers: {
-            Authorization: 'Bearer ' + window.localStorage.getItem('auth._token.local')
-          }
-        })
+        // See role.vue: the manual Authorization header read a localStorage key
+        // that is never written, sending "Bearer null" and overriding the real
+        // token that token.global already applies.
+        await this.$axios.put(url, this.update)
 
         this.$toast.success('Changes saved')
         this.isLoading = false

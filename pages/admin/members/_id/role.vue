@@ -121,11 +121,12 @@ export default {
 
       try {
         this.isLoading = true
-        await this.$axios.post('roles/assign', requestData, {
-          headers: {
-            Authorization: 'Bearer ' + window.localStorage.getItem('auth._token.local')
-          }
-        })
+        // No explicit Authorization header: the auth module is configured with
+        // `token.global`, so the bearer token is already on every request. The
+        // manual header this replaces read auth._token.local from localStorage,
+        // which is never written (the strategy has localStorage disabled), so it
+        // sent the literal string "Bearer null" and overrode the real token.
+        await this.$axios.post('roles/assign', requestData)
         this.update.roleId = this.roleId
         this.$toast.success('Role updated')
         this.isLoading = false
