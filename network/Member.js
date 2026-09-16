@@ -1,7 +1,17 @@
+/*
+ * Placeholder shapes used before an API response arrives.
+ *
+ * The list defaults below were previously seeded with a single example item
+ * (`results: [ChurchMember]`). Those references point at constants declared
+ * further down this file, and `const` compiles to `var`, so each one evaluated
+ * to `[undefined]` — a phantom row that crashed any `v-for` reading a property
+ * off it. An empty list is what these defaults always meant.
+ */
+
 export const MemberList = {
   pageIndex: 0,
   pageSize: 10,
-  results: [ChurchMember],
+  results: [],
   totalCount: 16,
   totalPages: 2
 }
@@ -105,13 +115,13 @@ export const OfferingList = {
 }
 
 export const OfferingAltList = {
-  data: [OfferingTypes]
+  data: []
 }
 
 export const OfferingTypes = {
   offeringTypeId: "",
   offeringTypeName: "",
-  data: [OffType]
+  data: []
 }
 
 export const OffType = {
@@ -128,24 +138,24 @@ export const IssuesList = {
 }
 
 export const GroupList = {
-  data: [ServiceItem]
+  data: []
 }
 
 export const ChurchFamilyList = {
-  data: [ServiceItem]
+  data: []
 }
 
 export const ChurchWelfareList = {
-  results: [WelfareItem]
+  results: []
 }
 
 export const OfferingType = {
-  data: [ServiceItem]
+  data: []
 }
 
 
 export const ServiceList = {
-  data: [ServiceItem]
+  data: []
 }
 
 
