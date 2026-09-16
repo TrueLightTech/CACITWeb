@@ -62,9 +62,17 @@
         <img :src="getAnnouncementImage(announcement.image)" alt="" class="announcement__image">
         <div class="ds-card__body announcement__body">
           <h2 class="ds-h3">{{ announcement.title }}</h2>
-          <time class="ds-meta" :datetime="announcement.createdAt">
-            {{ $moment(announcement.createdAt).format('D MMMM YYYY') }}
-          </time>
+          <div class="announcement__meta">
+            <span v-if="announcement.isPinned" class="ds-badge ds-badge--info">Pinned</span>
+            <span
+              v-if="announcement.status && announcement.status !== 'published'"
+              class="ds-badge"
+              :class="statusBadge(announcement.status)"
+            >{{ statusLabel(announcement.status) }}</span>
+            <time class="ds-meta" :datetime="announcement.createdAt">
+              {{ $moment(announcement.createdAt).format('D MMMM YYYY') }}
+            </time>
+          </div>
           <p class="ds-muted announcement__excerpt">{{ truncateMessage(announcement.body) }}</p>
           <NuxtLink :to="'/admin/announcements/' + announcement.id" class="ds-btn ds-btn--secondary ds-btn--sm">
             Read announcement
@@ -123,6 +131,7 @@ import { mapGetters } from 'vuex'
 import { profileImageBaseUrl } from '../../../resources/constants'
 import { AnnouncementList } from '../../../network/Announcement'
 import { ROLE_CHURCH_MANAGER } from '../../../resources/navigation'
+import { STATUS_LABELS, STATUS_BADGE } from '../../../network/MobileApp'
 
 const PAGE_SIZE = 9
 const SEARCH_DEBOUNCE_MS = 350
@@ -186,6 +195,12 @@ export default {
     clearTimeout(this.searchTimer)
   },
   methods: {
+    statusLabel (status) {
+      return STATUS_LABELS[status] || ''
+    },
+    statusBadge (status) {
+      return STATUS_BADGE[status] || 'ds-badge--neutral'
+    },
     onSearchInput () {
       clearTimeout(this.searchTimer)
       this.searchTimer = setTimeout(() => {
@@ -217,7 +232,7 @@ export default {
     },
     searchByTitle () {
       this.isLoading = true
-      this.$axios.get(`announcements?Title=${encodeURIComponent(this.searchQuery.trim())}&Page=1&PageSize=${PAGE_SIZE}`)
+      this.$axios.get(`admin/announcements?Title=${encodeURIComponent(this.searchQuery.trim())}&Page=1&PageSize=${PAGE_SIZE}`)
         .then(response => {
           this.applyResponse(response)
           this.currentPage = 1
@@ -230,7 +245,7 @@ export default {
       this.currentPage = page
       this.isLoading = true
 
-      this.$axios.get(`announcements?Page=${page}&PageSize=${pageSize}`).then(response => {
+      this.$axios.get(`admin/announcements?Page=${page}&PageSize=${pageSize}`).then(response => {
         this.applyResponse(response)
         this.isLoading = false
       }).catch(() => {
@@ -273,6 +288,7 @@ export default {
 
 .announcement__body { display: flex; flex-direction: column; gap: 6px; flex: 1; }
 .announcement__body h2 { margin: 0; overflow-wrap: anywhere; }
+.announcement__meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .announcement__excerpt { margin: 4px 0 12px; font-size: var(--ds-text-base); overflow-wrap: anywhere; }
 .announcement__body .ds-btn { margin-top: auto; align-self: flex-start; }
 </style>

@@ -69,13 +69,24 @@
             <span class="ds-help">Optional. Used where there is only room for a line or two.</span>
           </div>
         </div>
+
+        <PublishControls
+          :status.sync="form.status"
+          :publish-at.sync="form.publishAt"
+          :is-pinned.sync="form.isPinned"
+          pinnable
+          pin-note=" of the announcements list"
+          noun="announcement"
+          :show-errors="showErrors"
+          :allow-archive="isEdit"
+        />
       </div>
 
       <div class="ds-card__foot" style="display:flex;gap:8px;justify-content:flex-end">
         <button class="ds-btn ds-btn--ghost" type="button" @click="$router.push('/admin/announcements')">Cancel</button>
         <button class="ds-btn ds-btn--primary" type="submit" :disabled="isLoading">
           <span v-if="isLoading" class="ds-btn__spinner"></span>
-          {{ isLoading ? 'Saving' : (isEdit ? 'Save changes' : 'Publish announcement') }}
+          {{ isLoading ? 'Saving' : saveLabel }}
         </button>
       </div>
     </form>
@@ -83,7 +94,9 @@
 </template>
 
 <script>
+import PublishControls from './PublishControls'
 import { profileImageBaseUrl } from '../resources/constants'
+import { toUtcIso, toLocalInput } from '../network/MobileApp'
 
 /**
  * Create and edit share one form. They were two near-identical pages, each
@@ -92,6 +105,7 @@ import { profileImageBaseUrl } from '../resources/constants'
  */
 export default {
   name: 'AnnouncementForm',
+  components: { PublishControls },
   props: {
     isEdit: { type: Boolean, default: false }
   },
@@ -105,11 +119,20 @@ export default {
         title: '',
         body: '',
         announcementSummaryMessage: '',
-        image: ''
+        image: '',
+        isPinned: false,
+        status: 'published',
+        publishAt: ''
       }
     }
   },
   computed: {
+    saveLabel () {
+      if (this.form.status === 'scheduled') { return 'Schedule announcement' }
+      if (this.form.status === 'draft') { return 'Save draft' }
+      if (this.form.status === 'archived') { return 'Archive announcement' }
+      return this.isEdit ? 'Save changes' : 'Publish announcement'
+    },
     hasImage () {
       return !!this.form.image
     },
@@ -152,15 +175,24 @@ export default {
       }
       reader.readAsDataURL(selectedImage)
     },
+    savedMessage () {
+      if (this.form.status === 'scheduled') { return 'Announcement scheduled' }
+      if (this.form.status === 'draft') { return 'Draft saved' }
+      if (this.form.status === 'archived') { return 'Announcement archived' }
+      return this.isEdit ? 'Announcement updated' : 'Announcement published'
+    },
     getAnnouncement (id) {
       this.pageRefresh = true
-      this.$axios.get(`announcements/${id}`).then(response => {
+      this.$axios.get(`admin/announcements/${id}`).then(response => {
         const data = response.data.data || {}
         this.form = {
           title: data.title || '',
           body: data.body || '',
           announcementSummaryMessage: data.announcementSummaryMessage || '',
-          image: data.image || ''
+          image: data.image || '',
+          isPinned: !!data.isPinned,
+          status: data.status || 'published',
+          publishAt: toLocalInput(data.publishAt)
         }
         this.pageRefresh = false
       }).catch(() => {
@@ -168,7 +200,8 @@ export default {
       })
     },
     submit () {
-      if (!this.form.title || !this.form.body) {
+      if (!this.form.title || !this.form.body ||
+          (this.form.status === 'scheduled' && !this.form.publishAt)) {
         this.showErrors = true
         return
       }
@@ -180,7 +213,10 @@ export default {
       const requestBody = {
         title: this.form.title,
         body: this.form.body,
-        announcementSummaryMessage: this.form.announcementSummaryMessage
+        announcementSummaryMessage: this.form.announcementSummaryMessage,
+        isPinned: this.form.isPinned,
+        status: this.form.status,
+        publishAt: this.form.status === 'scheduled' ? toUtcIso(this.form.publishAt) : null
       }
 
       if (!this.isEdit || this.hasImageEdited) {
@@ -192,7 +228,7 @@ export default {
         : this.$axios.post('announcements', requestBody)
 
       request.then(() => {
-        this.$toast.success(this.isEdit ? 'Announcement updated' : 'Announcement published')
+        this.$toast.success(this.savedMessage())
         this.isLoading = false
         this.$router.push('/admin/announcements')
       }).catch(error => {
