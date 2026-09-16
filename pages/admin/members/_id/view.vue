@@ -1,596 +1,365 @@
 <template>
-  <div class="container">
-    <div class="row justify-content-center mt-10">
-      <div v-if="!pageRefresh" class="col-md-8">
-        <div class="card py-4">
-          <div class="row justify-content-center">
-            <div class="col-md-4 d-flex text-center align-content-center justify-content-center">
-              <img style="height: 150px; width: 150px;" :src="getProfileImage(this.member.profilePicture)"
-                   class="img-fluid align-content-center justify-content-center align-self-center profileImage rounded-circle">
-            </div>
-            <div class="col-md-8">
-              <ul class="list-unstyled">
-                <li><h5 class="my-1">{{ member.name }}</h5></li>
-                <li><p class="my-1">{{ member.phoneNumber }}</p></li>
-                <li><p class="my-1">{{ member.gender }}</p></li>
-                <li><p class="my-2">{{ $moment(member.dataOfBirth).format('Do MMMM YYYY') }}</p></li>
-                <li><p class="my-2">{{ member.churchFamilyName }}</p></li>
-                <li>
-                  <ul class="list-item mx-0 px-0">
-                    <li class="list-unstyled mx-0">
-                      <div class="" role="group" aria-label="Basic example">
-                        <NuxtLink :to="'/admin/members/'+member.id">
-                          <button type="button" class="btn btn-primary">Update</button>
-                        </NuxtLink>
-                        <NuxtLink :to="'/admin/members/'+member.id+'/tithe'">
-                          <button type="button" class="btn btn-outline-primary">Record Tithe</button>
-                        </NuxtLink>
-                        <NuxtLink :to="'/admin/members/'+member.id+'/role'"
-                                  v-if="loggedInUser.data.roleId === '1'">
-                          <button type="button" class="btn btn-secondary">Assign Role</button>
-                        </NuxtLink>
-                        <button v-if="loggedInUser.data.roleId === '1'" type="button" data-bs-target="#warningModal"
-                                data-bs-toggle="modal"
-                                class="btn btn-danger">Delete
-                        </button>
-                      </div>
-                    </li>
-                  </ul>
-                </li>
-              </ul>
-
-
-            </div>
-          </div>
-
-
+  <div>
+    <!-- Identity header -->
+    <div v-if="pageRefresh" class="ds-card" style="margin-bottom:24px">
+      <div class="ds-recordhead">
+        <span class="ds-skeleton" style="width:64px;height:64px;border-radius:999px"></span>
+        <div style="display:grid;gap:10px;flex:1;max-width:320px">
+          <span class="ds-skeleton" style="height:18px;width:60%"></span>
+          <span class="ds-skeleton" style="height:12px;width:80%"></span>
         </div>
       </div>
-      <page-loader v-else></page-loader>
-
-      <div v-if="!isLoading" class="col-md-8">
-        <div class="d-flex justify-content-between mt-4">
-          <h4>Member Details</h4>
-
-          <NuxtLink :to="'/admin/members/'+member.id+'/membership-form'" v-if="loggedInUser.data.roleId === '1'">
-            <button type="button" class="btn btn-outline-primary">Membership Form <i class="fas fa-arrow-right"></i>
-            </button>
-          </NuxtLink>
-        </div>
-
-        <div class="card py-4 mt-3 px-4">
-
-          <div class="row justify-content-center">
-            <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
-              <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="pills-home-tab" data-bs-toggle="pill" data-bs-target="#pills-home"
-                        type="button" role="tab" aria-controls="pills-home" aria-selected="true"> Personal Info
-                </button>
-              </li>
-              <li class="nav-item" role="presentation">
-                <button class="nav-link" id="pills-profile-tab" data-bs-toggle="pill" data-bs-target="#pills-profile"
-                        type="button" role="tab" aria-controls="pills-profile" aria-selected="false"> Family Details
-                </button>
-              </li>
-              <li class="nav-item" role="presentation">
-                <button class="nav-link" id="pills-contact-tab" data-bs-toggle="pill" data-bs-target="#pills-contact"
-                        type="button" role="tab" aria-controls="pills-contact" aria-selected="false"> Parental Details
-                </button>
-              </li>
-            </ul>
-            <div class="tab-content mt-4" id="pills-tabContent">
-              <div class="tab-pane fade show active" id="pills-home" role="tabpanel" aria-labelledby="pills-home-tab">
-                <div class="row my-2">
-                  <div class="col">
-                    <ul class="list-unstyled">
-                      <li><label>First name</label></li>
-                      <li>
-                        <p>{{ memberInfoSectionOne.firstName }}</p>
-                      </li>
-                    </ul>
-                  </div>
-                  <div class="col">
-                    <ul class="list-unstyled">
-                      <li><label>Surname</label></li>
-                      <li>
-                        <p>{{ memberInfoSectionOne.surname }}</p>
-                      </li>
-                    </ul>
-                  </div>
-                  <div class="col">
-                    <ul class="list-unstyled">
-                      <li><label>Other name</label></li>
-                      <li>
-                        <p>{{ memberInfoSectionOne.otherNames }}</p>
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-
-                <div class="row my-2">
-                  <div class="col">
-                    <ul class="list-unstyled">
-                      <li><label>Date of Birth</label></li>
-                      <li>
-                        <p>{{ $moment(memberInfoSectionOne.dateOfBirth).format('Do MMMM YYYY') }}</p>
-                      </li>
-                    </ul>
-                  </div>
-                  <div class="col">
-                    <ul class="list-unstyled">
-                      <li><label>Gender</label></li>
-                      <li>
-                        <p>{{ memberInfoSectionOne.gender }}</p>
-                      </li>
-                    </ul>
-                  </div>
-                  <div class="col">
-                    <ul class="list-unstyled">
-                      <li><label>Nationality</label></li>
-                      <li>
-                        <p>{{ memberInfoSectionOne.nationality }}</p>
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-
-                <div class="row my-2">
-                  <div class="col">
-                    <ul class="list-unstyled">
-                      <li><label>Hometown</label></li>
-                      <li>
-                        <p>{{ memberInfoSectionOne.town }}</p>
-                      </li>
-                    </ul>
-                  </div>
-                  <div class="col">
-                    <ul class="list-unstyled">
-                      <li><label>Region</label></li>
-                      <li>
-                        <p>{{ memberInfoSectionOne.region }}</p>
-                      </li>
-                    </ul>
-                  </div>
-
-                  <div class="col">
-                    <ul class="list-unstyled">
-                      <li><label>Marital Status</label></li>
-                      <li>
-                        <p>{{ memberInfoSectionOne.maritalStatus }}</p>
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-
-                <div class="row my-2">
-                  <div class="col">
-                    <ul class="list-unstyled">
-                      <li><label>Postal Address</label></li>
-                      <li>
-                        <p>{{ memberInfoSectionOne.contactAddress }}</p>
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-
-                <div class="row my-2">
-                  <div class="col">
-                    <ul class="list-unstyled">
-                      <li><label>Tel No. 1</label></li>
-                      <li>
-                        <p>{{ memberInfoSectionOne.firstTelephoneNumber }}</p>
-                      </li>
-                    </ul>
-                  </div>
-                  <div class="col">
-                    <ul class="list-unstyled">
-                      <li><label>Tel No. 2</label></li>
-                      <li>
-                        <p>{{ memberInfoSectionOne.secondTelephoneNumber }}</p>
-                      </li>
-                    </ul>
-                  </div>
-
-                  <div class="col">
-                    <ul class="list-unstyled">
-                      <li><label>Email Address</label></li>
-                      <li>
-                        <p>{{ memberInfoSectionOne.emailAddress }}</p>
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-
-                <div class="row my-2">
-                  <div class="col">
-                    <ul class="list-unstyled">
-                      <li><label>Year of Baptism</label></li>
-                      <li>
-                        <p>{{ $moment(memberInfoSectionOne.dateOfBaptism).format('Do MMMM YYYY') }}</p>
-                      </li>
-                    </ul>
-                  </div>
-                  <div class="col">
-                    <ul class="list-unstyled">
-                      <li><label>Name of assembly where baptised </label></li>
-                      <li>
-                        <p>{{ memberInfoSectionOne.churchOfBaptism }}</p>
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-
-                <div class="row my-2">
-                  <div class="col">
-                    <ul class="list-unstyled">
-                      <li><label>Education</label></li>
-                      <li>
-                        <p>{{ memberInfoSectionOne.educationLevel }}</p>
-                      </li>
-                    </ul>
-                  </div>
-                  <div class="col">
-                    <ul class="list-unstyled">
-                      <li><label>Profession</label></li>
-                      <li>
-                        <p>{{ memberInfoSectionOne.memberProfession }}</p>
-                      </li>
-                    </ul>
-                  </div>
-
-                  <div class="col">
-                    <ul class="list-unstyled">
-                      <li><label>Occupation</label></li>
-                      <li>
-                        <p>{{ memberInfoSectionOne.memberOccupation }}</p>
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-
-                <div class="row my-2">
-                  <div class="col">
-                    <ul class="list-unstyled">
-                      <li><label>Spoken Languages</label></li>
-                      <li>
-                        <p>{{ memberInfoSectionOne.spokenLanguage.join() }}</p>
-                      </li>
-                    </ul>
-                  </div>
-                  <div class="col">
-                    <ul class="list-unstyled">
-                      <li><label>Written Languages</label></li>
-                      <li>
-                        <p>{{ memberInfoSectionOne.writtenLanguage.join() }}</p>
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-
-                <div class="row my-2">
-                  <div class="col">
-                    <ul class="list-unstyled">
-                      <li><label>Hobbies</label></li>
-                      <li>
-                        <p>{{ memberInfoSectionOne.hobbies }}</p>
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-
-              </div>
-              <div class="tab-pane fade" id="pills-profile" role="tabpanel" aria-labelledby="pills-profile-tab">
-                <div class="row">
-                  <h6>Spouse Details</h6>
-                </div>
-                <div class="row my-2">
-                  <div class="col">
-                    <ul class="list-unstyled">
-                      <li><label>First name</label></li>
-                      <li>
-                        <p>{{ memberInfoSectionTwo.spouseFirstName }}</p>
-                      </li>
-                    </ul>
-                  </div>
-                  <div class="col">
-                    <ul class="list-unstyled">
-                      <li><label>Surname</label></li>
-                      <li>
-                        <p>{{ memberInfoSectionTwo.spouseSurname }}</p>
-                      </li>
-                    </ul>
-                  </div>
-                  <div class="col">
-                    <ul class="list-unstyled">
-                      <li><label>Other name</label></li>
-                      <li>
-                        <p>{{ memberInfoSectionTwo.spouseOtherName }}</p>
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-                <div class="row my-2">
-                  <div class="col">
-                    <ul class="list-unstyled">
-                      <li><label>Tel No. 1</label></li>
-                      <li>
-                        <p>{{ memberInfoSectionTwo.spouseFirstTelephoneNumber }}</p>
-                      </li>
-                    </ul>
-                  </div>
-                  <div class="col">
-                    <ul class="list-unstyled">
-                      <li><label>Tel No. 2</label></li>
-                      <li>
-                        <p>{{ memberInfoSectionTwo.spouseSecondTelephoneNumber }}</p>
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-                <div class="row">
-                  <hr>
-                </div>
-                <div class="row">
-                  <h6>Details of Children</h6>
-                </div>
-                <div>
-                  <table class="table">
-                    <thead>
-                    <tr>
-                      <th scope="col">#</th>
-                      <th scope="col">Name</th>
-                      <th scope="col">Date of Birth</th>
-                      <th scope="col">Tel No.</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr v-for="(child,index) in memberInfoSectionTwo.childInformation">
-                      <th scope="row">{{ index + 1 }}</th>
-                      <td>{{ child.nameOfChild }}</td>
-                      <td>{{ $moment(child.childDateOfBirth).format('Do MMMM YYYY') }}</td>
-                      <td>{{ child.telephoneNumber }}</td>
-                    </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-              <div class="tab-pane fade" id="pills-contact" role="tabpanel" aria-labelledby="pills-contact-tab">
-                <div class="row">
-                  <h6>Father's Details</h6>
-                </div>
-                <div class="row my-2">
-                  <div class="col">
-                    <ul class="list-unstyled">
-                      <li><label>First name</label></li>
-                      <li>
-                        <p>{{ memberInfoSectionThree.fatherFirstName }}</p>
-                      </li>
-                    </ul>
-                  </div>
-                  <div class="col">
-                    <ul class="list-unstyled">
-                      <li><label>Surname</label></li>
-                      <li>
-                        <p>{{ memberInfoSectionThree.fatherSurname }}</p>
-                      </li>
-                    </ul>
-                  </div>
-                  <div class="col">
-                    <ul class="list-unstyled">
-                      <li><label>Other name</label></li>
-                      <li>
-                        <p>{{ memberInfoSectionThree.fatherOtherName }}</p>
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-                <div class="row my-2">
-                  <div class="col">
-                    <ul class="list-unstyled">
-                      <li><label>Biological Father</label></li>
-                      <li>
-                        <p>{{ memberInfoSectionThree.isBiologicalFather }}</p>
-                      </li>
-                    </ul>
-                  </div>
-                  <div class="col">
-                    <ul class="list-unstyled">
-                      <li><label>Is Father Alive?</label></li>
-                      <li>
-                        <p>{{ memberInfoSectionThree.isFatherAlive }}</p>
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-                <div class="row my-2">
-                  <hr>
-                </div>
-                <div class="row">
-                  <h6>Mother's Details</h6>
-                </div>
-                <div class="row my-2">
-                  <div class="col">
-                    <ul class="list-unstyled">
-                      <li><label>First name</label></li>
-                      <li>
-                        <p>{{ memberInfoSectionThree.motherFirstName }}</p>
-                      </li>
-                    </ul>
-                  </div>
-                  <div class="col">
-                    <ul class="list-unstyled">
-                      <li><label>Surname</label></li>
-                      <li>
-                        <p>{{ memberInfoSectionThree.motherSurname }}</p>
-                      </li>
-                    </ul>
-                  </div>
-                  <div class="col">
-                    <ul class="list-unstyled">
-                      <li><label>Other name</label></li>
-                      <li>
-                        <p>{{ memberInfoSectionThree.motherLastName }}</p>
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-                <div class="row my-2">
-                  <div class="col">
-                    <ul class="list-unstyled">
-                      <li><label>Biological Mother</label></li>
-                      <li>
-                        <p>{{ memberInfoSectionThree.isBiologicalMother }}</p>
-                      </li>
-                    </ul>
-                  </div>
-                  <div class="col">
-                    <ul class="list-unstyled">
-                      <li><label>Is Mother Alive?</label></li>
-                      <li>
-                        <p>{{ memberInfoSectionThree.isMotherAlive }}</p>
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-                <div class="row my-2">
-                  <hr>
-                </div>
-                <div class="row">
-                  <h6>Details of Next of-Kin</h6>
-                </div>
-                <div class="row my-2">
-                  <div class="col">
-                    <ul class="list-unstyled">
-                      <li><label>Full name</label></li>
-                      <li>
-                        <p>{{ memberInfoSectionThree.nextOfKinFullname }}</p>
-                      </li>
-                    </ul>
-                  </div>
-                  <div class="col">
-                    <ul class="list-unstyled">
-                      <li><label>Relationship of Member to Next-of-kin</label></li>
-                      <li>
-                        <p>{{ memberInfoSectionThree.memberNextOfKinRelationship }}</p>
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-                <div class="row my-2">
-                  <div class="col">
-                    <ul class="list-unstyled">
-                      <li><label>Tel No. 1</label></li>
-                      <li>
-                        <p>{{ memberInfoSectionThree.nextOfKinFirstTelephoneNumber }}</p>
-                      </li>
-                    </ul>
-                  </div>
-                  <div class="col">
-                    <ul class="list-unstyled">
-                      <li><label>Tel No. 2</label></li>
-                      <li>
-                        <p>{{ memberInfoSectionThree.nextOfKinSecondTelephoneNumber }}</p>
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <page-loader class="mt-10" v-else></page-loader>
     </div>
 
+    <div v-else class="ds-card" style="margin-bottom:24px">
+      <div class="ds-recordhead">
+        <img :src="member.profilePicture" alt="" class="ds-recordhead__avatar">
 
-    <warning-modal v-bind:title="'Are you sure?'" :message="'You are about to delete this users details.'"
-                   @onclick="modalState($event)"></warning-modal>
+        <div class="ds-recordhead__copy">
+          <h1 class="ds-h1">{{ member.name || 'Member' }}</h1>
+          <div class="ds-recordhead__meta">
+            <span v-if="member.phoneNumber" class="ds-num">{{ member.phoneNumber }}</span>
+            <span v-if="member.gender">{{ member.gender }}</span>
+            <span v-if="member.dataOfBirth">Born {{ fmtDate(member.dataOfBirth) }}</span>
+            <span v-if="member.churchFamilyName" class="ds-badge ds-badge--neutral">
+              {{ member.churchFamilyName }}
+            </span>
+          </div>
+        </div>
+
+        <div class="ds-recordhead__actions">
+          <NuxtLink class="ds-btn ds-btn--secondary" :to="`/admin/members/${member.id}/tithe`">
+            Record tithe
+          </NuxtLink>
+          <NuxtLink class="ds-btn ds-btn--primary" :to="`/admin/members/${member.id}`">
+            Edit member
+          </NuxtLink>
+
+          <RowMenu v-if="isChurchManager" label="More actions for this member">
+            <template #default="{ close }">
+              <NuxtLink class="ds-menu__item" :to="`/admin/members/${member.id}/membership-form`" @click.native="close">
+                Membership form
+              </NuxtLink>
+              <NuxtLink class="ds-menu__item" :to="`/admin/members/${member.id}/welfare`" @click.native="close">
+                Welfare
+              </NuxtLink>
+              <NuxtLink class="ds-menu__item" :to="`/admin/members/${member.id}/role`" @click.native="close">
+                Assign role
+              </NuxtLink>
+              <span class="ds-menu__sep"></span>
+              <button class="ds-menu__item ds-menu__item--danger" type="button" @click="confirmOpen = true; close()">
+                Delete member
+              </button>
+            </template>
+          </RowMenu>
+        </div>
+      </div>
+    </div>
+
+    <!-- Membership form detail -->
+    <div class="ds-section__head">
+      <h2 class="ds-h2">Membership details</h2>
+      <NuxtLink
+        v-if="isChurchManager"
+        class="ds-btn ds-btn--secondary ds-btn--sm"
+        :to="`/admin/members/${member.id}/membership-form`"
+      >
+        Edit membership form
+      </NuxtLink>
+    </div>
+
+    <div class="ds-card">
+      <div class="ds-card__body">
+        <!-- Tab state lives in the URL, so these views can be linked and the
+             back button works. -->
+        <div class="ds-tabs" role="tablist">
+          <button
+            v-for="tab in tabs"
+            :key="tab.key"
+            class="ds-tab"
+            :class="{ 'is-active': activeTab === tab.key }"
+            type="button"
+            role="tab"
+            :aria-selected="activeTab === tab.key ? 'true' : 'false'"
+            @click="selectTab(tab.key)"
+          >
+            {{ tab.label }}
+          </button>
+        </div>
+
+        <div v-if="isLoading" style="display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(210px,1fr))">
+          <div v-for="n in 8" :key="n" style="display:grid;gap:8px">
+            <span class="ds-skeleton" style="height:10px;width:50%"></span>
+            <span class="ds-skeleton" style="height:14px;width:75%"></span>
+          </div>
+        </div>
+
+        <template v-else>
+          <!-- Personal -->
+          <dl v-if="activeTab === 'personal'" class="ds-deflist">
+            <div v-for="row in personalRows" :key="row.label">
+              <dt>{{ row.label }}</dt>
+              <dd :class="{ 'is-empty': !row.value }">{{ row.value }}</dd>
+            </div>
+          </dl>
+
+          <!-- Family -->
+          <div v-else-if="activeTab === 'family'">
+            <h3 class="ds-h3" style="margin-bottom:16px">Spouse</h3>
+            <dl class="ds-deflist">
+              <div v-for="row in spouseRows" :key="row.label">
+                <dt>{{ row.label }}</dt>
+                <dd :class="{ 'is-empty': !row.value }">{{ row.value }}</dd>
+              </div>
+            </dl>
+
+            <h3 class="ds-h3" style="margin:28px 0 16px">Children</h3>
+            <div v-if="children.length" class="ds-tablewrap">
+              <div class="ds-tablescroll">
+                <table class="ds-table ds-table--cards">
+                  <thead>
+                    <tr><th>Name</th><th>Date of birth</th><th>Phone</th></tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="(child, index) in children" :key="index">
+                      <td data-label="Name">{{ child.nameOfChild || '—' }}</td>
+                      <td data-label="Date of birth">{{ fmtDate(child.childDateOfBirth) }}</td>
+                      <td data-label="Phone" class="ds-muted">{{ child.telephoneNumber || '—' }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <p v-else class="ds-muted" style="margin:0">No children recorded.</p>
+          </div>
+
+          <!-- Parental -->
+          <div v-else>
+            <h3 class="ds-h3" style="margin-bottom:16px">Father</h3>
+            <dl class="ds-deflist">
+              <div v-for="row in fatherRows" :key="row.label">
+                <dt>{{ row.label }}</dt>
+                <dd :class="{ 'is-empty': !row.value }">{{ row.value }}</dd>
+              </div>
+            </dl>
+
+            <h3 class="ds-h3" style="margin:28px 0 16px">Mother</h3>
+            <dl class="ds-deflist">
+              <div v-for="row in motherRows" :key="row.label">
+                <dt>{{ row.label }}</dt>
+                <dd :class="{ 'is-empty': !row.value }">{{ row.value }}</dd>
+              </div>
+            </dl>
+
+            <h3 class="ds-h3" style="margin:28px 0 16px">Next of kin</h3>
+            <dl class="ds-deflist">
+              <div v-for="row in nextOfKinRows" :key="row.label">
+                <dt>{{ row.label }}</dt>
+                <dd :class="{ 'is-empty': !row.value }">{{ row.value }}</dd>
+              </div>
+            </dl>
+          </div>
+        </template>
+      </div>
+    </div>
+
+    <ConfirmDialog
+      :open="confirmOpen"
+      :busy="isDeleting"
+      title="Delete this member?"
+      :message="`${member.name || 'This member'} will be removed from the register. Their giving history stays in accounting reports. This cannot be undone.`"
+      confirm-label="Delete member"
+      @cancel="confirmOpen = false"
+      @confirm="deleteMember"
+    />
   </div>
 </template>
 
 <script>
-import {profileImageBaseUrl} from "../../../../resources/constants";
-import {ChurchMember, MembershipFormOne, MembershipFormThree, MembershipFormTwo} from "../../../../network/Member";
-import {mapGetters} from 'vuex';
+import { mapGetters } from 'vuex'
+import { profileImageBaseUrl } from '../../../../resources/constants'
+import { ChurchMember, MembershipFormOne, MembershipFormThree, MembershipFormTwo } from '../../../../network/Member'
+import { ROLE_CHURCH_MANAGER } from '../../../../resources/navigation'
+import RowMenu from '../../../../components/RowMenu'
+import ConfirmDialog from '../../../../components/ConfirmDialog'
 
+const TABS = [
+  { key: 'personal', label: 'Personal info' },
+  { key: 'family', label: 'Family details' },
+  { key: 'parental', label: 'Parental details' }
+]
 
 export default {
-  name: "view",
-  beforeMount() {
-    this.getMember(this.$route.params.id)
-    this.getMembershipDetails(this.$route.params.id)
-  },
-  data() {
+  name: 'member-view',
+  components: { RowMenu, ConfirmDialog },
+  data () {
     return {
+      tabs: TABS,
       pageRefresh: false,
-      toDeleteId: '',
+      isLoading: false,
+      isDeleting: false,
+      confirmOpen: false,
       member: ChurchMember,
       memberInfoSectionOne: MembershipFormOne,
       memberInfoSectionTwo: MembershipFormTwo,
-      memberInfoSectionThree: MembershipFormThree,
-      isLoading: false
+      memberInfoSectionThree: MembershipFormThree
     }
   },
   computed: {
-    ...mapGetters(['isAuthenticated', 'loggedInUser'])
+    ...mapGetters(['isAuthenticated', 'loggedInUser']),
+    isChurchManager () {
+      return this.loggedInUser &&
+        this.loggedInUser.data &&
+        this.loggedInUser.data.roleId === ROLE_CHURCH_MANAGER
+    },
+    activeTab () {
+      const requested = String(this.$route.query.tab || '')
+      return TABS.some(tab => tab.key === requested) ? requested : 'personal'
+    },
+    children () {
+      const list = this.memberInfoSectionTwo.childInformation
+      return Array.isArray(list) ? list : []
+    },
+    personalRows () {
+      const one = this.memberInfoSectionOne
+      return [
+        { label: 'First name', value: one.firstName },
+        { label: 'Surname', value: one.surname },
+        { label: 'Other names', value: one.otherNames },
+        { label: 'Date of birth', value: this.fmtDate(one.dateOfBirth) },
+        { label: 'Gender', value: one.gender },
+        { label: 'Nationality', value: one.nationality },
+        { label: 'Hometown', value: one.town },
+        { label: 'Region', value: one.region },
+        { label: 'Marital status', value: one.maritalStatus },
+        { label: 'Postal address', value: one.contactAddress },
+        { label: 'Phone 1', value: one.firstTelephoneNumber },
+        { label: 'Phone 2', value: one.secondTelephoneNumber },
+        { label: 'Email address', value: one.emailAddress },
+        { label: 'Date of baptism', value: this.fmtDate(one.dateOfBaptism) },
+        { label: 'Assembly of baptism', value: one.churchOfBaptism },
+        { label: 'Education', value: one.educationLevel },
+        { label: 'Profession', value: one.memberProfession },
+        { label: 'Occupation', value: one.memberOccupation },
+        { label: 'Spoken languages', value: this.fmtList(one.spokenLanguage) },
+        { label: 'Written languages', value: this.fmtList(one.writtenLanguage) },
+        { label: 'Hobbies', value: one.hobbies }
+      ]
+    },
+    spouseRows () {
+      const two = this.memberInfoSectionTwo
+      return [
+        { label: 'First name', value: two.spouseFirstName },
+        { label: 'Surname', value: two.spouseSurname },
+        { label: 'Other names', value: two.spouseOtherName },
+        { label: 'Phone 1', value: two.spouseFirstTelephoneNumber },
+        { label: 'Phone 2', value: two.spouseSecondTelephoneNumber }
+      ]
+    },
+    fatherRows () {
+      const three = this.memberInfoSectionThree
+      return [
+        { label: 'First name', value: three.fatherFirstName },
+        // The form writes fatherLastName while the model also carries
+        // fatherSurname; read both so whichever was stored is shown.
+        { label: 'Surname', value: three.fatherSurname || three.fatherLastName },
+        { label: 'Other names', value: three.fatherOtherName },
+        { label: 'Biological father', value: this.fmtYesNo(three.isBiologicalFather) },
+        { label: 'Living', value: this.fmtYesNo(three.isFatherAlive) }
+      ]
+    },
+    motherRows () {
+      const three = this.memberInfoSectionThree
+      return [
+        { label: 'First name', value: three.motherFirstName },
+        { label: 'Surname', value: three.motherSurname },
+        { label: 'Other names', value: three.motherOtherName || three.motherLastName },
+        { label: 'Biological mother', value: this.fmtYesNo(three.isBiologicalMother) },
+        { label: 'Living', value: this.fmtYesNo(three.isMotherAlive) }
+      ]
+    },
+    nextOfKinRows () {
+      const three = this.memberInfoSectionThree
+      return [
+        { label: 'Full name', value: three.nextOfKinFullname },
+        { label: 'Relationship to member', value: three.memberNextOfKinRelationship },
+        { label: 'Phone 1', value: three.nextOfKinFirstTelephoneNumber },
+        { label: 'Phone 2', value: three.nextOfKinSecondTelephoneNumber }
+      ]
+    }
+  },
+  beforeMount () {
+    this.getMember(this.$route.params.id)
+    this.getMembershipDetails(this.$route.params.id)
   },
   methods: {
-    getMember(id) {
+    selectTab (key) {
+      if (this.activeTab === key) { return }
+      this.$router.replace({ query: Object.assign({}, this.$route.query, { tab: key }) })
+    },
+    /** Empty dates rendered as a real date read as "Invalid date" before. */
+    fmtDate (value) {
+      if (!value) { return '' }
+      const parsed = this.$moment(value)
+      return parsed.isValid() ? parsed.format('D MMMM YYYY') : ''
+    },
+    fmtList (value) {
+      if (Array.isArray(value)) { return value.filter(Boolean).join(', ') }
+      return value || ''
+    },
+    fmtYesNo (value) {
+      if (value === true || value === 'true') { return 'Yes' }
+      if (value === false || value === 'false') { return 'No' }
+      return value || ''
+    },
+    getMember (id) {
       this.pageRefresh = true
       this.$axios.get(`churchmembers/user/${id}`).then(response => {
-        this.member = Object.assign(this.member, response.data.data)
-        this.member.dataOfBirth = this.member.dataOfBirth.split('T')[0]
-        this.member.profilePicture = this.getProfileImage(this.member.profilePicture)
-
+        this.member = Object.assign({}, ChurchMember, response.data.data)
+        this.member.profilePicture = this.getProfileImage(response.data.data.profilePicture)
         this.pageRefresh = false
-      }).catch(error => {
+      }).catch(() => {
+        this.member = Object.assign({}, ChurchMember)
         this.member.profilePicture = this.getProfileImage('')
         this.pageRefresh = false
       })
     },
-    getMembershipDetails(id) {
+    getMembershipDetails (id) {
       this.isLoading = true
-
       this.$axios.get(`/churchmembers/userdetails/${id}`).then(response => {
-        this.memberInfoSectionOne = Object.assign(this.memberInfoSectionOne, response.data.data)
-        this.memberInfoSectionTwo = Object.assign(this.memberInfoSectionTwo, response.data.data)
-        this.memberInfoSectionThree = Object.assign(this.memberInfoSectionThree, response.data.data)
-
+        this.memberInfoSectionOne = Object.assign({}, MembershipFormOne, response.data.data)
+        this.memberInfoSectionTwo = Object.assign({}, MembershipFormTwo, response.data.data)
+        this.memberInfoSectionThree = Object.assign({}, MembershipFormThree, response.data.data)
         this.isLoading = false
-      }).catch(error => {
+      }).catch(() => {
         this.isLoading = false
       })
     },
-    getProfileImage(image) {
+    getProfileImage (image) {
       if (image) {
-        if (image.includes('user.svg')) {
-          return require(`~/assets/imgs/user.svg`)
-        } else {
-          return `${profileImageBaseUrl}/${image}`
+        if (String(image).includes('user.svg')) {
+          return require('~/assets/imgs/user.svg')
         }
+        return `${profileImageBaseUrl}/${image}`
       }
-      return require(`~/assets/imgs/user.svg`)
+      return require('~/assets/imgs/user.svg')
     },
-    deleteMember(id) {
-      this.$axios.delete(`churchmembers/${id}`).then(response => {
-        this.$toast.info("User successfully deleted.")
-        this.$router.push('/admin/manage')
-
+    deleteMember () {
+      this.isDeleting = true
+      this.$axios.delete(`churchmembers/${this.$route.params.id}`).then(() => {
+        this.isDeleting = false
+        this.confirmOpen = false
+        this.$toast.success('Member deleted')
+        this.$router.push('/admin/members')
       }).catch(error => {
+        this.isDeleting = false
+        this.confirmOpen = false
+        const message = error && error.response && error.response.data && error.response.data.message
+          ? error.response.data.message
+          : 'Could not delete this member. Nothing was changed.'
+        this.$toast.error(message)
       })
-    },
-    checkUserToDelete(id) {
-      this.toDeleteId = id
-    },
-    modalState(data) {
-      if (data.toString().toLowerCase() === 'positive') {
-        this.deleteMember(this.$route.params.id)
-      }
     }
   }
 }
 </script>
-
-<style scoped>
-
-</style>

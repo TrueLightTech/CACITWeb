@@ -1,13 +1,10 @@
 <template>
-  <member-view v-bind:is-account="null" v-bind:id="455"></member-view>
+  <!-- isAccount === null puts the shared editor into "create" mode. -->
+  <member-view :is-account="null" />
 </template>
 
 <script>
-    export default {
-        name: "new"
-    }
+export default {
+  name: 'new-member'
+}
 </script>
-
-<style scoped>
-
-</style>

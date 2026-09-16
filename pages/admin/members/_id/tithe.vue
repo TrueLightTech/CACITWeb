@@ -1,252 +1,287 @@
 <template>
-  <div class="container">
+  <div>
+    <div class="ds-page-head">
+      <div class="ds-page-head__copy">
+        <h1 class="ds-h1">Record tithe</h1>
+        <p>{{ user.name || 'Member' }} — {{ monthLabel }} {{ year }}</p>
+      </div>
+      <div class="ds-page-head__actions">
+        <NuxtLink class="ds-btn ds-btn--secondary" :to="`/admin/members/${$route.params.id}/view`">
+          Back to member
+        </NuxtLink>
+      </div>
+    </div>
 
-    <div v-if="!pageRefresh" class="row justify-content-center mt-10">
-      <div class="row justify-content-center">
-        <div class="col text-center">
-          <ul class="list-unstyled">
-            <li><h2 class="py-2">Record Tithe ( {{ month }} {{ year }}) </h2></li>
-            <li><h5>({{ user.name }})</h5></li>
-            <li>
-            </li>
-          </ul>
+    <div class="ds-card" style="margin-bottom:24px">
+      <div class="ds-card__body" style="display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end">
+        <div class="ds-field" style="margin-bottom:0;min-width:160px">
+          <label class="ds-label" for="recMonth">Month</label>
+          <select id="recMonth" v-model="month" class="ds-select" @change="getTithe(user.id)">
+            <option v-for="(code, index) in months" :key="code" :value="code">{{ monthNames[index] }}</option>
+          </select>
         </div>
-
-        <div class="row justify-content-center my-4">
-          <div class="col-md-6">
-            <div class="d-flex justify-content-end">
-              <div class="d-flex justify-content-end">
-                <div class="dropdown w-100">
-                  <button class="btn btn-primary btn-lg dropdown-toggle" type="button" id="dropdownMenuButton1"
-                          data-bs-toggle="dropdown" aria-expanded="false">
-                    Month
-                  </button>
-                  <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                    <li @click="setMonth(index)" v-for="(month,index) in months" :key="index"><a
-                      class="dropdown-item" href="#">
-                      {{ month }}
-                    </a></li>
-                  </ul>
-                </div>
-
-                <div class="dropdown mx-2  w-100">
-                  <button class="btn btn-primary btn-lg dropdown-toggle" type="button" id="dropdownMenuButton1"
-                          data-bs-toggle="dropdown" aria-expanded="false">
-                    Year
-                  </button>
-                  <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                    <li @click="setYear(year)" v-for="(year,index) in generateArrayOfYears()" :key="index"><a
-                      class="dropdown-item" href="#">
-                      {{ year }}
-                    </a></li>
-                  </ul>
-                </div>
-              </div>
-
-              <button type="button" class="btn btn-success w-25 d-none" disabled>Save</button>
-            </div>
-          </div>
+        <div class="ds-field" style="margin-bottom:0;min-width:140px">
+          <label class="ds-label" for="recYear">Year</label>
+          <select id="recYear" v-model="year" class="ds-select" @change="getTithe(user.id)">
+            <option v-for="value in generateArrayOfYears()" :key="value" :value="value">{{ value }}</option>
+          </select>
         </div>
       </div>
-      <div class="col-md-6">
-        <div class="table-responsive">
-          <table class="table table-bordered border-primary">
-            <thead>
-            <tr class="text-center">
-              <th scope="col">Weeks</th>
-              <th scope="col">Amount (GHS)</th>
-              <th scope="col"></th>
+    </div>
+
+    <div class="ds-tablewrap">
+      <div v-if="pageRefresh" class="ds-tablescroll">
+        <table class="ds-table">
+          <thead>
+            <tr><th>Week</th><th class="ds-col-num">Amount (GHS)</th><th class="ds-col-action">Record</th></tr>
+          </thead>
+          <tbody>
+            <tr v-for="n in 5" :key="n">
+              <td><span class="ds-skeleton" style="width:60px"></span></td>
+              <td class="ds-col-num"><span class="ds-skeleton" style="width:70px;margin-left:auto"></span></td>
+              <td class="ds-col-action"><span class="ds-skeleton" style="width:72px;margin-left:auto"></span></td>
             </tr>
-            </thead>
-            <tbody>
-            <tr class="text-center" v-for="i in weeks">
-              <th scope="row"><h2>{{ i }}</h2></th>
-              <td><h2>{{ formatMoney(tithe['week' + i]) }}</h2></td>
-              <td>
-                <button data-bs-toggle="modal" data-bs-target="#exampleModal" @click="weekSelected(i)"
-                        class="btn btn-success"><i class="fa fa-plus-circle"></i> Record
+          </tbody>
+        </table>
+      </div>
+
+      <div v-else class="ds-tablescroll">
+        <table class="ds-table ds-table--cards">
+          <thead>
+            <tr>
+              <th>Week</th>
+              <th class="ds-col-num">Amount (GHS)</th>
+              <th class="ds-col-action">Record</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="i in weeks" :key="i">
+              <td data-label="Week">Week {{ i }}</td>
+              <td data-label="Amount (GHS)" class="ds-col-num">{{ formatMoney(tithe['week' + i]) }}</td>
+              <td data-label="Record" class="ds-col-action">
+                <button class="ds-btn ds-btn--secondary ds-btn--sm" type="button" @click="openRecord(i)">
+                  {{ Number(tithe['week' + i]) > 0 ? 'Update' : 'Record' }}
                 </button>
               </td>
             </tr>
-            <tr scope="row" class="text-center">
-              <th scope="row"><h2>Total</h2></th>
-              <td colspan="2"><h2>GHS {{ formatMoney(getTotal()) }}</h2></td>
+          </tbody>
+          <tfoot>
+            <tr>
+              <td>Total for {{ monthLabel }} {{ year }}</td>
+              <td class="ds-col-num">{{ formatMoney(getTotal()) }}</td>
+              <td></td>
             </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-    <PageLoader v-else class="mt-10"></PageLoader>
-
-
-    <!-- Modal -->
-    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-      <div class="modal-dialog modal-dialog-centered modal-sm">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title text-center" id="exampleModalLabel">Record Tithe</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body my-4 text-center d-flex justify-content-center">
-            <ul class="list-unstyled">
-              <li>
-                <label class="mb-2 text-start">Amount</label>
-                <input v-model="amountPaid" class="form-control form-control-lg w-100 text-center" type="text"
-                       placeholder="GHs 100"
-                       aria-label=".form-control-lg example">
-              </li>
-
-              <li class="my-3" v-if="!isServiceLoaded">
-                <label class="mb-2 text-start">Select Service</label>
-                <select v-model="serviceId" class="form-select form-control-lg"
-                        aria-label="Default select example">
-                  <option :value="service.id"
-                          v-for="service in services.data">{{ service.name }}
-                  </option>
-                </select>
-              </li>
-
-            </ul>
-
-          </div>
-          <div class="modal-footer">
-            <button data-bs-dismiss="modal" @click="recordTithe()" type="button" class="btn btn-primary">Save</button>
-          </div>
-        </div>
+          </tfoot>
+        </table>
       </div>
     </div>
 
+    <!-- Record dialog -->
+    <div v-if="isDialogOpen" class="ds-overlay" @click.self="closeRecord">
+      <div class="ds-modal" role="dialog" aria-modal="true" aria-labelledby="recordTitheTitle">
+        <div class="ds-modal__head">
+          <div>
+            <h2 id="recordTitheTitle" class="ds-h3">Record tithe — week {{ week }}</h2>
+            <p>{{ user.name }} · {{ monthLabel }} {{ year }}</p>
+          </div>
+        </div>
+
+        <div class="ds-modal__body">
+          <div class="ds-field" :class="{ 'is-invalid': showErrors && !amountPaid }">
+            <label class="ds-label" for="titheAmount">Amount (GHS)</label>
+            <input
+              id="titheAmount"
+              ref="amount"
+              v-model="amountPaid"
+              class="ds-input ds-input--amount"
+              type="text"
+              inputmode="decimal"
+              placeholder="0.00"
+            >
+            <span v-if="showErrors && !amountPaid" class="ds-error">Enter the amount received.</span>
+          </div>
+
+          <div class="ds-field" :class="{ 'is-invalid': showErrors && !serviceId }" style="margin-bottom:0">
+            <label class="ds-label" for="titheService">Service</label>
+            <select id="titheService" v-model="serviceId" class="ds-select" :disabled="isServiceLoaded">
+              <option value="" disabled>Select a service</option>
+              <option v-for="service in serviceOptions" :key="service.id" :value="service.id">
+                {{ service.name }}
+              </option>
+            </select>
+            <span v-if="showErrors && !serviceId" class="ds-error">Choose which service this was given at.</span>
+          </div>
+        </div>
+
+        <div class="ds-modal__foot">
+          <button class="ds-btn ds-btn--ghost" type="button" @click="closeRecord">Cancel</button>
+          <button class="ds-btn ds-btn--primary" type="button" :disabled="isSaving" @click="recordTithe">
+            <span v-if="isSaving" class="ds-btn__spinner"></span>
+            {{ isSaving ? 'Saving' : 'Save tithe' }}
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
-import {ChurchMember, ServiceList, Tithe} from "../../../../network/Member";
-import {mapGetters} from 'vuex'
-import {numberWithCommas} from "../../../../resources/constants";
+import { ChurchMember, ServiceList, Tithe } from '../../../../network/Member'
+import { mapGetters } from 'vuex'
+import { numberWithCommas } from '../../../../resources/constants'
 
-const date = new Date();
-const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
-
+const date = new Date()
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+const MONTH_NAMES = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December'
+]
 
 export default {
-  name: "tithe",
-  data() {
+  name: 'record-tithe',
+  data () {
     return {
       week: 1,
       pageRefresh: false,
       isServiceLoaded: false,
+      isSaving: false,
+      isDialogOpen: false,
+      showErrors: false,
       user: ChurchMember,
-      amountPaid: "",
-      tithe: Tithe,
-      totalAmount: 0,
-      month: months[date.getMonth()],
+      amountPaid: '',
+      tithe: Object.assign({}, Tithe),
+      month: MONTHS[date.getMonth()],
       year: date.getFullYear(),
       weeks: [1, 2, 3, 4, 5],
       services: ServiceList,
       serviceId: '',
-      serviceName: '',
-      months: months,
+      months: MONTHS,
+      monthNames: MONTH_NAMES
     }
   },
-  beforeMount() {
-    let id = this.$route.params.id
-    this.getServices()
-    this.getMember(id)
-  },
   computed: {
-    ...mapGetters(['isAuthenticated', 'loggedInUser'])
+    ...mapGetters(['isAuthenticated', 'loggedInUser']),
+    monthLabel () {
+      const index = MONTHS.indexOf(this.month)
+      return index === -1 ? this.month : MONTH_NAMES[index]
+    },
+    serviceOptions () {
+      return this.services && this.services.data ? this.services.data : []
+    }
+  },
+  beforeMount () {
+    this.getServices()
+    this.getMember(this.$route.params.id)
   },
   methods: {
-    formatMoney(value) {
-      return numberWithCommas(value)
+    formatMoney (value) {
+      return numberWithCommas(Number(value || 0))
     },
-    weekSelected(i) {
-      this.week = i
-    },
-    setYear(yr) {
-      this.year = yr
-      this.getTithe(this.user.id)
-    },
-    setMonth(mth) {
-      this.month = this.months[mth];
-      this.getTithe(this.user.id)
-    },
-    generateArrayOfYears() {
-      let max = new Date().getFullYear()
-      let min = max - 12
-      let years = []
-
+    generateArrayOfYears () {
+      const max = new Date().getFullYear()
+      const min = max - 12
+      const years = []
       for (let i = max; i >= min; i--) {
         years.push(i)
       }
       return years
     },
-    getMember(id) {
+    openRecord (i) {
+      this.week = i
+      this.amountPaid = ''
+      this.serviceId = ''
+      this.showErrors = false
+      this.isDialogOpen = true
+      this.$nextTick(() => this.$refs.amount && this.$refs.amount.focus())
+    },
+    closeRecord () {
+      this.isDialogOpen = false
+    },
+    getMember (id) {
       this.pageRefresh = true
       this.$axios.get(`churchmembers/user/${id}`).then(response => {
-        this.user = Object.assign(this.user, response.data.data)
-        this.user.dataOfBirth = this.user.dataOfBirth.split('T')[0]
-
+        this.user = Object.assign({}, ChurchMember, response.data.data)
+        if (this.user.dataOfBirth && typeof this.user.dataOfBirth === 'string') {
+          this.user.dataOfBirth = this.user.dataOfBirth.split('T')[0]
+        }
         this.getTithe(this.user.id)
-      }).catch(error => {
+      }).catch(() => {
         this.pageRefresh = false
       })
     },
-    getTithe(id) {
+    getTithe (id) {
       this.pageRefresh = true
       this.$axios.get(`tithes/${id}/?Month=${this.month}&Year=${this.year}`).then(response => {
-        this.tithe = Object.assign(this.tithe, response.data.data)[this.month]
+        const byMonth = Object.assign({}, response.data.data)
+        this.tithe = Object.assign({}, Tithe, byMonth[this.month] || {})
         this.pageRefresh = false
-      }).catch(error => {
+      }).catch(() => {
+        this.tithe = Object.assign({}, Tithe)
         this.pageRefresh = false
       })
     },
-    getServices() {
+    getServices () {
       this.isServiceLoaded = true
-      this.$axios.get(`services`).then(response => {
+      this.$axios.get('services').then(response => {
         this.isServiceLoaded = false
-        this.services = Object.assign(this.services, response.data)
-      }).catch(error => {
+        this.services = Object.assign({}, ServiceList, response.data)
+      }).catch(() => {
         this.isServiceLoaded = false
       })
     },
-    getTotal() {
-      return [this.tithe.week1, this.tithe.week2, this.tithe.week3, this.tithe.week4, this.tithe.week5].reduce((a, b) => a + b, 0)
+    getTotal () {
+      if (!this.tithe) { return 0 }
+      return [
+        this.tithe.week1, this.tithe.week2, this.tithe.week3,
+        this.tithe.week4, this.tithe.week5
+      ].reduce((a, b) => Number(a || 0) + Number(b || 0), 0)
     },
-    recordTithe() {
+    recordTithe () {
+      if (!this.amountPaid || !this.serviceId) {
+        this.showErrors = true
+        return
+      }
+      this.showErrors = false
 
-      if (this.amountPaid.length !== 0 && this.serviceId.length !== 0) {
-        this.tithe['week' + this.week] = parseFloat(this.amountPaid)
-
-        const requestBody = {
-          userId: this.user.id,
-          year: this.year + "",
-          signature: this.loggedInUser.data.id,
-          serviceId: this.serviceId,
-          serviceName: this.services.data.filter(service => service.id === this.serviceId)[0].name,
-          month: this.month,
-          amountPaid: parseFloat(this.amountPaid),
-          week: this.week
-        }
-
-        this.$axios.post(`tithes`, requestBody).then(response => {
-          this.tithe.titheId = response.data.data[this.month]["titheId"]
-          this.$toast.success("Successfully recorded")
-          this.isLoading = false
-          this.amountPaid = 0.0
-          this.serviceId = ''
-        }).catch(error => {
-          this.$toast.success(error.response.data.message)
-          this.isLoading = false
-        })
+      const service = this.serviceOptions.filter(item => item.id === this.serviceId)
+      if (service.length === 0) {
+        this.$toast.error('That service is no longer available. Choose another.')
+        return
       }
 
+      this.tithe['week' + this.week] = parseFloat(this.amountPaid)
+
+      const requestBody = {
+        userId: this.user.id,
+        year: this.year + '',
+        signature: this.loggedInUser.data.id,
+        serviceId: this.serviceId,
+        serviceName: service[0].name,
+        month: this.month,
+        amountPaid: parseFloat(this.amountPaid),
+        week: this.week
+      }
+
+      this.isSaving = true
+      this.$axios.post('tithes', requestBody).then(response => {
+        const byMonth = response.data && response.data.data ? response.data.data : {}
+        if (byMonth[this.month]) {
+          this.tithe.titheId = byMonth[this.month].titheId
+        }
+        this.$toast.success(`Tithe recorded for week ${this.week}`)
+        this.isSaving = false
+        this.isDialogOpen = false
+        this.amountPaid = ''
+        this.serviceId = ''
+      }).catch(error => {
+        // Previously reported through $toast.success, so failures looked like successes.
+        const message = error && error.response && error.response.data && error.response.data.message
+          ? error.response.data.message
+          : 'Could not record this tithe.'
+        this.$toast.error(message)
+        this.isSaving = false
+      })
     }
   }
 }
 </script>
-
-<style scoped>
-
-</style>

@@ -1,226 +1,207 @@
 <template>
-  <div class="row">
-    <div>
-      <!--      <form>-->
-      <ul class="list-unstyled">
-        <li>
-          <h5>PART II</h5>
-        </li>
-        <li>
-          <div class="row">
-            <label class="text-black my-2">NAME OF SPOUSE</label>
-            <div class="col">
-              <label>First name</label>
-              <div class="mt-2">
-                <input type="text" v-model="memberInfo.spouseFirstName" class="form-control" placeholder=""
-                       aria-label="First name">
-              </div>
-            </div>
-            <div class="col">
-              <label>Surname</label>
-              <div class="mt-2">
-                <input type="text" v-model="memberInfo.spouseSurname" class="form-control" placeholder=""
-                       aria-label="Last name">
-              </div>
-            </div>
-            <div class="col">
-              <label>Other names</label>
-              <div class="mt-2">
-                <input type="text" v-model="memberInfo.spouseOtherName" class="form-control" placeholder=""
-                       aria-label="Other name">
-              </div>
-            </div>
-          </div>
-        </li>
-        <li>
-          <div class="row mt-3">
-            <div class="col">
-              <label>Telephone Number 1</label>
-              <div class="mt-2">
-                <input type="text" v-model="memberInfo.spouseFirstTelephoneNumber" class="form-control" placeholder=""
-                       aria-label="First name">
-              </div>
-            </div>
-            <div class="col">
-              <label>Telephone Number 2</label>
-              <div class="mt-2">
-                <input type="text" v-model="memberInfo.spouseSecondTelephoneNumber" class="form-control"
-                       placeholder="" aria-label="First name">
-              </div>
-            </div>
-          </div>
-        </li>
-        <li>
-          <hr>
-          <label class="text-black my-1">DETAILS OF CHILDREN (<small>To be completed by members who have
-            children</small> )</label>
-        </li>
-        <li class="p-2">
-          <div class="d-flex w-100 justify-content-end">
-            <button @click="increaseChildrenCount()" type="button" class="btn btn-primary text-end"><i
-              class="fas fa-plus-circle"></i> Add Child
-            </button>
-          </div>
-          <div class="row my-2">
-            <table class="table">
-              <thead>
-              <tr>
-                <th scope="col">#</th>
-                <th scope="col">Name of child</th>
-                <th scope="col">Date of Birth</th>
-                <th scope="col">Tel No.</th>
-                <th scope="col"></th>
-              </tr>
-              </thead>
-              <tbody>
-              <tr v-for="(info,index) in memberInfo.childInformation" :key="index">
-                <th scope="row">{{ index + 1 }}</th>
-                <td>
-                  <div class="mt-2">
-                    <input type="text" v-model="memberInfo.childInformation[index].nameOfChild" class="form-control"
-                           placeholder=""
-                           @keyup="activate(index)"
-                           aria-label="First name">
-                  </div>
-                </td>
-                <td>
-                  <div class="mt-2">
-                    <input type="date" v-model="memberInfo.childInformation[index].childDateOfBirth"
-                           @keyup="activate(index)"
-                           class="form-control" placeholder=""
-                           aria-label="Last name">
-                  </div>
-                </td>
-                <td>
-                  <div class="mt-2">
-                    <input type="text" v-model="memberInfo.childInformation[index].telephoneNumber" class="form-control"
-                           placeholder=""
-                           @keyup="activate(index)"
-                           aria-label="Last name">
-                  </div>
-                </td>
-                <td>
-                  <div class="mt-2">
-                    <button v-if="!(isClicked === index)" @click="saveChildRecord(index)" type="button"
-                            class="btn btn-success"
-                            :disabled="!activeChildrenRow.includes(index)">
-                      Save
-                    </button>
-                    <button v-else class="btn btn-success" type="button" disabled>
-                      <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                      <span class="visually-hidden">Loading...</span>
-                    </button>
-                    <button @click="deleteChildRecord(index)" type="button" class="btn btn-outline-danger"><i
-                      class="far fa-trash-alt"></i></button>
+  <form @submit.prevent="updateRecord">
+    <!-- Spouse -->
+    <div class="ds-formsection">
+      <div class="ds-formsection__head">
+        <h3 class="ds-h3">Spouse</h3>
+        <p>Complete only if the member is married.</p>
+      </div>
 
-                  </div>
-                </td>
-              </tr>
-              </tbody>
-            </table>
-          </div>
-        </li>
-        <li class="mt-4">
-          <button v-if="!isLoading" @click="updateRecord()" class="btn btn-primary btn-lg px-4 py-2 w-50">
-            <h6 class="p-0 m-0">SAVE DETAILS</h6>
-          </button>
-          <button v-else class="btn btn-primary btn-lg px-4 py-2 w-50" type="button" disabled>
-            <h6 class="p-0 m-0"><span class="spinner-border spinner-border-sm" role="status"
-                                      aria-hidden="true"></span> LOADING ...</h6>
-          </button>
-        </li>
-      </ul>
-      <!--      </form>-->
-
+      <div class="ds-formgrid">
+        <div class="ds-field">
+          <label class="ds-label" for="s2SpouseFirst">First name</label>
+          <input id="s2SpouseFirst" v-model="memberInfo.spouseFirstName" class="ds-input" type="text">
+        </div>
+        <div class="ds-field">
+          <label class="ds-label" for="s2SpouseSurname">Surname</label>
+          <input id="s2SpouseSurname" v-model="memberInfo.spouseSurname" class="ds-input" type="text">
+        </div>
+        <div class="ds-field">
+          <label class="ds-label" for="s2SpouseOther">Other names</label>
+          <input id="s2SpouseOther" v-model="memberInfo.spouseOtherName" class="ds-input" type="text">
+        </div>
+        <div class="ds-field">
+          <label class="ds-label" for="s2SpouseTel1">Telephone number 1</label>
+          <input id="s2SpouseTel1" v-model="memberInfo.spouseFirstTelephoneNumber" class="ds-input" type="tel" inputmode="tel">
+        </div>
+        <div class="ds-field">
+          <label class="ds-label" for="s2SpouseTel2">Telephone number 2</label>
+          <input id="s2SpouseTel2" v-model="memberInfo.spouseSecondTelephoneNumber" class="ds-input" type="tel" inputmode="tel">
+        </div>
+      </div>
     </div>
-  </div>
+
+    <!-- Children -->
+    <div class="ds-formsection">
+      <div class="ds-formsection__head" style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap">
+        <div>
+          <h3 class="ds-h3">Children</h3>
+          <p>Complete only for members who have children. Saved with this section.</p>
+        </div>
+        <button class="ds-btn ds-btn--secondary ds-btn--sm" type="button" @click="addChild">
+          <svg class="ds-btn__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-linecap="round" aria-hidden="true">
+            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          Add child
+        </button>
+      </div>
+
+      <div v-if="children.length" class="ds-tablewrap">
+        <div class="ds-tablescroll">
+          <table class="ds-table ds-table--cards">
+            <thead>
+              <tr>
+                <th>Name of child</th>
+                <th>Date of birth</th>
+                <th>Phone</th>
+                <th class="ds-col-action">Remove</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(child, index) in children" :key="index">
+                <td data-label="Name of child">
+                  <label class="sr-only-label" :for="`s2ChildName${index}`">Name of child {{ index + 1 }}</label>
+                  <input
+                    :id="`s2ChildName${index}`"
+                    v-model="child.nameOfChild"
+                    class="ds-input"
+                    type="text"
+                  >
+                </td>
+                <td data-label="Date of birth">
+                  <label class="sr-only-label" :for="`s2ChildDob${index}`">Date of birth of child {{ index + 1 }}</label>
+                  <input
+                    :id="`s2ChildDob${index}`"
+                    v-model="child.childDateOfBirth"
+                    class="ds-input"
+                    type="date"
+                  >
+                </td>
+                <td data-label="Phone">
+                  <label class="sr-only-label" :for="`s2ChildTel${index}`">Phone number of child {{ index + 1 }}</label>
+                  <input
+                    :id="`s2ChildTel${index}`"
+                    v-model="child.telephoneNumber"
+                    class="ds-input"
+                    type="tel"
+                    inputmode="tel"
+                  >
+                </td>
+                <td data-label="Remove" class="ds-col-action">
+                  <button
+                    class="ds-btn ds-btn--ghost ds-btn--sm ds-btn--danger-quiet"
+                    type="button"
+                    :aria-label="`Remove child ${index + 1}`"
+                    @click="deleteChildRecord(index)"
+                  >
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                         stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <polyline points="3 6 5 6 21 6"/>
+                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                    </svg>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div v-else class="ds-empty" style="padding:32px 24px;border:1px dashed var(--ds-border);border-radius:6px">
+        <h3 class="ds-h3">No children recorded</h3>
+        <p>Add a row for each child, then save this section.</p>
+        <button class="ds-btn ds-btn--secondary ds-btn--sm" type="button" @click="addChild">Add child</button>
+      </div>
+    </div>
+
+    <div class="ds-formactions">
+      <button class="ds-btn ds-btn--primary" type="submit" :disabled="isLoading">
+        <span v-if="isLoading" class="ds-btn__spinner"></span>
+        {{ isLoading ? 'Saving' : 'Save spouse and children' }}
+      </button>
+    </div>
+  </form>
 </template>
 
 <script>
-import {MembershipFormTwo} from "../../network/Member";
+import { MembershipFormTwo } from '../../network/Member'
 
 export default {
-  name: "SectionTwo",
+  name: 'SectionTwo',
   props: ['member'],
-  data() {
+  data () {
     return {
       id: '',
-      children: 1,
-      memberInfo: MembershipFormTwo,
-      childrenDetails: [],
-      activeChildrenRow: [],
-      isClicked: -1,
       isLoading: false,
+      memberInfo: Object.assign({}, MembershipFormTwo, { childInformation: [] })
     }
   },
-  mounted() {
-    this.id = this.$route.params.id;
-    this.memberInfo = Object.assign({}, this.member)
+  computed: {
+    children () {
+      return Array.isArray(this.memberInfo.childInformation) ? this.memberInfo.childInformation : []
+    }
+  },
+  mounted () {
+    this.id = this.$route.params.id
+    this.memberInfo = Object.assign({}, MembershipFormTwo, this.member)
 
-    this.memberInfo.childInformation.map((child) => {
+    // The API returns null when no children are recorded; the old code called
+    // .map() on it directly and threw.
+    if (!Array.isArray(this.memberInfo.childInformation)) {
+      this.$set(this.memberInfo, 'childInformation', [])
+    }
+
+    this.memberInfo.childInformation.forEach(child => {
       child.childDateOfBirth = this.formatDate(child.childDateOfBirth)
     })
-
   },
   methods: {
-    activate(index) {
-      if (this.activeChildrenRow.includes(index)) {
-      } else {
-        this.activeChildrenRow.push(index)
-      }
-    },
-    deactivate(index) {
-      if (this.activeChildrenRow.includes(index)) {
-        let theIndex = this.activeChildrenRow.indexOf(index)
-        this.activeChildrenRow.splice(theIndex, 1)
-      }
-      this.isClicked = -1
-    },
-    formatDate(rowDate) {
+    formatDate (rowDate) {
       if (rowDate == null) {
-        return ""
-      } else {
-        return rowDate.split("T")[0]
+        return ''
       }
+      return String(rowDate).split('T')[0]
     },
-    increaseChildrenCount() {
+    addChild () {
       this.memberInfo.childInformation.push({
-        nameOfChild: "",
+        nameOfChild: '',
         childDateOfBirth: null,
-        telephoneNumber: ""
+        telephoneNumber: ''
       })
     },
-    saveChildRecord(index) {
-      this.isClicked = index
-      this.memberInfo.childInformation[index] = {
-        nameOfChild: this.memberInfo.childInformation[index].nameOfChild,
-        childDateOfBirth: this.memberInfo.childInformation[index].childDateOfBirth,
-        telephoneNumber: this.memberInfo.childInformation[index].telephoneNumber
-      }
-      this.deactivate(index)
+    deleteChildRecord (index) {
+      this.memberInfo.childInformation.splice(index, 1)
     },
-    deleteChildRecord(index) {
-      let theIndex = this.memberInfo.childInformation.indexOf(this.memberInfo.childInformation[index])
-      this.memberInfo.childInformation.splice(theIndex, 1)
-      this.deactivate(index)
-    },
-    updateRecord() {
-
+    updateRecord () {
       this.memberInfo.userId = this.id
       this.isLoading = true
-      this.$axios.put(`churchmembers/userdetails/${this.id}`, this.memberInfo).then(response => {
-        this.$toast.success("Successfully updated")
+
+      this.$axios.put(`churchmembers/userdetails/${this.id}`, this.memberInfo).then(() => {
+        this.$toast.success('Spouse and children saved')
         this.isLoading = false
       }).catch(error => {
-        this.$toast.success(error.response.data.message)
+        const message = error && error.response && error.response.data && error.response.data.message
+          ? error.response.data.message
+          : 'Could not save this section.'
+        this.$toast.error(message)
         this.isLoading = false
       })
-
     }
   }
 }
 </script>
 
 <style scoped>
-
+.sr-only-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
 </style>
