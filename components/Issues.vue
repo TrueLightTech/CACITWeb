@@ -1,241 +1,323 @@
 <template>
   <div>
-    <div class="row justify-content-center">
-      <div class="col-md-12 text-left d-flex justify-content-between mb-3">
+    <div class="ds-section__head">
+      <div>
+        <h2 class="ds-h2">Reported issues</h2>
+        <p class="ds-muted" style="margin:4px 0 0;font-size:var(--ds-text-sm)">
+          Messages members have sent to the church office.
+        </p>
+      </div>
 
-
-        <ul class="list-unstyled">
-          <li>
-            <h3>Issues <span style="font-size: 0.9em;">({{getStatus()}})</span></h3>
-          </li>
-        </ul>
-
-
-        <div>
-          <div class="dropdown">
-            <a class="btn btn-secondary dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
-               data-bs-toggle="dropdown" aria-expanded="false">
-              Filter
-            </a>
-
-            <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink">
-              <li><a @click="selectFilter(true)" class="dropdown-item" href="#">Resolved</a></li>
-              <li><a @click="selectFilter(false)" class="dropdown-item" href="#">Unresolved</a></li>
-            </ul>
-          </div>
-        </div>
-
-
+      <div class="ds-segment" role="tablist">
+        <button
+          type="button"
+          role="tab"
+          :class="{ 'is-active': !isResolved }"
+          :aria-selected="!isResolved ? 'true' : 'false'"
+          @click="selectFilter(false)"
+        >
+          Unresolved
+        </button>
+        <button
+          type="button"
+          role="tab"
+          :class="{ 'is-active': isResolved }"
+          :aria-selected="isResolved ? 'true' : 'false'"
+          @click="selectFilter(true)"
+        >
+          Resolved
+        </button>
       </div>
     </div>
 
-    <div class="row justify-content-center">
-      <div class="col-md-12">
-        <div v-if="!isLoading">
-          <div class="input-group text-end float-end w-50 mb-3">
-            <span class="input-group-text" id="basic-addon1" style="background-color: #f8f8f8;">
-              <i class="fa fa-search" style="color:#cdcdcd;"></i>
-            </span>
-            <input type="text" v-model="searchQuery" @keyup="searchByName()" class="form-control"
-                   placeholder="Search Issue by username"
-                   aria-label="Username"
-                   aria-describedby="basic-addon1">
+    <div class="ds-tablewrap">
+      <div class="ds-toolbar">
+        <div class="ds-toolbar__search ds-search">
+          <svg class="ds-search__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2" stroke-linecap="round" aria-hidden="true">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <input
+            v-model="searchQuery"
+            class="ds-input"
+            type="search"
+            aria-label="Search issues by member name"
+            placeholder="Search by member name"
+            @input="onSearchInput"
+          >
+          <button v-if="searchQuery" class="ds-search__clear" type="button" aria-label="Clear search" @click="clearSearch">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
+              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
+        <div class="ds-toolbar__right">
+          <span class="ds-toolbar__count">
+            {{ isLoading ? 'Loading…' : rows.length + (rows.length === 1 ? ' issue' : ' issues') }}
+          </span>
+        </div>
+      </div>
 
-          </div>
-          <table class="table table-hover table-responsive">
-            <thead>
-            <tr>
-              <th scope="col">#</th>
-              <th scope="col">Member</th>
-              <th scope="col">Title</th>
-              <th scope="col">Message</th>
-              <th class="text-end" scope="col">Actions</th>
+      <div v-if="isLoading" class="ds-tablescroll">
+        <table class="ds-table">
+          <thead><tr><th>Member</th><th>Issue</th><th>Status</th><th class="ds-col-action">Actions</th></tr></thead>
+          <tbody>
+            <tr v-for="n in 4" :key="n">
+              <td><span class="ds-skeleton" style="width:120px"></span></td>
+              <td><span class="ds-skeleton" style="width:80%"></span></td>
+              <td><span class="ds-skeleton ds-skeleton--pill"></span></td>
+              <td class="ds-col-action"><span class="ds-skeleton" style="width:28px;margin-left:auto"></span></td>
             </tr>
-            </thead>
-            <tbody>
-            <tr v-for="(issue,index) in issues.results" :key="index">
-              <th scope="row">{{index +1}}</th>
-              <td>{{issue.userName}}</td>
-              <td>{{issue.title}}</td>
-              <td>{{issue.issueMessage}}</td>
-              <td class="text-end">
-                <div class="btn-group">
-                  <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown"
-                          aria-expanded="false">
-                    Action
+          </tbody>
+        </table>
+      </div>
+
+      <div v-else-if="rows.length" class="ds-tablescroll">
+        <table class="ds-table ds-table--cards">
+          <thead>
+            <tr>
+              <th>Member</th>
+              <th>Issue</th>
+              <th>Status</th>
+              <th v-if="isChurchManager" class="ds-col-action">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(issue, index) in rows" :key="issue.id || index">
+              <td data-label="Member" style="font-weight:500">{{ issue.userName || '—' }}</td>
+              <td data-label="Issue" class="issue-cell">
+                <strong>{{ issue.title }}</strong>
+                <!-- The message was rendered untruncated in a table cell, so one
+                     long report destroyed the row grid. -->
+                <p>
+                  {{ expanded === issue.id ? issue.issueMessage : truncate(issue.issueMessage) }}
+                  <button
+                    v-if="isLong(issue.issueMessage)"
+                    class="issue-cell__toggle"
+                    type="button"
+                    @click="toggle(issue.id)"
+                  >
+                    {{ expanded === issue.id ? 'Show less' : 'Show more' }}
                   </button>
-                  <ul class="dropdown-menu">
-                    <li v-if="loggedInUser.data.roleId === '1'" @click="updateState(issue)">
-                      <NuxtLink v-if="!isResolved" class="dropdown-item" :to="''">Resolve</NuxtLink>
-                    </li>
-                    <li v-if="loggedInUser.data.roleId === '1'">
-                      <a @click="checkToDelete(issue.id)" class="dropdown-item text-danger" style="cursor: pointer;"
-                         data-bs-toggle="modal"
-                         data-bs-target="#exampleModal4">Delete
-                      </a>
-                    </li>
-                  </ul>
-                </div>
+                </p>
+              </td>
+              <td data-label="Status">
+                <span class="ds-status" :class="isResolved ? 'ds-status--success' : 'ds-status--warning'">
+                  <span class="ds-status__dot"></span>{{ isResolved ? 'Resolved' : 'Unresolved' }}
+                </span>
+              </td>
+              <td v-if="isChurchManager" data-label="Actions" class="ds-col-action">
+                <RowMenu :label="`Actions for issue from ${issue.userName}`">
+                  <template #default="{ close }">
+                    <button v-if="!isResolved" class="ds-menu__item" type="button" @click="updateState(issue); close()">
+                      Mark resolved
+                    </button>
+                    <span v-if="!isResolved" class="ds-menu__sep"></span>
+                    <button class="ds-menu__item ds-menu__item--danger" type="button" @click="askDelete(issue); close()">
+                      Delete issue
+                    </button>
+                  </template>
+                </RowMenu>
               </td>
             </tr>
-            </tbody>
-          </table>
-          <div v-if="!isLoading">
-            <p v-if="issues.results.length === 0" class="align-self-center text-center">No data found</p>
-          </div>
-        </div>
-        <page-loader v-else></page-loader>
+          </tbody>
+        </table>
+      </div>
 
+      <div v-else class="ds-empty">
+        <span class="ds-empty__icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          </svg>
+        </span>
+        <h3 class="ds-h3">
+          {{ isSearching ? 'No issues match that search' : (isResolved ? 'No resolved issues' : 'Nothing outstanding') }}
+        </h3>
+        <p v-if="isSearching">Check the spelling, or clear the search.</p>
+        <p v-else-if="isResolved">Issues you resolve will be listed here.</p>
+        <p v-else>No members are waiting on a reply right now.</p>
+        <button v-if="isSearching" class="ds-btn ds-btn--secondary ds-btn--sm" type="button" @click="clearSearch">
+          Clear search
+        </button>
       </div>
     </div>
 
-    <!-- Modal -->
-    <div class="modal fade" id="exampleModal4" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-      <div class="modal-dialog modal-dialog-centered modal-sm">
-        <div class="modal-content">
-          <div class="modal-header">
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body text-center">
-            <ul class="list-unstyled">
-              <li><h3>{{this.title}}</h3></li>
-              <li><p>
-                {{this.message}}
-              </p></li>
-            </ul>
-          </div>
-          <div class="modal-footer d-flex justify-content-center">
-            <button type="button" class="btn btn-secondary" @click="negativeButton()" data-bs-dismiss="modal">Cancel
-            </button>
-            <button type="button" class="btn btn-primary" @click="positiveButton()" data-bs-dismiss="modal">Continue
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-
+    <ConfirmDialog
+      :open="confirmOpen"
+      :busy="isDeleting"
+      title="Delete this issue?"
+      message="The member's report will be removed permanently. This cannot be undone."
+      confirm-label="Delete issue"
+      @cancel="confirmOpen = false"
+      @confirm="confirmDelete"
+    />
   </div>
 </template>
 
 <script>
-  import {mapGetters} from 'vuex'
-  import {IssuesList, OfferingList} from "../network/Member";
+import { mapGetters } from 'vuex'
+import { IssuesList } from '../network/Member'
+import { ROLE_CHURCH_MANAGER } from '../resources/navigation'
+import RowMenu from './RowMenu'
+import ConfirmDialog from './ConfirmDialog'
 
-  export default {
-    name: "Issues",
-    props: ['isActive'],
-    watch: {
-      isActive: function (newVal, oldVal) { // watch it
-        if (newVal) {
-          this.fetchServices()
-        }
+const SEARCH_DEBOUNCE_MS = 350
+const TRUNCATE_AT = 140
+
+export default {
+  name: 'Issues',
+  components: { RowMenu, ConfirmDialog },
+  props: {
+    isActive: { type: Boolean, default: false }
+  },
+  data () {
+    return {
+      isLoading: false,
+      isDeleting: false,
+      confirmOpen: false,
+      pendingDelete: null,
+      searchQuery: '',
+      searchTimer: null,
+      isResolved: false,
+      expanded: null,
+      issues: IssuesList
+    }
+  },
+  computed: {
+    ...mapGetters(['isAuthenticated', 'loggedInUser']),
+    isChurchManager () {
+      return this.loggedInUser && this.loggedInUser.data &&
+        this.loggedInUser.data.roleId === ROLE_CHURCH_MANAGER
+    },
+    rows () {
+      return this.issues && Array.isArray(this.issues.results) ? this.issues.results : []
+    },
+    isSearching () {
+      return this.searchQuery.trim().length > 0
+    }
+  },
+  watch: {
+    isActive (isVisible) {
+      if (isVisible) {
+        this.fetchIssues()
+      }
+    }
+  },
+  beforeMount () {
+    this.fetchIssues()
+  },
+  beforeDestroy () {
+    clearTimeout(this.searchTimer)
+  },
+  methods: {
+    errorMessage (error, fallback) {
+      return error && error.response && error.response.data && error.response.data.message
+        ? error.response.data.message
+        : fallback
+    },
+    isLong (message) {
+      return !!message && message.length > TRUNCATE_AT
+    },
+    truncate (message) {
+      if (!message) { return '—' }
+      return this.isLong(message) ? message.slice(0, TRUNCATE_AT) + '… ' : message
+    },
+    toggle (id) {
+      this.expanded = this.expanded === id ? null : id
+    },
+    selectFilter (status) {
+      this.isResolved = status
+      this.expanded = null
+      this.load()
+    },
+    onSearchInput () {
+      clearTimeout(this.searchTimer)
+      this.searchTimer = setTimeout(() => this.load(), SEARCH_DEBOUNCE_MS)
+    },
+    clearSearch () {
+      clearTimeout(this.searchTimer)
+      this.searchQuery = ''
+      this.load()
+    },
+    load () {
+      if (this.isSearching) {
+        this.searchByName()
+      } else {
+        this.fetchIssues()
       }
     },
-    beforeMount() {
-      this.fetchServices()
+    fetchIssues () {
+      this.isLoading = true
+      this.$axios.get(`issues?IsResolved=${this.isResolved}`).then(response => {
+        this.issues = Object.assign({}, IssuesList, response.data.data)
+        this.isLoading = false
+      }).catch(() => {
+        this.isLoading = false
+      })
     },
-    data() {
-      return {
-        title: "Are you sure?",
-        message: 'You are about to delete this Issue.',
-        isLoading: false,
-        serviceName: '',
-        toDeleteId: '',
-        searchQuery: '',
-        isResolved: false,
-        serviceDescription: '',
-        issues: IssuesList
+    searchByName () {
+      this.isLoading = true
+      this.$axios.get(`issues?IsResolved=${this.isResolved}&UserName=${encodeURIComponent(this.searchQuery.trim())}`)
+        .then(response => {
+          this.issues = Object.assign({}, IssuesList, response.data.data)
+          this.isLoading = false
+        }).catch(() => {
+          this.isLoading = false
+        })
+    },
+    updateState (issue) {
+      const requestBody = {
+        userId: this.loggedInUser.data.id,
+        isResolved: true
       }
+
+      this.$axios.put(`issues/${issue.id}`, requestBody).then(() => {
+        this.$toast.success('Issue marked resolved')
+        this.load()
+      }).catch(error => {
+        // Previously reported through $toast.success, so failures looked like successes.
+        this.$toast.error(this.errorMessage(error, 'Could not update this issue.'))
+      })
     },
-    methods: {
-      updateState(data) {
-
-        const requestBody = {
-          userId: this.loggedInUser.data.id,
-          isResolved: true
-        }
-
-        this.$axios.put(`issues/${data.id}`, requestBody).then(response => {
-          this.$toast.success("Successfully Updated")
-          this.isLoading = false
-          this.fetchServices()
-        }).catch(error => {
-          this.$toast.success(error.response.data.message)
-          this.isLoading = false
-        })
-      },
-      getStatus() {
-        if (this.isResolved) {
-          return "Resolved"
-        } else {
-          return "Unresolved"
-        }
-      },
-      selectFilter(status) {
-        this.isResolved = status
-        this.fetchServices()
-      },
-      saveService() {
-        const requestBody = {
-          name: this.serviceName,
-          description: this.serviceDescription
-        }
-        this.$axios.post(`issues`, requestBody).then(response => {
-          this.$toast.success("Successfully recorded")
-          this.isLoading = false
-          this.fetchServices()
-        }).catch(error => {
-          this.$toast.success(error.response.data.message)
-          this.isLoading = false
-        })
-      },
-      searchByName() {
-
-        let filterBy = ''
-        filterBy = `UserName=${this.searchQuery}`
-
-        this.$axios.get(`issues?IsResolved=${this.isResolved}&${filterBy}`).then(response => {
-          this.issues = Object.assign(IssuesList, response.data.data)
-
-        }).catch(error => {
-          // this.isLoading = false
-        })
-      },
-      fetchServices() {
-        this.isLoading = true
-        this.$axios.get(`issues?IsResolved=${this.isResolved}`).then(response => {
-          this.issues = Object.assign(IssuesList, response.data.data)
-
-          this.isLoading = false
-        }).catch(error => {
-          this.isLoading = false
-        })
-      },
-      checkToDelete(id) {
-        this.toDeleteId = id
-      },
-      deleteService(id) {
-        this.$axios.delete(`issues/${id}`).then(response => {
-          this.fetchServices()
-          this.$toast.info("Issue successfully deleted.")
-        }).catch(error => {
-          console.log(error)
-        })
-      },
-      positiveButton() {
-        this.deleteService(this.toDeleteId)
-      },
-      negativeButton() {
-        // this.$emit("onclick", "negative")
-      }
+    askDelete (issue) {
+      this.pendingDelete = issue
+      this.confirmOpen = true
     },
-    computed: {
-      ...mapGetters(['isAuthenticated', 'loggedInUser'])
+    confirmDelete () {
+      if (!this.pendingDelete) { return }
+      this.isDeleting = true
+
+      this.$axios.delete(`issues/${this.pendingDelete.id}`).then(() => {
+        this.isDeleting = false
+        this.confirmOpen = false
+        this.pendingDelete = null
+        this.$toast.success('Issue deleted')
+        this.load()
+      }).catch(error => {
+        this.isDeleting = false
+        this.confirmOpen = false
+        this.$toast.error(this.errorMessage(error, 'Could not delete this issue.'))
+      })
     }
   }
+}
 </script>
 
 <style scoped>
+.issue-cell { max-width: 460px; }
+.issue-cell strong { display: block; font-weight: 600; margin-bottom: 2px; }
+.issue-cell p { margin: 0; color: var(--ds-text-2); font-size: var(--ds-text-base); overflow-wrap: anywhere; }
 
+.issue-cell__toggle {
+  border: 0;
+  background: none;
+  padding: 0;
+  font: inherit;
+  font-weight: 500;
+  color: var(--ds-navy);
+  cursor: pointer;
+  text-decoration: underline;
+}
 </style>

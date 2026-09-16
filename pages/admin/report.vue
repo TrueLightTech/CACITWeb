@@ -1,105 +1,96 @@
 <template>
-  <div class="container">
-    <div v-if="!pageRefresh" class="row justify-content-center mt-10">
-      <div class="row justify-content-center">
-        <div class="col text-center">
-          <ul class="list-unstyled">
-            <li><h2 class="py-2">Report An Issue</h2></li>
-            <li><p></p></li>
-          </ul>
-        </div>
-      </div>
-      <div class="col-md-6 mb-5">
-        <div class="card p-3 mt-4">
-          <div class="card-body">
-            <div class="row g-3">
-              <div class="col-12">
-
-                <div class="mb-3">
-                  <label for="exampleFormControlInput1" class="form-label">Title</label>
-                  <input v-model="title" type="text" class="form-control" id="exampleFormControlInput1" placeholder="">
-                </div>
-                <div class="mb-3">
-                  <label for="exampleFormControlTextarea1" class="form-label">Message</label>
-                  <textarea v-model="message" class="form-control" id="exampleFormControlTextarea1" rows="5"></textarea>
-                </div>
-              </div>
-            </div>
-
-            <div class="row justify-content-end text-end">
-
-              <div class="col-12 my-3">
-                <button v-if="!isLoading" @click="createReport()" type="button" :class="activateButton()">Send
-                </button>
-                <button v-else class="btn btn-primary btn-lg px-4" type="button" disabled>
-                  <h6 class="p-0 m-0"><span class="spinner-border spinner-border-sm" role="status"
-                                            aria-hidden="true"></span> LOADING ...</h6>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+  <div>
+    <div class="ds-page-head">
+      <div class="ds-page-head__copy">
+        <h1 class="ds-h1">Report an issue</h1>
+        <p>Send a message to the church office. Someone will follow it up.</p>
       </div>
     </div>
-    <PageLoader class="mt-10" v-else></PageLoader>
+
+    <form class="ds-card" style="max-width:640px" @submit.prevent="createReport">
+      <div class="ds-card__body">
+        <div class="ds-field" :class="{ 'is-invalid': showErrors && !title }">
+          <label class="ds-label" for="issueTitle">What is this about?</label>
+          <input
+            id="issueTitle"
+            v-model="title"
+            class="ds-input"
+            type="text"
+            placeholder="A short summary"
+          >
+          <span v-if="showErrors && !title" class="ds-error">Add a short summary so the office can sort it.</span>
+        </div>
+
+        <div class="ds-field" :class="{ 'is-invalid': showErrors && !message }" style="margin-bottom:0">
+          <label class="ds-label" for="issueMessage">Details</label>
+          <textarea
+            id="issueMessage"
+            v-model="message"
+            class="ds-textarea"
+            rows="6"
+            placeholder="Explain what happened, and what you need"
+          ></textarea>
+          <span v-if="showErrors && !message" class="ds-error">Tell the office what you need help with.</span>
+        </div>
+      </div>
+
+      <div class="ds-card__foot" style="display:flex;gap:8px;justify-content:flex-end">
+        <button class="ds-btn ds-btn--ghost" type="button" @click="$router.push('/admin/dashboard')">Cancel</button>
+        <button class="ds-btn ds-btn--primary" type="submit" :disabled="isLoading">
+          <span v-if="isLoading" class="ds-btn__spinner"></span>
+          {{ isLoading ? 'Sending' : 'Send to the office' }}
+        </button>
+      </div>
+    </form>
   </div>
 </template>
 
 <script>
-  import {mapGetters} from 'vuex'
+import { mapGetters } from 'vuex'
 
-  import {ChurchMember} from "../../network/Member";
-
-  export default {
-    name: "report",
-    data() {
-      return {
-        update: ChurchMember,
-        isLoading: false,
-        pageRefresh: false,
-        title: '',
-        message: '',
+export default {
+  name: 'report',
+  data () {
+    return {
+      isLoading: false,
+      showErrors: false,
+      title: '',
+      message: ''
+    }
+  },
+  computed: {
+    ...mapGetters(['isAuthenticated', 'loggedInUser'])
+  },
+  methods: {
+    createReport () {
+      // The old submit button was disabled by a CSS class only, so an empty
+      // form could still be posted.
+      if (!this.title || !this.message) {
+        this.showErrors = true
+        return
       }
-    },
-    methods: {
-      activateButton() {
-        if (this.isInputFieldsValid()) {
-          return "btn btn-primary px-5"
-        } else {
-          return "btn btn-primary px-5 disabled"
-        }
-      },
-      isInputFieldsValid() {
-        const isValid = (currentValue) => currentValue.length !== 0;
-        const inputArray = [this.title, this.message];
-        return inputArray.every(isValid)
-      },
-      createReport() {
-        this.isLoading = true
+      this.showErrors = false
+      this.isLoading = true
 
-        let requestBody = {
-          userId: this.loggedInUser.data.id,
-          title: this.title,
-          issueMessage: this.message
-        }
+      const requestBody = {
+        userId: this.loggedInUser.data.id,
+        title: this.title,
+        issueMessage: this.message
+      }
 
-        this.$axios.post('issues', requestBody).then(response => {
-          this.$toast.success("Successfully created")
-          this.isLoading = false
-
-          this.$router.push('/admin/dashboard')
-        }).catch(error => {
-          this.$toast.success(error.response.data.message)
-          this.isLoading = false
-        })
-      },
-    },
-    computed: {
-      ...mapGetters(['isAuthenticated', 'loggedInUser'])
+      this.$axios.post('issues', requestBody).then(() => {
+        this.$toast.success('Your issue has been sent to the church office')
+        this.isLoading = false
+        this.$router.push('/admin/dashboard')
+      }).catch(error => {
+        // Previously reported through $toast.success, so failures looked like successes.
+        const text = error && error.response && error.response.data && error.response.data.message
+          ? error.response.data.message
+          : 'Could not send this right now. Nothing was sent.'
+        this.$toast.error(text)
+        this.isLoading = false
+      })
     }
   }
+}
 </script>
-
-<style scoped>
-
-</style>
