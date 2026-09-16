@@ -1,16 +1,14 @@
 <template>
-  <div class="">
-    <AdminHeader></AdminHeader>
-    <Nuxt/>
-  </div>
+  <AppShell>
+    <Nuxt />
+  </AppShell>
 </template>
 
 <script>
-  export default {
-    name: "default"
-  }
+import AppShell from '../components/AppShell'
+
+export default {
+  name: 'default',
+  components: { AppShell }
+}
 </script>
-
-<style scoped>
-
-</style>

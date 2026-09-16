@@ -23,16 +23,11 @@ export default {
     link: [
       {rel: 'icon', type: 'image/x-icon', href: '/favicon.ico'}
     ],
+    // Bootstrap's JS bundle is loaded once, locally. The Chart.js, Popper and
+    // Bootstrap CDN tags that also sat here were removed: Chart.js had no
+    // remaining consumer, and the other two duplicated the local bundle.
     script: [
-      {
-        src: "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.5.0/chart.min.js"
-      },
-      {src: "/bootstrap/bootstrap.bundle.min.js", type: "text/javascript"},
-      {
-        src: "https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"
-      }, {
-        src: "https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.min.js"
-      }
+      {src: "/bootstrap/bootstrap.bundle.min.js", type: "text/javascript"}
     ]
   },
 //
@@ -42,7 +37,8 @@ export default {
   // Global CSS: https://go.nuxtjs.dev/config-css
   css: [
     '~/assets/main.css',
-    '~/assets/admin.css'
+    '~/assets/admin.css',
+    '~/assets/design-system.css'
   ],
 
   // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
