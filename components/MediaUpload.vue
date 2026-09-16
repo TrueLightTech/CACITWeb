@@ -11,10 +11,12 @@
       <div v-if="allowsLink" class="mu__modes" role="tablist" :aria-label="'How to add ' + kindNoun">
         <button
           class="mu__mode"
-          :class="{ 'is-active': mode === 'upload' }"
+          :class="{ 'is-active': mode === 'upload', 'is-off': !canUploadThisKind }"
           type="button"
           role="tab"
           :aria-selected="mode === 'upload'"
+          :disabled="!canUploadThisKind"
+          :title="canUploadThisKind ? null : unavailableNote"
           @click="mode = 'upload'"
         >
           Upload a file
@@ -58,6 +60,14 @@
         </p>
         <p v-if="linkError" class="ds-error">{{ linkError }}</p>
       </div>
+
+      <!--
+        Said once, where the choice is made. Before this, picking a file was the
+        only obvious path and it failed with a message about server keys.
+      -->
+      <p v-if="allowsLink && !canUploadThisKind" class="ds-help mu__offnote">
+        {{ unavailableNote }}
+      </p>
 
       <div v-else class="mu__drop" :class="{ 'is-over': isDragging }"
            @dragover.prevent="isDragging = true"
@@ -156,6 +166,31 @@ const LINKED_PROVIDERS = ['youtube', 'vimeo', 'facebook', 'external']
 let uid = 0
 
 /**
+ * What the server can actually do, asked once for the whole page rather than
+ * once per upload box — a form can hold several.
+ */
+let capabilities = null
+let capabilitiesRequest = null
+
+function loadCapabilities (axios) {
+  if (capabilities) { return Promise.resolve(capabilities) }
+  if (!capabilitiesRequest) {
+    capabilitiesRequest = axios.get('media/capabilities')
+      .then(response => {
+        capabilities = (response.data && response.data.data) || {}
+        return capabilities
+      })
+      .catch(() => {
+        // An older server has no such endpoint. Assume everything works and
+        // let the upload itself report the truth, as it did before.
+        capabilities = { canUploadVideo: true, canUploadFiles: true }
+        return capabilities
+      })
+  }
+  return capabilitiesRequest
+}
+
+/**
  * Uploads one file straight to Cloudflare and hands back the media id.
  *
  * The bytes never pass through CACITapi: it issues an upload ticket, the
@@ -191,6 +226,9 @@ export default {
   data () {
     uid += 1
     return {
+      canUploadVideo: true,
+      canUploadFiles: true,
+      unavailableNote: '',
       inputId: `mediaUpload${uid}`,
       linkId: `mediaLink${uid}`,
       mode: 'upload',
@@ -213,6 +251,9 @@ export default {
     }
   },
   computed: {
+    canUploadThisKind () {
+      return this.kind === 'video' ? this.canUploadVideo : this.canUploadFiles
+    },
     allowsLink () {
       return this.allowLink && (this.kind === 'video' || this.kind === 'audio')
     },
@@ -281,6 +322,20 @@ export default {
         }
       }
     }
+  },
+  mounted () {
+    loadCapabilities(this.$axios).then(available => {
+      this.canUploadVideo = available.canUploadVideo !== false
+      this.canUploadFiles = available.canUploadFiles !== false
+      this.unavailableNote = available.videoUploadNote ||
+        'Uploading is off on this server. Paste a link instead.'
+
+      // Land on the tab that works, so nobody picks a file that cannot go
+      // anywhere. Only when a link is an option at all.
+      if (!this.canUploadThisKind && this.allowsLink) {
+        this.mode = 'link'
+      }
+    })
   },
   beforeDestroy () {
     this.stopPolling()
@@ -538,6 +593,9 @@ export default {
   position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
   overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
 }
+
+.mu__mode.is-off { opacity: .45; cursor: not-allowed; }
+.mu__offnote { margin-top: 10px; }
 
 .mu__modes { display: inline-flex; gap: 2px; margin-bottom: 12px; padding: 3px;
   background: var(--ds-surface-2); border-radius: 7px; }

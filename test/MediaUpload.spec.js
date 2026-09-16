@@ -42,6 +42,93 @@ describe('what the uploader offers', () => {
   })
 })
 
+describe('when the server cannot take uploads', () => {
+  /**
+   * The capability answer is cached for the whole page, so each case gets a
+   * fresh copy of the module rather than the previous case's answer.
+   */
+  function mountWith (capabilities, props = {}) {
+    let wrapper
+    jest.isolateModules(() => {
+      // eslint-disable-next-line global-require
+      const Fresh = require('../components/MediaUpload').default
+      wrapper = shallowMount(Fresh, {
+        propsData: Object.assign({ kind: 'video' }, props),
+        mocks: {
+          $axios: {
+            post: jest.fn().mockResolvedValue({ data: { data: {} } }),
+            get: jest.fn().mockResolvedValue({ data: { data: capabilities } })
+          }
+        }
+      })
+    })
+    return wrapper
+  }
+
+  const noVideo = {
+    canUploadVideo: false,
+    canUploadFiles: true,
+    videoUploadNote: 'Video upload is off. Paste a link instead.'
+  }
+
+  it('opens on the link, not on a file picker that would fail', async () => {
+    const wrapper = mountWith(noVideo)
+    await wrapper.vm.$nextTick()
+    await wrapper.vm.$nextTick()
+
+    expect(wrapper.vm.mode).toBe('link')
+    expect(wrapper.vm.canUploadThisKind).toBe(false)
+  })
+
+  it('says why, in words the office can act on', async () => {
+    const wrapper = mountWith(noVideo)
+    await wrapper.vm.$nextTick()
+    await wrapper.vm.$nextTick()
+
+    expect(wrapper.text()).toContain('Paste a link instead')
+  })
+
+  it('leaves audio alone when only video is off', async () => {
+    const wrapper = mountWith(noVideo, { kind: 'audio' })
+    await wrapper.vm.$nextTick()
+    await wrapper.vm.$nextTick()
+
+    expect(wrapper.vm.canUploadThisKind).toBe(true)
+    expect(wrapper.vm.mode).toBe('upload')
+  })
+
+  it('an image has no link to fall back to, so it stays on upload', async () => {
+    const wrapper = mountWith({ canUploadVideo: false, canUploadFiles: false }, { kind: 'image' })
+    await wrapper.vm.$nextTick()
+    await wrapper.vm.$nextTick()
+
+    // Switching to a mode the component does not offer would leave an empty box.
+    expect(wrapper.vm.mode).toBe('upload')
+  })
+
+  it('an older server with no such endpoint behaves as before', async () => {
+    let wrapper
+    jest.isolateModules(() => {
+      // eslint-disable-next-line global-require
+      const Fresh = require('../components/MediaUpload').default
+      wrapper = shallowMount(Fresh, {
+        propsData: { kind: 'video' },
+        mocks: {
+          $axios: {
+            post: jest.fn().mockResolvedValue({ data: { data: {} } }),
+            get: jest.fn().mockRejectedValue(new Error('404'))
+          }
+        }
+      })
+    })
+    await wrapper.vm.$nextTick()
+    await wrapper.vm.$nextTick()
+
+    expect(wrapper.vm.canUploadThisKind).toBe(true)
+    expect(wrapper.vm.mode).toBe('upload')
+  })
+})
+
 describe('applying an asset', () => {
   it('goes to ready and emits the media id', () => {
     const wrapper = mount()
