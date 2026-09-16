@@ -22,8 +22,19 @@ export const ROLE_CHURCH_MANAGER = '1'
 export const ROLE_FAMILY_MANAGER = '2'
 export const ROLE_MEMBER = '3'
 
-const EVERYONE = [ROLE_CHURCH_MANAGER, ROLE_FAMILY_MANAGER, ROLE_MEMBER]
+/**
+ * Pastoral Team. Added rather than widening the staff group, because a
+ * counselling request should not be readable by every family manager — the
+ * mobile app tells members only the pastoral team can see it, and the API now
+ * gates those endpoints on this role alone.
+ */
+export const ROLE_PASTORAL = '4'
+
+const EVERYONE = [ROLE_CHURCH_MANAGER, ROLE_FAMILY_MANAGER, ROLE_MEMBER, ROLE_PASTORAL]
 const STAFF = [ROLE_CHURCH_MANAGER, ROLE_FAMILY_MANAGER]
+const PASTORAL = [ROLE_PASTORAL, ROLE_CHURCH_MANAGER]
+
+export { STAFF, PASTORAL }
 
 export const navigation = [
   {
@@ -59,6 +70,22 @@ export const navigation = [
     title: 'Church',
     items: [
       { label: 'Announcements', to: '/admin/announcements', icon: 'announcement', roles: STAFF }
+    ]
+  },
+  {
+    title: 'Mobile App',
+    items: [
+      { label: 'App Overview', to: '/admin/app', icon: 'dashboard', roles: STAFF },
+      { label: 'Sermons', to: '/admin/app/sermons', icon: 'sermon', roles: STAFF },
+      { label: 'Shorts', to: '/admin/app/shorts', icon: 'shorts', roles: STAFF },
+      { label: 'Events', to: '/admin/app/events', icon: 'calendar', roles: STAFF },
+      { label: 'Videos', to: '/admin/app/videos', icon: 'video', roles: STAFF },
+      { label: 'Hymnal (Dwom)', to: '/admin/app/hymns', icon: 'hymn', roles: STAFF },
+      { label: 'Word for Today', to: '/admin/app/word', icon: 'verse', roles: STAFF },
+      { label: 'Live Service', to: '/admin/app/live', icon: 'live', roles: [ROLE_CHURCH_MANAGER] },
+      // Pastoral only — see the role note above.
+      { label: 'Requests', to: '/admin/app/requests', icon: 'support', roles: PASTORAL },
+      { label: 'Push Messages', to: '/admin/app/push', icon: 'push', roles: [ROLE_CHURCH_MANAGER] }
     ]
   },
   {
