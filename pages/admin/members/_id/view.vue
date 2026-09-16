@@ -345,8 +345,20 @@ export default {
       return require('~/assets/imgs/user.svg')
     },
     deleteMember () {
+      // The delete endpoint is keyed by phone number (UserAccountService
+      // matches on PhoneNumber), not by user id. This page previously passed
+      // the route's user id, so the request always 404'd and the button never
+      // worked. The members list has always passed phoneNumber.
+      const phoneNumber = this.member && this.member.phoneNumber
+
+      if (!phoneNumber) {
+        this.confirmOpen = false
+        this.$toast.error('This member has no phone number recorded, so they cannot be deleted here.')
+        return
+      }
+
       this.isDeleting = true
-      this.$axios.delete(`churchmembers/${this.$route.params.id}`).then(() => {
+      this.$axios.delete(`churchmembers/${phoneNumber}`).then(() => {
         this.isDeleting = false
         this.confirmOpen = false
         this.$toast.success('Member deleted')
