@@ -1,189 +1,144 @@
 <template>
-  <div class="container">
-
-
-    <div class="row justify-content-center mt-10">
-      <div class="col-md-12 col-lg-8 col-lx-8 text-left d-flex justify-content-between mb-3">
-
-        <ul class="list-unstyled">
-          <li>
-            <h3>Welfare</h3>
-          </li>
-        </ul>
-
-        <div>
-          <div class="btn-group">
-            <button type="button" class="btn btn-secondary dropdown-toggle"
-                    data-bs-toggle="dropdown"
-                    aria-expanded="false">
-              Year ({{ this.year }})
-            </button>
-            <ul class="dropdown-menu dropdown-menu-end">
-              <li v-for="(year,index) in generateArrayOfYears()" :key="index">
-                <button @click="setYear(year)" class="dropdown-item" type="button">{{ year }}</button>
-              </li>
-            </ul>
-          </div>
+  <div>
+    <div class="ds-page-head">
+      <div class="ds-page-head__copy">
+        <h1 class="ds-h1">My welfare</h1>
+        <p>{{ member.name || 'Your' }} welfare contributions and awards for {{ year }}.</p>
+      </div>
+      <div class="ds-page-head__actions">
+        <div class="ds-field" style="margin-bottom:0;min-width:130px">
+          <label class="ds-label sr-only-label" for="welfareYear">Year</label>
+          <select id="welfareYear" v-model="year" class="ds-select" @change="onYearChange">
+            <option v-for="value in generateArrayOfYears()" :key="value" :value="String(value)">{{ value }}</option>
+          </select>
         </div>
       </div>
     </div>
 
-
-    <div class="container">
-      <div class="row justify-content-around" v-if="!isLoadingMember">
-        <div class="col-md-12 col-lg-8 col-lx-8 text-left justify-content-between mb-3">
-          <hr>
-          <h4>{{ member.name }}</h4>
-        </div>
+    <!-- Totals -->
+    <div class="ds-metrics" style="margin-bottom:24px">
+      <div class="ds-metric">
+        <span class="ds-metric__label"><span class="ds-eyebrow">Paid by you</span></span>
+        <strong v-if="!isLoadingTotal" class="ds-metric__value">
+          <small>GHS</small>{{ formatMoney(welfareTotals.data.welfareBySelf) }}
+        </strong>
+        <span v-else class="ds-skeleton" style="height:28px;width:70%"></span>
+        <span class="ds-metric__foot">Your welfare contributions in {{ year }}</span>
       </div>
-      <div class="row justify-content-around">
-        <div class="col-md-12 col-lg-8 col-lx-8 text-center justify-content-between mb-3">
-          <div v-if="!isLoadingTotal" class="row justify-content-center text-center mb-3">
-            <div class="col-md-6 my-2">
-              <div class="card">
-                <div class="card-body text-center">
-                  <ul class="list-unstyled">
-                    <li><h6>GHs</h6></li>
-                    <li><h1>{{ formatMoney(welfareTotals.data.welfareBySelf) }}</h1></li>
-                    <li><p>Paid</p></li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-            <div class="col-md-6 my-2">
-              <div class="card">
-                <div class="card-body">
-                  <ul class="list-unstyled">
-                    <li><h6>GHs</h6></li>
-                    <li><h1>{{ formatMoney(welfareTotals.data.welfareByChurch) }}</h1></li>
-                    <li><p>Awarded</p></li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </div>
-          <PageLoader v-else></PageLoader>
-        </div>
+
+      <div class="ds-metric">
+        <span class="ds-metric__label"><span class="ds-eyebrow">Awarded by the church</span></span>
+        <strong v-if="!isLoadingTotal" class="ds-metric__value">
+          <small>GHS</small>{{ formatMoney(welfareTotals.data.welfareByChurch) }}
+        </strong>
+        <span v-else class="ds-skeleton" style="height:28px;width:70%"></span>
+        <span class="ds-metric__foot">Support received from the church in {{ year }}</span>
       </div>
     </div>
 
-    <div class="container">
-      <div class="row justify-content-center">
-
-        <div class="col-md-12 col-lg-8 col-lx-8 text-left justify-content-between mb-3">
-          <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
-            <li class="nav-item" role="presentation">
-              <button @click="isWelfareSelected(true)" class="nav-link active" id="pills-home-tab"
-                      data-bs-toggle="pill" data-bs-target="#pills-home"
-                      type="button" role="tab" aria-controls="pills-home" aria-selected="true">Paid
-              </button>
-            </li>
-            <li class="nav-item" role="presentation">
-              <button @click="isWelfareSelected(false)" class="nav-link" id="pills-profile-tab"
-                      data-bs-toggle="pill" data-bs-target="#pills-profile"
-                      type="button" role="tab" aria-controls="pills-profile" aria-selected="false">Awarded
-              </button>
-            </li>
-          </ul>
-          <div class="tab-content" id="pills-tabContent">
-            <div class="tab-pane fade show active" id="pills-home" role="tabpanel" aria-labelledby="pills-home-tab">
-              <div v-if="!isWelfareLoading" class="">
-                <div v-if="welfare.data.results.length !== 0">
-                  <table class="table">
-                    <thead>
-                    <tr>
-                      <th scope="col">#</th>
-                      <th scope="col">Amount (GHS)</th>
-                      <th scope="col">Date</th>
-                      <th scope="col">Received By</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr v-for="(item,index) in welfare.data.results" :key="index">
-                      <th scope="row">{{ index + 1 }}</th>
-                      <td>{{ formatMoney(item.transactionAmount) }}</td>
-                      <td>{{ $moment(item.createdAt).format('Do MMMM YYYY') }}</td>
-                      <td>{{ item.receivedBy }}</td>
-                    </tr>
-                    </tbody>
-                  </table>
-                </div>
-                <p class="d-flex justify-content-center my-5" v-else>
-                  No data
-                </p>
-              </div>
-              <PageLoader v-else></PageLoader>
-            </div>
-            <div class="tab-pane fade" id="pills-profile" role="tabpanel" aria-labelledby="pills-profile-tab">
-              <div class="" v-if="!isWelfareLoading">
-                <div v-if="welfare.data.results.length !== 0">
-                  <table class="table">
-                    <thead>
-                    <tr>
-                      <th scope="col">#</th>
-                      <th scope="col">Amount (GHS)</th>
-                      <th scope="col">Date</th>
-                      <th scope="col">Description</th>
-                      <th scope="col">Given By</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr v-for="(item,index) in welfare.data.results" :key="index">
-                      <th scope="row">{{ index + 1 }}</th>
-                      <td>{{ formatMoney(item.transactionAmount) }}</td>
-                      <td>{{ $moment(item.createdAt).format('Do MMMM YYYY') }}</td>
-                      <td>{{ item.description }}</td>
-                      <td>{{ item.receivedBy }}</td>
-                    </tr>
-                    </tbody>
-                  </table>
-                </div>
-                <p class="d-flex justify-content-center my-5" v-else>
-                  No data
-                </p>
-              </div>
-              <PageLoader v-else></PageLoader>
-            </div>
-          </div>
-
-
-        </div>
-
+    <!-- Transactions -->
+    <div class="ds-section__head">
+      <h2 class="ds-h2">Transactions</h2>
+      <div class="ds-segment" role="tablist">
+        <button
+          type="button"
+          role="tab"
+          :class="{ 'is-active': isSelf }"
+          :aria-selected="isSelf ? 'true' : 'false'"
+          @click="isWelfareSelected(true)"
+        >
+          Paid
+        </button>
+        <button
+          type="button"
+          role="tab"
+          :class="{ 'is-active': isChurch }"
+          :aria-selected="isChurch ? 'true' : 'false'"
+          @click="isWelfareSelected(false)"
+        >
+          Awarded
+        </button>
       </div>
     </div>
 
+    <div class="ds-tablewrap">
+      <div v-if="isWelfareLoading" class="ds-tablescroll">
+        <table class="ds-table">
+          <thead>
+            <tr><th>Date</th><th class="ds-col-num">Amount (GHS)</th><th>Received by</th></tr>
+          </thead>
+          <tbody>
+            <tr v-for="n in 4" :key="n">
+              <td><span class="ds-skeleton" style="width:110px"></span></td>
+              <td class="ds-col-num"><span class="ds-skeleton" style="width:70px;margin-left:auto"></span></td>
+              <td><span class="ds-skeleton" style="width:120px"></span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
+      <div v-else-if="rows.length" class="ds-tablescroll">
+        <table class="ds-table ds-table--cards">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th class="ds-col-num">Amount (GHS)</th>
+              <th v-if="isChurch">Reason</th>
+              <th>Received by</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(item, index) in rows" :key="item.id || index">
+              <td data-label="Date">{{ fmtDate(item.createdAt) }}</td>
+              <td data-label="Amount (GHS)" class="ds-col-num">{{ formatMoney(item.transactionAmount) }}</td>
+              <td v-if="isChurch" data-label="Reason" class="ds-muted">{{ item.description || '—' }}</td>
+              <td data-label="Received by" class="ds-muted">{{ item.receivedBy || '—' }}</td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr>
+              <td>Total shown</td>
+              <td class="ds-col-num">{{ formatMoney(rowsTotal) }}</td>
+              <td v-if="isChurch"></td>
+              <td></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      <div v-else class="ds-empty">
+        <span class="ds-empty__icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l8.8 8.8 8.8-8.8a5.5 5.5 0 0 0 0-7.8z"/>
+          </svg>
+        </span>
+        <h3 class="ds-h3">
+          {{ isSelf ? 'No welfare paid in ' + year : 'No welfare awarded in ' + year }}
+        </h3>
+        <p>
+          {{ isSelf
+            ? 'Welfare contributions recorded for you will appear here.'
+            : 'Support awarded to you by the church will appear here.' }}
+        </p>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
+import { ChurchMember, WelfareList, WelfareTotals } from '../../network/Member'
+import { numberWithCommas } from '../../resources/constants'
 
-import {mapGetters} from "vuex";
-import PageLoader from "../../components/PageLoader";
-import {ChurchMember, WelfareList, WelfareTotals} from "../../network/Member";
-import {numberWithCommas} from "../../resources/constants";
-
-const date = new Date();
+const date = new Date()
 
 export default {
-
-  name: "welfare",
-  components: {PageLoader},
-  mounted() {
-    this.id = this.loggedInUser.data.id;
-    this.getWelfares();
-    this.getWelfareTotals();
-    this.getMemberDetails();
-  },
-  data() {
+  name: 'welfare',
+  data () {
     return {
       id: '',
-      amount: 0.0,
-      title: "Are you sure?",
-      message: 'You are about to delete this Welfare.',
-      year: date.getFullYear() + "",
-      description: '',
-      toDeleteId: '',
+      year: date.getFullYear() + '',
       isLoadingMember: false,
       member: ChurchMember,
       isWelfareLoading: false,
@@ -194,121 +149,92 @@ export default {
       isChurch: false
     }
   },
+  computed: {
+    ...mapGetters(['isAuthenticated', 'loggedInUser']),
+    rows () {
+      return this.welfare && this.welfare.data && Array.isArray(this.welfare.data.results)
+        ? this.welfare.data.results
+        : []
+    },
+    rowsTotal () {
+      return this.rows.reduce((sum, item) => sum + Number(item.transactionAmount || 0), 0)
+    }
+  },
+  mounted () {
+    this.id = this.loggedInUser.data.id
+    this.getWelfares()
+    this.getWelfareTotals()
+    this.getMemberDetails()
+  },
   methods: {
-    formatMoney(value) {
-      return numberWithCommas(value)
+    formatMoney (value) {
+      return numberWithCommas(Number(value || 0))
     },
-    setYear(year) {
-      this.year = year
-      this.getWelfares();
-      this.getWelfareTotals();
+    fmtDate (value) {
+      if (!value) { return '—' }
+      const parsed = this.$moment(value)
+      return parsed.isValid() ? parsed.format('D MMMM YYYY') : '—'
     },
-    checkToDelete(id) {
-      this.toDeleteId = id
+    onYearChange () {
+      this.getWelfares()
+      this.getWelfareTotals()
     },
-    generateArrayOfYears() {
-      let max = new Date().getFullYear()
-      let min = max - 12
-      let years = []
-
+    generateArrayOfYears () {
+      const max = new Date().getFullYear()
+      const min = max - 12
+      const years = []
       for (let i = max; i >= min; i--) {
         years.push(i)
       }
       return years
     },
-    isWelfareSelected(type) {
-      if (type) {
-        this.isSelf = true
-        this.isChurch = false
-      } else {
-        this.isSelf = false
-        this.isChurch = true
-      }
-      this.getWelfares();
-    }, isSelected(type) {
-      if (type) {
-        this.isSelf = true
-        this.isChurch = false
-      } else {
-        this.isSelf = false
-        this.isChurch = true
-      }
+    isWelfareSelected (type) {
+      this.isSelf = type
+      this.isChurch = !type
+      this.getWelfares()
     },
-    recordWelfare() {
-      const requestBody = {
-        userId: this.id,
-        transactionAmount: parseFloat(this.amount),
-        year: this.year + "",
-        isWelfarePaidBySelf: this.isSelf,
-        isWelfarePaidByChurch: this.isChurch,
-        description: this.description
-      }
-
-      if (this.amount > 0.0) {
-        if (this.isChurch && this.description.length !== 0) {
-          this.$axios.post(`welfaretransactions`, requestBody).then(response => {
-            this.$toast.success("Successfully added")
-            this.isLoading = false
-            this.getWelfares();
-            this.getWelfareTotals();
-            this.clearFields();
-          }).catch(error => {
-            this.$toast.success(error.response.data.message)
-            this.isLoading = false
-          })
-        } else if (this.isSelf) {
-          this.$axios.post(`welfaretransactions`, requestBody).then(response => {
-            this.$toast.success("Successfully added")
-            this.isLoading = false
-            this.getWelfares();
-            this.getWelfareTotals();
-            this.clearFields();
-          }).catch(error => {
-            this.$toast.success(error.response.data.message)
-            this.isLoading = false
-          })
-        }
-      }
-    },
-    getWelfareTotals() {
+    getWelfareTotals () {
       this.isLoadingTotal = true
       this.$axios.get(`welfaretransactions/total?userId=${this.id}&year=${this.year}`).then(response => {
-        this.welfareTotals = Object.assign(WelfareTotals, response.data)
+        this.welfareTotals = Object.assign({}, WelfareTotals, response.data)
         this.isLoadingTotal = false
-      }).catch(error => {
-        // this.$toast.success(error.response.data.message)
+      }).catch(() => {
         this.isLoadingTotal = false
       })
-
     },
-    getMemberDetails() {
+    getMemberDetails () {
       this.isLoadingMember = true
       this.$axios.get(`churchmembers/user/${this.id}`).then(response => {
-        this.member = Object.assign(ChurchMember, response.data.data)
+        this.member = Object.assign({}, ChurchMember, response.data.data)
         this.isLoadingMember = false
-      }).catch(error => {
-        // this.$toast.success(error.response.data.message)
+      }).catch(() => {
         this.isLoadingMember = false
       })
-
     },
-    getWelfares() {
+    getWelfares () {
       this.isWelfareLoading = true
-      this.$axios.get(`welfaretransactions?UserId=${this.id}&IsWelfarePaidBySelf=${this.isSelf}&IsWelfarePaidByChurch=${this.isChurch}&Year=${this.year}&PageSize=20`).then(response => {
-        this.welfare = Object.assign(WelfareList, response.data)
-        this.isWelfareLoading = false
-      }).catch(error => {
-        this.$toast.success(error.response.data.message)
-        this.isWelfareLoading = false
-      })
+      this.$axios.get(`welfaretransactions?UserId=${this.id}&IsWelfarePaidBySelf=${this.isSelf}&IsWelfarePaidByChurch=${this.isChurch}&Year=${this.year}&PageSize=20`)
+        .then(response => {
+          this.welfare = Object.assign({}, WelfareList, response.data)
+          this.isWelfareLoading = false
+        }).catch(() => {
+          // Previously raised a success toast on failure; an empty list is
+          // shown instead, which is what the screen can actually say.
+          this.welfare = Object.assign({}, WelfareList, { data: { results: [] } })
+          this.isWelfareLoading = false
+        })
     }
-  },
-  computed: {
-    ...mapGetters(['isAuthenticated', 'loggedInUser'])
   }
 }
 </script>
 
 <style scoped>
-
+.sr-only-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
 </style>

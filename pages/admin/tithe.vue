@@ -1,154 +1,159 @@
 <template>
-
-  <div class="container">
-
-    <div v-if="!pageRefresh" class="row justify-content-center mt-10">
-      <div class="row justify-content-center">
-        <div class="col text-center">
-          <ul class="list-unstyled">
-            <li><h2 class="py-2">Tithe ( {{ month }} {{ year }}) </h2></li>
-            <li><h5>({{ this.loggedInUser.data.name }})</h5></li>
-            <li>
-            </li>
-          </ul>
-        </div>
-
-        <div class="row justify-content-center my-4">
-          <div class="col-md-6">
-            <div class="d-flex justify-content-end">
-              <div class="d-flex justify-content-end">
-                <div class="dropdown w-100">
-                  <button class="btn btn-primary btn-lg dropdown-toggle" type="button" id="dropdownMenuButton1"
-                          data-bs-toggle="dropdown" aria-expanded="false">
-                    Month
-                  </button>
-                  <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                    <li @click="setMonth(index)" v-for="(month,index) in months" :key="index"><a
-                      class="dropdown-item" href="#">
-                      {{ month }}
-                    </a></li>
-                  </ul>
-                </div>
-
-                <div class="dropdown mx-2  w-100">
-                  <button class="btn btn-primary btn-lg dropdown-toggle" type="button" id="dropdownMenuButton1"
-                          data-bs-toggle="dropdown" aria-expanded="false">
-                    Year
-                  </button>
-                  <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                    <li @click="setYear(year)" v-for="(year,index) in generateArrayOfYears()" :key="index"><a
-                      class="dropdown-item" href="#">
-                      {{ year }}
-                    </a></li>
-                  </ul>
-                </div>
-              </div>
-
-              <button type="button" class="btn btn-success w-25 d-none" disabled>Save</button>
-            </div>
-          </div>
-        </div>
+  <div>
+    <div class="ds-page-head">
+      <div class="ds-page-head__copy">
+        <h1 class="ds-h1">My tithe</h1>
+        <p>{{ loggedInUser.data.name }} — what you have given, week by week.</p>
       </div>
-      <div class="col-md-6">
-        <div class="table-responsive">
-          <table class="table table-bordered border-primary">
-            <thead>
-            <tr class="text-center">
-              <th scope="col">Weeks</th>
-              <th scope="col">Amount (GHS)</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr class="text-center" v-for="i in weeks">
-              <th scope="row"><h2>{{ i }}</h2></th>
-              <td><h2>{{ formatMoney(tithe['week' + i]) }}</h2></td>
-            </tr>
-            <tr scope="row" class="text-center">
-              <th><h2>Total</h2></th>
-              <td><h2>GHS {{ formatMoney(getTotal()) }}</h2></td>
-            </tr>
-            </tbody>
-          </table>
+    </div>
+
+    <!-- The period selector shows the period it is set to, rather than two
+         buttons permanently labelled "Month" and "Year". -->
+    <div class="ds-card" style="margin-bottom:24px">
+      <div class="ds-card__body" style="display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end">
+        <div class="ds-field" style="margin-bottom:0;min-width:160px">
+          <label class="ds-label" for="titheMonth">Month</label>
+          <select id="titheMonth" v-model="month" class="ds-select" @change="getTithe(loggedInUser.data.id)">
+            <option v-for="(name, index) in months" :key="index" :value="name">{{ monthNames[index] }}</option>
+          </select>
+        </div>
+
+        <div class="ds-field" style="margin-bottom:0;min-width:140px">
+          <label class="ds-label" for="titheYear">Year</label>
+          <select id="titheYear" v-model="year" class="ds-select" @change="getTithe(loggedInUser.data.id)">
+            <option v-for="value in generateArrayOfYears()" :key="value" :value="value">{{ value }}</option>
+          </select>
         </div>
       </div>
     </div>
-    <PageLoader v-else class="mt-10"></PageLoader>
 
+    <div class="ds-tablewrap">
+      <div v-if="pageRefresh" class="ds-tablescroll">
+        <table class="ds-table">
+          <thead>
+            <tr><th>Week</th><th class="ds-col-num">Amount (GHS)</th></tr>
+          </thead>
+          <tbody>
+            <tr v-for="n in 5" :key="n">
+              <td><span class="ds-skeleton" style="width:60px"></span></td>
+              <td class="ds-col-num"><span class="ds-skeleton" style="width:70px;margin-left:auto"></span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div v-else class="ds-tablescroll">
+        <table class="ds-table">
+          <caption class="sr-only-caption">Tithe for {{ monthLabel }} {{ year }}</caption>
+          <thead>
+            <tr>
+              <th>Week</th>
+              <th class="ds-col-num">Amount (GHS)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="i in weeks" :key="i">
+              <td>Week {{ i }}</td>
+              <td class="ds-col-num">{{ formatMoney(tithe['week' + i]) }}</td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr>
+              <td>Total for {{ monthLabel }} {{ year }}</td>
+              <td class="ds-col-num">{{ formatMoney(getTotal()) }}</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+
+    <p v-if="!pageRefresh && getTotal() === 0" class="ds-muted" style="margin-top:16px">
+      No tithe is recorded for {{ monthLabel }} {{ year }}.
+    </p>
   </div>
-
 </template>
 
 <script>
-import {mapGetters} from 'vuex'
-import {Tithe} from "../../network/Member";
-import {numberWithCommas} from "../../resources/constants";
+import { mapGetters } from 'vuex'
+import { Tithe } from '../../network/Member'
+import { numberWithCommas } from '../../resources/constants'
 
-const date = new Date();
-const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+const date = new Date()
 
+/** Short codes are what the API expects; full names are what people read. */
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+const MONTH_NAMES = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December'
+]
 
 export default {
-  name: "tithe",
-  data() {
+  name: 'tithe',
+  data () {
     return {
-      week: 1,
       pageRefresh: false,
-      amountPaid: 0,
       tithe: Tithe,
-      totalAmount: 0,
-      month: months[date.getMonth()],
+      month: MONTHS[date.getMonth()],
       year: date.getFullYear(),
       weeks: [1, 2, 3, 4, 5],
-      months: months,
+      months: MONTHS,
+      monthNames: MONTH_NAMES
     }
   },
   computed: {
-    ...mapGetters(['isAuthenticated', 'loggedInUser'])
+    ...mapGetters(['isAuthenticated', 'loggedInUser']),
+    monthLabel () {
+      const index = MONTHS.indexOf(this.month)
+      return index === -1 ? this.month : MONTH_NAMES[index]
+    }
   },
-  beforeMount() {
+  beforeMount () {
     this.getTithe(this.loggedInUser.data.id)
   },
   methods: {
-    formatMoney(value) {
-      return numberWithCommas(value)
+    formatMoney (value) {
+      return numberWithCommas(Number(value || 0))
     },
-    weekSelected(i) {
-      this.week = i
-    },
-    setYear(yr) {
-      this.year = yr
-      this.getTithe(this.loggedInUser.data.id)
-    },
-    setMonth(mth) {
-      this.month = this.months[mth];
-      this.getTithe(this.loggedInUser.data.id)
-    },
-    generateArrayOfYears() {
-      let max = new Date().getFullYear()
-      let min = max - 12
-      let years = []
-
+    generateArrayOfYears () {
+      const max = new Date().getFullYear()
+      const min = max - 12
+      const years = []
       for (let i = max; i >= min; i--) {
         years.push(i)
       }
       return years
     },
-    getTithe(id) {
+    getTithe (id) {
       this.pageRefresh = true
       this.$axios.get(`tithes/${id}/?Month=${this.month}&Year=${this.year}`).then(response => {
-        this.tithe = Object.assign(this.tithe, response.data.data)[this.month]
+        // The response is keyed by month code. Fall back to an empty week set
+        // rather than undefined, which the week rows would then read through.
+        const byMonth = Object.assign({}, response.data.data)
+        this.tithe = Object.assign({}, Tithe, byMonth[this.month] || {})
         this.pageRefresh = false
-      }).catch(error => {
+      }).catch(() => {
+        this.tithe = Object.assign({}, Tithe)
         this.pageRefresh = false
       })
     },
-    getTotal() {
-      return [this.tithe.week1, this.tithe.week2, this.tithe.week3, this.tithe.week4, this.tithe.week5].reduce((a, b) => a + b, 0)
-    },
+    getTotal () {
+      if (!this.tithe) { return 0 }
+      return [
+        this.tithe.week1, this.tithe.week2, this.tithe.week3,
+        this.tithe.week4, this.tithe.week5
+      ].reduce((a, b) => Number(a || 0) + Number(b || 0), 0)
+    }
   }
 }
 </script>
 
 <style scoped>
-
+.sr-only-caption {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
 </style>
