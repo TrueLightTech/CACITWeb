@@ -338,13 +338,17 @@ export default {
       })
     },
     publishNow (row) {
-      // Publishing from the list sends the row back with its status changed and
-      // nothing else touched, so this cannot quietly blank a field the list
-      // does not show.
-      this.$axios.put(`${this.endpoint}/${row.id}`, Object.assign({}, row, {
+      // Only the publishing state is sent.
+      //
+      // This used to post the row back through the update endpoint, which is
+      // quietly destructive: a list row is a RESPONSE, and a response carries a
+      // resolved media object where the request expects a media id — so
+      // publishing a sermon from the list detached its recording. The dedicated
+      // endpoint changes one field and leaves the rest alone.
+      this.$axios.put(`${this.endpoint}/${row.id}/publish`, {
         status: 'published',
         publishAt: null
-      })).then(() => {
+      }).then(() => {
         this.$toast.success(`${this.capitalise(this.singular)} published`)
         this.load(this.paging.page)
       }).catch(error => {
