@@ -1,245 +1,317 @@
 <template>
-  <main class="dashboard-page">
-    <section class="dashboard-shell">
-      <section class="dashboard-hero">
-        <div class="hero-copy">
-          <span class="dashboard-kicker">{{ dashboardRoleLabel }}</span>
-          <h1>{{ dashboardTitle }}</h1>
-          <p>{{ dashboardSubtitle }}</p>
-        </div>
-
-        <NuxtLink v-if="hasPrimaryAction" :to="primaryActionPath" class="primary-action">
+  <div>
+    <div class="ds-page-head">
+      <div class="ds-page-head__copy">
+        <span class="ds-eyebrow">{{ dashboardRoleLabel }}</span>
+        <h1 class="ds-h1" style="margin-top:6px">{{ dashboardTitle }}</h1>
+        <p>{{ dashboardSubtitle }}</p>
+      </div>
+      <div v-if="hasPrimaryAction" class="ds-page-head__actions">
+        <NuxtLink :to="primaryActionPath" class="ds-btn ds-btn--primary">
           {{ primaryActionLabel }}
         </NuxtLink>
-      </section>
+      </div>
+    </div>
 
-      <section v-if="isManager" class="metrics-grid" aria-label="Dashboard totals">
-        <article class="metric-card metric-card-featured">
-          <div class="metric-topline">
-            <span>Total today</span>
-            <span class="metric-currency">GHS</span>
+    <!-- Manager totals -->
+    <section v-if="isManager" class="ds-section" aria-label="Today's totals">
+      <div class="ds-section__head">
+        <h2 class="ds-h2">Today</h2>
+        <span class="ds-meta">{{ todayLabel }}</span>
+      </div>
+
+      <div class="ds-metrics">
+        <NuxtLink class="ds-metric" to="/admin/accounting">
+          <span class="ds-metric__label"><span class="ds-eyebrow">Total received</span></span>
+          <strong v-if="!isAccountingLoading" class="ds-metric__value">
+            <small>GHS</small>{{ formatMoney(accountTotals.total) }}
+          </strong>
+          <span v-else class="ds-skeleton" style="height:28px;width:70%"></span>
+          <span class="ds-metric__foot">Offerings and tithes together</span>
+        </NuxtLink>
+
+        <NuxtLink class="ds-metric" to="/admin/offering">
+          <span class="ds-metric__label"><span class="ds-eyebrow">Offering</span></span>
+          <strong v-if="!isAccountingLoading" class="ds-metric__value">
+            <small>GHS</small>{{ formatMoney(accountTotals.offeringSum) }}
+          </strong>
+          <span v-else class="ds-skeleton" style="height:28px;width:70%"></span>
+          <span class="ds-metric__foot">Received today</span>
+        </NuxtLink>
+
+        <NuxtLink class="ds-metric" to="/admin/accounting">
+          <span class="ds-metric__label"><span class="ds-eyebrow">Tithe</span></span>
+          <strong v-if="!isAccountingLoading" class="ds-metric__value">
+            <small>GHS</small>{{ formatMoney(accountTotals.titheSum) }}
+          </strong>
+          <span v-else class="ds-skeleton" style="height:28px;width:70%"></span>
+          <span class="ds-metric__foot">Received today</span>
+        </NuxtLink>
+
+        <NuxtLink class="ds-metric" to="/admin/manage">
+          <span class="ds-metric__label">
+            <span class="ds-eyebrow">Open issues</span>
+            <span v-if="!isIssueLoading && unResolvedIssuesCount > 0" class="ds-badge ds-badge--warning">
+              Needs attention
+            </span>
+          </span>
+          <strong v-if="!isIssueLoading" class="ds-metric__value">{{ unResolvedIssuesCount }}</strong>
+          <span v-else class="ds-skeleton" style="height:28px;width:40%"></span>
+          <span class="ds-metric__foot">Reported by members, not yet resolved</span>
+        </NuxtLink>
+      </div>
+    </section>
+
+    <!-- Manager membership -->
+    <section v-if="isManager" class="ds-section" aria-label="Membership">
+      <div class="ds-section__head">
+        <h2 class="ds-h2">Membership</h2>
+        <NuxtLink to="/admin/members" class="ds-btn ds-btn--secondary ds-btn--sm">View members</NuxtLink>
+      </div>
+
+      <div class="ds-card">
+        <div class="ds-card__body" style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:20px">
+          <div>
+            <span class="ds-eyebrow">Members</span>
+            <strong v-if="!isMembersLoading" class="ds-metric__value" style="display:block;margin-top:8px">
+              {{ totalMembersCount }}
+            </strong>
+            <span v-else class="ds-skeleton" style="height:28px;width:120px;display:block;margin-top:8px"></span>
+            <p class="ds-muted" style="margin:8px 0 0;font-size:var(--ds-text-sm)">
+              {{ selectedFamilyName === 'All' ? 'Across all church families' : 'In ' + selectedFamilyName }}
+            </p>
           </div>
-          <strong v-if="!isAccountingLoading" class="metric-value">{{ formatMoney(accountTotals.total) }}</strong>
-          <span v-else class="metric-loading"></span>
-          <p>All money received across offerings and tithes.</p>
-        </article>
 
-        <article class="metric-card">
-          <div class="metric-topline">
-            <span>Offering</span>
-            <span class="metric-currency">GHS</span>
+          <div class="ds-field" style="margin-bottom:0;min-width:200px">
+            <label class="ds-label" for="familyFilter">Church family</label>
+            <select
+              id="familyFilter"
+              class="ds-select"
+              :disabled="isChurchFamiliesLoading"
+              @change="onFamilyChange($event)"
+            >
+              <option value="">All families</option>
+              <option v-for="family in familyOptions" :key="family.id" :value="family.id">
+                {{ family.name }}
+              </option>
+            </select>
           </div>
-          <strong v-if="!isAccountingLoading" class="metric-value">{{ formatMoney(accountTotals.offeringSum) }}</strong>
-          <span v-else class="metric-loading"></span>
-          <p>Total offering received today.</p>
-        </article>
+        </div>
+      </div>
+    </section>
 
-        <article class="metric-card">
-          <div class="metric-topline">
-            <span>Tithe</span>
-            <span class="metric-currency">GHS</span>
-          </div>
-          <strong v-if="!isAccountingLoading" class="metric-value">{{ formatMoney(accountTotals.titheSum) }}</strong>
-          <span v-else class="metric-loading"></span>
-          <p>Total tithe received today.</p>
-        </article>
+    <!-- Family manager totals -->
+    <section v-else-if="isFamilyManager" class="ds-section" aria-label="Your family group">
+      <div class="ds-section__head">
+        <h2 class="ds-h2">Your church family</h2>
+        <NuxtLink to="/admin/records" class="ds-btn ds-btn--secondary ds-btn--sm">View tithe records</NuxtLink>
+      </div>
 
-        <article class="metric-card">
-          <div class="metric-topline">
-            <span>Open issues</span>
-            <span class="metric-status">Needs care</span>
-          </div>
-          <strong v-if="!isIssueLoading" class="metric-value">{{ unResolvedIssuesCount }}</strong>
-          <span v-else class="metric-loading"></span>
-          <p>Unresolved items awaiting follow up.</p>
-        </article>
+      <div class="ds-metrics">
+        <NuxtLink class="ds-metric" to="/admin/records">
+          <span class="ds-metric__label"><span class="ds-eyebrow">Family tithe</span></span>
+          <strong v-if="!isAccountingLoading" class="ds-metric__value">
+            <small>GHS</small>{{ formatMoney(accountTotals.titheSum) }}
+          </strong>
+          <span v-else class="ds-skeleton" style="height:28px;width:70%"></span>
+          <span class="ds-metric__foot">Total received from your family group</span>
+        </NuxtLink>
 
-        <article class="metric-card metric-card-wide">
-          <div class="metric-topline metric-topline-spread">
-            <span>Members</span>
-            <div class="dropdown family-filter">
-              <button
-                class="family-filter-button dropdown-toggle"
-                type="button"
-                id="familyFilter"
-                data-bs-toggle="dropdown"
-                aria-expanded="false"
-              >
-                {{ selectedFamilyName }}
-              </button>
-              <ul v-if="!isChurchFamiliesLoading" class="dropdown-menu dropdown-menu-end" aria-labelledby="familyFilter">
-                <li>
-                  <button class="dropdown-item" type="button" @click="getMembersCount('')">
-                    All families
-                  </button>
-                </li>
-                <li v-for="family in families.data" :key="family.id">
-                  <button class="dropdown-item" type="button" @click="getMembersCount(family)">
-                    {{ family.name }}
-                  </button>
-                </li>
-              </ul>
+        <NuxtLink class="ds-metric" to="/admin/members">
+          <span class="ds-metric__label"><span class="ds-eyebrow">Members</span></span>
+          <strong v-if="!isMembersLoading" class="ds-metric__value">{{ totalMembersCount }}</strong>
+          <span v-else class="ds-skeleton" style="height:28px;width:40%"></span>
+          <span class="ds-metric__foot">Assigned to your church family</span>
+        </NuxtLink>
+      </div>
+    </section>
+
+    <!-- Member quick links -->
+    <section v-else class="ds-section" aria-label="Your records">
+      <div class="ds-section__head">
+        <h2 class="ds-h2">Your records</h2>
+      </div>
+      <div class="ds-metrics">
+        <NuxtLink class="ds-metric" to="/admin/tithe">
+          <span class="ds-metric__label"><span class="ds-eyebrow">My tithe</span></span>
+          <strong class="ds-metric__value" style="font-size:var(--ds-text-lg)">View by month</strong>
+          <span class="ds-metric__foot">What you have given, week by week</span>
+        </NuxtLink>
+        <NuxtLink class="ds-metric" to="/admin/welfare">
+          <span class="ds-metric__label"><span class="ds-eyebrow">My welfare</span></span>
+          <strong class="ds-metric__value" style="font-size:var(--ds-text-lg)">View by year</strong>
+          <span class="ds-metric__foot">What you have paid and been awarded</span>
+        </NuxtLink>
+        <NuxtLink class="ds-metric" to="/admin/report">
+          <span class="ds-metric__label"><span class="ds-eyebrow">Need help?</span></span>
+          <strong class="ds-metric__value" style="font-size:var(--ds-text-lg)">Report an issue</strong>
+          <span class="ds-metric__foot">Send a message to the church office</span>
+        </NuxtLink>
+      </div>
+    </section>
+
+    <!-- Announcements -->
+    <section class="ds-section" aria-label="Announcements">
+      <div class="ds-section__head">
+        <div>
+          <h2 class="ds-h2">Announcements</h2>
+          <span v-if="!isLoading && totalCount" class="ds-meta">{{ totalCount }} in total</span>
+        </div>
+        <NuxtLink v-if="isManager" to="/admin/announcements" class="ds-btn ds-btn--secondary ds-btn--sm">
+          Manage
+        </NuxtLink>
+      </div>
+
+      <div class="ds-card">
+        <div v-if="isLoading" class="ds-card__body" style="display:grid;gap:14px">
+          <div v-for="n in 3" :key="n" style="display:grid;grid-template-columns:56px 1fr;gap:14px;align-items:center">
+            <span class="ds-skeleton" style="height:56px;width:56px;border-radius:6px"></span>
+            <div style="display:grid;gap:8px">
+              <span class="ds-skeleton" style="height:14px;width:45%"></span>
+              <span class="ds-skeleton" style="height:12px;width:80%"></span>
             </div>
           </div>
-          <strong v-if="!isMembersLoading" class="metric-value">{{ totalMembersCount }}</strong>
-          <span v-else class="metric-loading"></span>
-          <p>Members in {{ selectedFamilyName === 'All' ? 'all church families' : selectedFamilyName }}.</p>
-        </article>
-      </section>
-
-      <section v-else-if="isFamilyManager" class="metrics-grid family-manager-grid" aria-label="Family dashboard totals">
-        <article class="metric-card metric-card-featured">
-          <div class="metric-topline">
-            <span>Family tithe</span>
-            <span class="metric-currency">GHS</span>
-          </div>
-          <strong v-if="!isAccountingLoading" class="metric-value">{{ formatMoney(accountTotals.titheSum) }}</strong>
-          <span v-else class="metric-loading"></span>
-          <p>Total tithe received from your family group.</p>
-        </article>
-
-        <article class="metric-card">
-          <div class="metric-topline">
-            <span>Members</span>
-            <span class="metric-status">Family group</span>
-          </div>
-          <strong v-if="!isMembersLoading" class="metric-value">{{ totalMembersCount }}</strong>
-          <span v-else class="metric-loading"></span>
-          <p>People currently assigned to your church family.</p>
-        </article>
-      </section>
-
-      <section class="announcements-panel">
-        <div class="section-heading">
-          <div>
-            <span class="section-kicker">{{ totalCount }} total</span>
-            <h2>Announcements</h2>
-          </div>
-          <NuxtLink v-if="isManager" to="/admin/announcements" class="secondary-action">
-            Manage
-          </NuxtLink>
         </div>
 
-        <page-loader v-if="isLoading" class="panel-loader"></page-loader>
-
-        <div v-else-if="hasAnnouncements" class="announcement-list">
-          <article
+        <ul v-else-if="hasAnnouncements" class="announcement-list">
+          <li
             v-for="(announcement, index) in announcementItems"
             :key="announcement.id || index"
             class="announcement-item"
           >
-            <img :src="getImage(announcement.image)" :alt="announcement.title" class="announcement-image">
+            <img :src="getImage(announcement.image)" alt="" class="announcement-item__image">
 
-            <div class="announcement-copy">
-              <h3>{{ announcement.title }}</h3>
-              <time :datetime="announcement.createdAt">
-                {{ $moment(announcement.createdAt).format('Do MMMM, YYYY') }}
+            <div class="announcement-item__copy">
+              <h3 class="ds-h3">{{ announcement.title }}</h3>
+              <time class="ds-meta" :datetime="announcement.createdAt">
+                {{ $moment(announcement.createdAt).format('D MMMM YYYY') }}
               </time>
-              <p>{{ truncateMessage(announcement.body) }}</p>
+              <p class="ds-muted">{{ truncateMessage(announcement.body) }}</p>
             </div>
 
-            <NuxtLink :to="'/admin/announcements/' + announcement.id" class="announcement-link">
-              View
+            <NuxtLink :to="'/admin/announcements/' + announcement.id" class="ds-btn ds-btn--secondary ds-btn--sm">
+              Read
             </NuxtLink>
-          </article>
+          </li>
+        </ul>
+
+        <div v-else class="ds-empty">
+          <span class="ds-empty__icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+            </svg>
+          </span>
+          <h3 class="ds-h3">No announcements yet</h3>
+          <p>Church updates will appear here once they are published.</p>
+          <NuxtLink v-if="isManager" to="/admin/announcements/new" class="ds-btn ds-btn--primary ds-btn--sm">
+            Add announcement
+          </NuxtLink>
         </div>
 
-        <div v-else class="empty-state">
-          <h3>No announcements yet</h3>
-          <p>New church updates will appear here when they are published.</p>
+        <div v-if="!isLoading && numberOfPages > 1" class="ds-pagination">
+          <span class="ds-pagination__summary">Page <b>{{ currentPage }}</b> of <b>{{ numberOfPages }}</b></span>
+          <div class="ds-pagination__controls">
+            <button class="ds-page" type="button" :disabled="currentPage <= 1" @click="goToAnnouncementPage(currentPage - 1)">
+              Previous
+            </button>
+            <button class="ds-page" type="button" :disabled="currentPage >= numberOfPages" @click="goToAnnouncementPage(currentPage + 1)">
+              Next
+            </button>
+          </div>
         </div>
-
-        <nav v-if="numberOfPages > 1" class="premium-pagination" aria-label="Announcement pages">
-          <button
-            type="button"
-            :disabled="currentPage <= 1"
-            @click="goToAnnouncementPage(currentPage - 1)"
-          >
-            Previous
-          </button>
-          <span>Page {{ currentPage }} of {{ numberOfPages }}</span>
-          <button
-            type="button"
-            :disabled="currentPage >= numberOfPages"
-            @click="goToAnnouncementPage(currentPage + 1)"
-          >
-            Next
-          </button>
-        </nav>
-      </section>
+      </div>
     </section>
-  </main>
+  </div>
 </template>
 
 <script>
-
-import {mapGetters} from 'vuex'
-import {AnnouncementList} from "../../network/Announcement";
-import {numberWithCommas, profileImageBaseUrl} from "../../resources/constants";
-import {ChurchFamilyList, DashboardAccountingTotal} from "../../network/Member";
-import PageLoader from "../../components/PageLoader";
-
+import { mapGetters } from 'vuex'
+import { AnnouncementList } from '../../network/Announcement'
+import { numberWithCommas, profileImageBaseUrl } from '../../resources/constants'
+import { ChurchFamilyList, DashboardAccountingTotal } from '../../network/Member'
+import { ROLE_CHURCH_MANAGER, ROLE_FAMILY_MANAGER } from '../../resources/navigation'
 
 export default {
-  name: "dashboard",
-  components: {PageLoader},
+  name: 'dashboard',
+  data () {
+    return {
+      unResolvedIssuesCount: 0,
+      selectedFamilyName: 'All',
+      families: ChurchFamilyList,
+      numberOfPages: 0,
+      currentPage: 0,
+      totalCount: 0,
+      totalMembersCount: 0,
+      isLoading: false,
+      isIssueLoading: false,
+      isAccountingLoading: false,
+      isChurchFamiliesLoading: false,
+      isMembersLoading: false,
+      announcements: AnnouncementList,
+      accountTotals: DashboardAccountingTotal
+    }
+  },
   computed: {
     ...mapGetters(['isAuthenticated', 'loggedInUser']),
-    currentRoleId() {
-      return this.loggedInUser && this.loggedInUser.data ? this.loggedInUser.data.roleId : ''
+    currentUser () {
+      return this.loggedInUser && this.loggedInUser.data ? this.loggedInUser.data : {}
     },
-    dashboardUserName() {
-      return this.loggedInUser && this.loggedInUser.data && this.loggedInUser.data.name
-        ? this.loggedInUser.data.name
-        : 'there'
+    currentRoleId () {
+      return this.currentUser.roleId || ''
     },
-    isManager() {
-      return this.currentRoleId === '1'
+    dashboardUserName () {
+      return this.currentUser.name || 'there'
     },
-    isFamilyManager() {
-      return this.currentRoleId === '2'
+    isManager () {
+      return this.currentRoleId === ROLE_CHURCH_MANAGER
     },
-    dashboardRoleLabel() {
-      if (this.isManager) {
-        return 'Church manager'
-      }
-      if (this.isFamilyManager) {
-        return 'Family group manager'
-      }
-      return 'Member dashboard'
+    isFamilyManager () {
+      return this.currentRoleId === ROLE_FAMILY_MANAGER
     },
-    dashboardTitle() {
-      if (this.isManager) {
-        return 'Financial overview'
-      }
+    /** The totals below are for today only — say so rather than leaving it implicit. */
+    todayLabel () {
+      return this.$moment().format('dddd, D MMMM YYYY')
+    },
+    dashboardRoleLabel () {
+      if (this.isManager) { return 'Church manager' }
+      if (this.isFamilyManager) { return 'Family group manager' }
+      return 'Member'
+    },
+    dashboardTitle () {
+      if (this.isManager) { return 'Financial overview' }
       return `Welcome back, ${this.dashboardUserName}`
     },
-    dashboardSubtitle() {
+    dashboardSubtitle () {
       if (this.isManager) {
-        return "Today's giving, membership, and updates in one calm view."
+        return "Today's giving, membership and church updates in one view."
       }
       if (this.isFamilyManager) {
-        return 'Your family records, tithe summary, and announcements are ready.'
+        return 'Your family records, tithe summary and announcements.'
       }
-      return 'Your church updates are ready.'
+      return 'Your giving records and church updates.'
     },
-    primaryActionPath() {
+    primaryActionPath () {
       return this.isManager ? '/admin/accounting' : '/admin/records'
     },
-    primaryActionLabel() {
+    primaryActionLabel () {
       return this.isManager ? 'Open accounting' : 'Open records'
     },
-    hasPrimaryAction() {
+    hasPrimaryAction () {
       return this.isManager || this.isFamilyManager
     },
-    announcementItems() {
+    familyOptions () {
+      return this.families && this.families.data ? this.families.data : []
+    },
+    announcementItems () {
       return this.announcements && this.announcements.results ? this.announcements.results : []
     },
-    hasAnnouncements() {
+    hasAnnouncements () {
       return this.announcementItems.length > 0
     }
   },
-  beforeMount() {
+  beforeMount () {
     this.fetchAnnouncement()
 
     if (this.isManager) {
@@ -252,567 +324,156 @@ export default {
       this.getAccountingForFamilyManager()
     }
   },
-  data() {
-    return {
-      user: JSON.parse(window.localStorage.getItem('auth.user')),
-      unResolvedIssuesCount: 0,
-      selectedFamilyName: 'All',
-      families: ChurchFamilyList,
-      numberOfPages: 0,
-      currentPage: 0,
-      totalCount: 0,
-      totalMembersCount: 0,
-      searchQuery: '',
-      isLoading: false,
-      isIssueLoading: false,
-      isAccountingLoading: false,
-      isChurchFamiliesLoading: false,
-      isMembersLoading: false,
-      announcements: AnnouncementList,
-      accountTotals: DashboardAccountingTotal
-    }
-  },
   methods: {
-    formatMoney(value) {
+    formatMoney (value) {
       return numberWithCommas(Number(value || 0))
     },
-    getMembersCount(family = "") {
-      let famId = ""
+    onFamilyChange (event) {
+      const id = event.target.value
+      if (!id) {
+        this.getMembersCount('')
+        return
+      }
+      const match = this.familyOptions.filter(family => family.id === id)
+      this.getMembersCount(match.length ? match[0] : '')
+    },
+    getMembersCount (family = '') {
+      let famId = ''
       if (this.isFamilyManager) {
-        famId = this.loggedInUser.data.churchFamilyId
+        famId = this.currentUser.churchFamilyId
       }
 
       if (family && family.id) {
         famId = family.id
         this.selectedFamilyName = family.name
       } else {
-        this.selectedFamilyName = "All"
+        this.selectedFamilyName = 'All'
       }
+
       this.isMembersLoading = true
       this.$axios.get(`accounting/users?FamilyId=${famId}`).then(response => {
         this.totalMembersCount = response.data.data.totalCount
         this.isMembersLoading = false
-      }).catch(error => {
+      }).catch(() => {
         this.isMembersLoading = false
       })
     },
-    fetchFamilies() {
+    fetchFamilies () {
       this.isChurchFamiliesLoading = true
-      this.$axios.get(`churchfamilies`).then(response => {
-        this.families = Object.assign(ChurchFamilyList, response.data)
+      this.$axios.get('churchfamilies').then(response => {
+        this.families = Object.assign({}, ChurchFamilyList, response.data)
         this.isChurchFamiliesLoading = false
-      }).catch(error => {
+      }).catch(() => {
         this.isChurchFamiliesLoading = false
       })
     },
-    getUnresolvedIssuesCount() {
+    getUnresolvedIssuesCount () {
       this.isIssueLoading = true
-      this.$axios.get(`accounting/issues?IsResolved=false`).then(response => {
+      this.$axios.get('accounting/issues?IsResolved=false').then(response => {
         this.unResolvedIssuesCount = response.data.data.totalCount
         this.isIssueLoading = false
-      }).catch(error => {
+      }).catch(() => {
         this.isIssueLoading = false
       })
     },
-    getAccounting() {
+    getAccounting () {
       this.isAccountingLoading = true
-      this.$axios.get(`accounting/total`).then(response => {
-        this.accountTotals = Object.assign(DashboardAccountingTotal, response.data.data)
-
+      this.$axios.get('accounting/total').then(response => {
+        this.accountTotals = Object.assign({}, DashboardAccountingTotal, response.data.data)
         this.isAccountingLoading = false
-      }).catch(error => {
+      }).catch(() => {
         this.isAccountingLoading = false
       })
     },
-    getAccountingForFamilyManager() {
+    getAccountingForFamilyManager () {
       this.isAccountingLoading = true
-      this.$axios.get(`accounting/tithe-total?ChurchFamilyId=${this.loggedInUser.data.churchFamilyId}`).then(response => {
-        this.accountTotals = Object.assign(DashboardAccountingTotal, response.data.data)
-
+      this.$axios.get(`accounting/tithe-total?ChurchFamilyId=${this.currentUser.churchFamilyId}`).then(response => {
+        this.accountTotals = Object.assign({}, DashboardAccountingTotal, response.data.data)
         this.isAccountingLoading = false
-      }).catch(error => {
+      }).catch(() => {
         this.isAccountingLoading = false
       })
     },
-    fetchAnnouncement(page = 1, pageSize = 5) {
+    fetchAnnouncement (page = 1, pageSize = 5) {
       this.currentPage = page
       this.isLoading = true
 
       this.$axios.get(`announcements?Page=${page}&PageSize=${pageSize}`).then(response => {
-        this.announcements = Object.assign(AnnouncementList, response.data.data)
+        this.announcements = Object.assign({}, AnnouncementList, response.data.data)
         this.numberOfPages = this.announcements.totalPages
         this.totalCount = this.announcements.totalCount
-
         this.isLoading = false
-      }).catch(error => {
+      }).catch(() => {
         this.isLoading = false
       })
     },
-    goToAnnouncementPage(page) {
+    goToAnnouncementPage (page) {
       if (page < 1 || page > this.numberOfPages || page === this.currentPage) {
         return
       }
       this.fetchAnnouncement(page)
     },
-    truncateMessage(message) {
+    truncateMessage (message) {
       if (!message) {
         return ''
       }
-
       if (message.length >= 96) {
-        return message.toString().substring(0, 96) + " ..."
+        return message.toString().substring(0, 96) + ' …'
       }
       return message
     },
-    getImage(image) {
+    getImage (image) {
       if (image) {
         return `${profileImageBaseUrl}/${image}`
       }
-      return require(`~/assets/imgs/no_image.png`)
+      return require('~/assets/imgs/no_image.png')
     }
-  },
-  mounted() {
   }
 }
 </script>
 
 <style scoped>
-.dashboard-page {
-  min-height: 100vh;
-  background: var(--admin-bg, #f3f4f6);
-  color: var(--admin-text, #111827);
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  padding: 104px 20px 56px;
-}
-
-.dashboard-shell {
-  width: min(1180px, 100%);
-  margin: 0 auto;
-}
-
-.dashboard-hero,
-.announcements-panel {
-  background: #ffffff;
-  border: 1px solid var(--admin-border, #e5e7eb);
-  border-radius: 8px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-}
-
-.dashboard-hero {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 24px;
-  margin-bottom: 24px;
-  padding: 32px;
-  position: relative;
-}
-
-.hero-copy {
-  position: relative;
-  z-index: 1;
-}
-
-.dashboard-kicker,
-.section-kicker {
-  color: var(--admin-primary, #1a56db);
-  display: block;
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  margin-bottom: 8px;
-  text-transform: uppercase;
-}
-
-.dashboard-hero h1,
-.section-heading h2 {
-  color: var(--admin-text, #111827);
-  font-weight: 600;
-  letter-spacing: -0.01em;
-  line-height: 1.1;
-  margin: 0;
-}
-
-.dashboard-hero h1 {
-  font-size: clamp(1.75rem, 4vw, 2.5rem);
-}
-
-.dashboard-hero p {
-  color: var(--admin-muted, #6b7280);
-  font-size: 1rem;
-  font-weight: 400;
-  line-height: 1.5;
-  margin: 12px 0 0;
-  max-width: 580px;
-}
-
-.primary-action,
-.secondary-action,
-.announcement-link {
-  align-items: center;
-  border-radius: 6px;
-  display: inline-flex;
-  font-size: 0.875rem;
-  font-weight: 500;
-  justify-content: center;
-  min-height: 40px;
-  padding: 0 16px;
-  position: relative;
-  transition: all 0.15s ease-in-out;
-  z-index: 1;
-}
-
-.primary-action {
-  background: var(--admin-primary, #1a56db);
-  border: 1px solid var(--admin-primary, #1a56db);
-  color: #ffffff;
-  min-width: 140px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-}
-
-.primary-action:hover {
-  background: var(--admin-primary-dark, #1e429f);
-  border-color: var(--admin-primary-dark, #1e429f);
-  color: #ffffff;
-}
-
-.secondary-action,
-.announcement-link {
-  background: #ffffff;
-  border: 1px solid var(--admin-border, #e5e7eb);
-  color: #374151;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-}
-
-.secondary-action:hover,
-.announcement-link:hover {
-  background: #f9fafb;
-  color: #111827;
-}
-
-.metrics-grid {
-  display: grid;
-  gap: 16px;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  margin-bottom: 24px;
-}
-
-.family-manager-grid {
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-}
-
-.metric-card {
-  background: #ffffff;
-  border: 1px solid var(--admin-border, #e5e7eb);
-  border-radius: 8px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-  padding: 16px;
-  transition: border-color 0.15s ease;
-  display: flex;
-  flex-direction: column;
-}
-
-.metric-card:hover {
-  border-color: #d1d5db;
-}
-
-.metric-card-featured,
-.metric-card-wide {
-  grid-column: span 1;
-}
-
-.metric-topline {
-  align-items: center;
-  color: var(--admin-muted, #6b7280);
-  display: flex;
-  font-size: 0.75rem;
-  font-weight: 600;
-  justify-content: space-between;
-  letter-spacing: 0.05em;
-  margin-bottom: 16px;
-  text-transform: uppercase;
-}
-
-.metric-topline-spread {
-  align-items: flex-start;
-  gap: 14px;
-}
-
-.metric-currency,
-.metric-status {
-  background: #f3f4f6;
-  border-radius: 4px;
-  color: #4b5563;
-  font-size: 0.75rem;
-  font-weight: 500;
-  padding: 4px 8px;
-  text-transform: none;
-}
-
-.metric-value {
-  color: var(--admin-text, #111827);
-  display: block;
-  font-size: 1.75rem;
-  font-weight: 600;
-  letter-spacing: -0.02em;
-  line-height: 1;
-  margin-bottom: 8px;
-}
-
-.metric-card p {
-  color: var(--admin-muted, #6b7280);
-  font-size: 0.75rem;
-  font-weight: 400;
-  line-height: 1.4;
-  margin: 0;
-  margin-top: auto;
-}
-
-.metric-loading {
-  animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-  background: linear-gradient(90deg, #f3f4f6, #ffffff, #f3f4f6);
-  background-size: 200% 100%;
-  border-radius: 4px;
-  display: block;
-  height: 40px;
-  margin-bottom: 16px;
-  width: min(180px, 70%);
-}
-
-.family-filter {
-  min-width: 150px;
-  text-align: right;
-}
-
-.family-filter-button {
-  background: #ffffff;
-  border: 1px solid var(--admin-border, #e5e7eb);
-  border-radius: 6px;
-  color: #374151;
-  font-size: 0.875rem;
-  font-weight: 500;
-  max-width: 200px;
-  min-height: 36px;
-  overflow: hidden;
-  padding: 0 12px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  width: 100%;
-  transition: all 0.15s ease;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-}
-
-.family-filter-button:focus {
-  border-color: var(--admin-primary, #1a56db);
-  box-shadow: 0 0 0 3px rgba(26, 86, 219, 0.15);
-  outline: none;
-}
-
-.dropdown-menu {
-  border: 1px solid var(--admin-border, #e5e7eb);
-  border-radius: 8px;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-  padding: 4px;
-}
-
-.dropdown-item {
-  border-radius: 4px;
-  color: #374151;
-  font-size: 0.875rem;
-  font-weight: 500;
-  padding: 8px 12px;
-}
-
-.dropdown-item:active,
-.dropdown-item:hover {
-  background: #f3f4f6;
-  color: #111827;
-}
-
-.announcements-panel {
-  padding: 24px;
-}
-
-.section-heading {
-  align-items: center;
-  display: flex;
-  justify-content: space-between;
-  gap: 20px;
-  margin-bottom: 24px;
-}
-
-.section-heading h2 {
-  font-size: 1.25rem;
-}
-
 .announcement-list {
-  display: grid;
-  gap: 12px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
 }
 
 .announcement-item {
-  align-items: center;
-  background: #ffffff;
-  border: 1px solid var(--admin-border, #e5e7eb);
-  border-radius: 8px;
   display: grid;
+  grid-template-columns: 56px minmax(0, 1fr) auto;
+  align-items: center;
   gap: 16px;
-  grid-template-columns: 64px minmax(0, 1fr) auto;
-  padding: 16px;
-  transition: border-color 0.15s ease;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--ds-border);
 }
 
-.announcement-item:hover {
-  border-color: #d1d5db;
-}
+.announcement-item:last-child { border-bottom: 0; }
+.announcement-item:hover { background: var(--ds-surface-2); }
 
-.announcement-image {
-  aspect-ratio: 1;
-  background: #f3f4f6;
+.announcement-item__image {
+  width: 56px;
+  height: 56px;
   border-radius: 6px;
-  height: 64px;
   object-fit: cover;
-  width: 64px;
-  border: 1px solid #e5e7eb;
+  background: var(--ds-surface-2);
+  border: 1px solid var(--ds-border);
 }
 
-.announcement-copy {
-  min-width: 0;
-}
-
-.announcement-copy h3 {
-  color: var(--admin-text, #111827);
-  font-size: 1rem;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-  line-height: 1.4;
-  margin: 0 0 4px;
+.announcement-item__copy { min-width: 0; }
+.announcement-item__copy h3 { margin: 0 0 2px; overflow-wrap: anywhere; }
+.announcement-item__copy time { display: block; margin-bottom: 6px; }
+.announcement-item__copy p {
+  margin: 0;
+  font-size: var(--ds-text-base);
   overflow-wrap: anywhere;
 }
 
-.announcement-copy time {
-  color: var(--admin-muted, #6b7280);
-  display: block;
-  font-size: 0.75rem;
-  font-weight: 500;
-  margin-bottom: 8px;
-}
-
-.announcement-copy p,
-.empty-state p {
-  color: #4b5563;
-  font-size: 0.875rem;
-  line-height: 1.5;
-  margin: 0;
-  font-weight: 400;
-}
-
-.empty-state {
-  align-items: center;
-  background: #f9fafb;
-  border: 1px dashed var(--admin-border, #e5e7eb);
-  border-radius: 8px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  min-height: 200px;
-  padding: 24px;
-  text-align: center;
-}
-
-.empty-state h3 {
-  color: var(--admin-text, #111827);
-  font-size: 1rem;
-  font-weight: 600;
-  margin: 0 0 8px;
-}
-
-.panel-loader {
-  padding: 48px 0;
-}
-
-.premium-pagination {
-  align-items: center;
-  display: flex;
-  gap: 12px;
-  justify-content: flex-end;
-  margin-top: 24px;
-}
-
-.premium-pagination button {
-  background: #ffffff;
-  border: 1px solid var(--admin-border, #e5e7eb);
-  border-radius: 6px;
-  color: #374151;
-  font-size: 0.875rem;
-  font-weight: 500;
-  min-height: 36px;
-  padding: 0 12px;
-  transition: all 0.15s ease;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-}
-
-.premium-pagination button:hover:not(:disabled) {
-  background: #f9fafb;
-  color: #111827;
-}
-
-.premium-pagination button:disabled {
-  color: #9ca3af;
-  cursor: not-allowed;
-  background: #f3f4f6;
-  box-shadow: none;
-}
-
-.premium-pagination span {
-  color: var(--admin-muted, #6b7280);
-  font-size: 0.875rem;
-  font-weight: 500;
-}
-
-@keyframes pulse {
-  0% {
-    background-position: 200% 0;
-  }
-
-  100% {
-    background-position: -200% 0;
-  }
-}
-
-
-@media (max-width: 600px) {
-  .dashboard-page {
-    padding: 80px 16px 40px;
-  }
-  
-  .dashboard-hero {
-    padding: 24px;
-    flex-direction: column;
-    align-items: flex-start;
-  }
-  
-  .dashboard-hero h1 {
-    font-size: 1.5rem;
-  }
-  
-  .metrics-grid,
-  .family-manager-grid {
-    grid-template-columns: 1fr;
-  }
-  
+@media (max-width: 640px) {
   .announcement-item {
     grid-template-columns: 1fr;
-    gap: 16px;
+    gap: 12px;
   }
-  
-  .announcement-image {
-    width: 100%;
-    height: 140px;
-  }
-  
-  .announcement-link {
-    width: 100%;
-  }
+  .announcement-item__image { width: 100%; height: 140px; }
 }
 </style>
