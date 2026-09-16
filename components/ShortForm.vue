@@ -20,6 +20,14 @@
 
     <form v-else class="ds-card" style="max-width:720px" @submit.prevent="submit">
       <div class="ds-card__body">
+        <AiAssist
+          resource="short"
+          noun="short"
+          :current="aiCurrent"
+          :has-content="!!form.title"
+          @apply="applyDraft"
+        />
+
         <!-- Kind decides everything below it, so it comes first -->
         <div class="ds-formsection">
           <div class="ds-formsection__head">
@@ -290,6 +298,7 @@
 
 <script>
 import MediaUpload from './MediaUpload'
+import AiAssist from './AiAssist'
 import PublishControls from './PublishControls'
 import {
   payload, rowsOf, errorMessage, toUtcIso, toLocalInput,
@@ -303,7 +312,7 @@ import {
  */
 export default {
   name: 'ShortForm',
-  components: { MediaUpload, PublishControls },
+  components: { AiAssist, MediaUpload, PublishControls },
   props: {
     isEdit: { type: Boolean, default: false }
   },
@@ -344,6 +353,10 @@ export default {
     }
   },
   computed: {
+    /** What a redraft should improve rather than replace. */
+    aiCurrent () {
+      return { title: this.form.title, caption: this.form.caption }
+    },
     kinds () {
       return SHORT_KINDS
     },
@@ -382,6 +395,21 @@ export default {
     if (this.isEdit) { this.loadShort() }
   },
   methods: {
+
+    /**
+     * Fold a draft into the form. Only fields the draft returned are touched,
+     * so a redraft that says nothing about the date leaves the date alone.
+     * Everything stays editable afterwards.
+     */
+    applyDraft (fields) {
+      const set = (key, value) => { if (value !== undefined && value !== null && value !== '') { this.$set(this.form, key, value) } }
+      set('title', fields.title)
+      set('caption', fields.caption)
+      if (Array.isArray(fields.tags) && fields.tags.length) { this.form.tags = fields.tags }
+      if (fields.authorName) { this.form.author.name = fields.authorName }
+      if (fields.authorRole) { this.form.author.role = fields.authorRole }
+      if (fields.actionLabel) { this.form.action.label = fields.actionLabel }
+    },
     changeKind (kind) {
       this.form.kind = kind
     },

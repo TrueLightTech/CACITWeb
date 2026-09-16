@@ -20,6 +20,14 @@
 
     <form v-else class="ds-card" style="max-width:720px" @submit.prevent="submit">
       <div class="ds-card__body">
+        <AiAssist
+          resource="event"
+          noun="event"
+          :current="aiCurrent"
+          :has-content="!!form.title"
+          @apply="applyDraft"
+        />
+
         <div class="ds-formsection">
           <div class="ds-formsection__head">
             <h2 class="ds-h3">The event</h2>
@@ -139,12 +147,13 @@
 
 <script>
 import MediaUpload from './MediaUpload'
+import AiAssist from './AiAssist'
 import PublishControls from './PublishControls'
 import { payload, errorMessage, toUtcIso, toLocalInput, EVENT_STATUSES } from '../network/MobileApp'
 
 export default {
   name: 'EventForm',
-  components: { MediaUpload, PublishControls },
+  components: { AiAssist, MediaUpload, PublishControls },
   props: {
     isEdit: { type: Boolean, default: false }
   },
@@ -173,6 +182,10 @@ export default {
     }
   },
   computed: {
+    /** What a redraft should improve rather than replace. */
+    aiCurrent () {
+      return { title: this.form.title, location: this.form.location, category: this.form.category, description: this.form.description }
+    },
     eventStatuses () {
       return EVENT_STATUSES
     },
@@ -197,6 +210,23 @@ export default {
     if (this.isEdit) { this.loadEvent() }
   },
   methods: {
+
+    /**
+     * Fold a draft into the form. Only fields the draft returned are touched,
+     * so a redraft that says nothing about the date leaves the date alone.
+     * Everything stays editable afterwards.
+     */
+    applyDraft (fields) {
+      const set = (key, value) => { if (value !== undefined && value !== null && value !== '') { this.$set(this.form, key, value) } }
+      set('title', fields.title)
+      set('startsAt', fields.startsAt)
+      set('endsAt', fields.endsAt)
+      set('location', fields.location)
+      set('category', fields.category)
+      set('description', fields.description)
+      if (typeof fields.isAllDay === 'boolean') { this.form.isAllDay = fields.isAllDay }
+      if (typeof fields.registrationRequired === 'boolean') { this.form.registrationRequired = fields.registrationRequired }
+    },
     setImage (mediaId) {
       this.imageMediaId = mediaId
       if (!mediaId) {

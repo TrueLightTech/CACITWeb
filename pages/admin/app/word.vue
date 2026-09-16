@@ -14,6 +14,14 @@
         </div>
 
         <div class="ds-card__body">
+          <AiAssist
+            resource="word"
+            noun="verse and reflection"
+            :current="aiCurrent"
+            :has-content="!!form.text"
+            @apply="applyDraft"
+          />
+
           <div class="ds-field" :class="{ 'is-invalid': showErrors && !form.forDate }">
             <label class="ds-label" for="wordDate">For</label>
             <input id="wordDate" v-model="form.forDate" class="ds-input" type="date" :min="today">
@@ -93,8 +101,10 @@
 
 <script>
 import { rowsOf, errorMessage } from '../../../network/MobileApp'
+import AiAssist from '../../../components/AiAssist'
 
 export default {
+  components: { AiAssist },
   name: 'AdminAppWordForToday',
   data () {
     return {
@@ -112,6 +122,10 @@ export default {
     }
   },
   computed: {
+    /** What a redraft should improve rather than replace. */
+    aiCurrent () {
+      return { text: this.form.text, reference: this.form.reference, reflection: this.form.reflection }
+    },
     today () {
       return new Date().toISOString().slice(0, 10)
     },
@@ -127,6 +141,19 @@ export default {
     this.load()
   },
   methods: {
+
+    /**
+     * Fold a draft into the form. Only fields the draft returned are touched,
+     * and everything stays editable afterwards.
+     */
+    applyDraft (fields) {
+      const set = (key, value) => { if (value !== undefined && value !== null && value !== '') { this.$set(this.form, key, value) } }
+      set('forDate', fields.forDate)
+      set('text', fields.text)
+      set('reference', fields.reference)
+      set('translation', fields.translation)
+      set('reflection', fields.reflection)
+    },
     dayOf (value) {
       return value ? String(value).slice(0, 10) : ''
     },

@@ -358,6 +358,17 @@ export default {
      * platform it is and builds the address the app plays inline, so the
      * member watches inside the app exactly as they would an upload.
      */
+    /**
+     * Attach a link the form already has — a video confirmed by the drafting
+     * help, say — without the office retyping it. Switches to link mode so what
+     * happens is visible rather than silent.
+     */
+    attachUrl (url) {
+      if (!url) { return }
+      this.mode = 'link'
+      this.linkUrl = url
+      return this.attachLink()
+    },
     async attachLink () {
       const url = this.linkUrl.trim()
       if (!url) { return }

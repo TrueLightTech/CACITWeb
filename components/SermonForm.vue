@@ -22,6 +22,15 @@
 
     <form v-else class="ds-card" style="max-width:720px" @submit.prevent="submit">
       <div class="ds-card__body">
+        <AiAssist
+          resource="sermon"
+          noun="sermon"
+          :current="aiCurrent"
+          :has-content="!!form.title"
+          @apply="applyDraft"
+          @use-video="useVideo"
+        />
+
         <div class="ds-formsection">
           <div class="ds-formsection__head">
             <h2 class="ds-h3">The sermon</h2>
@@ -86,7 +95,7 @@
 
           <div class="ds-field">
             <label class="ds-label">Video</label>
-            <MediaUpload v-model="form.videoMediaId" kind="video" :label="form.title" @state="videoState = $event" />
+            <MediaUpload ref="video" v-model="form.videoMediaId" kind="video" :label="form.title" @state="videoState = $event" />
           </div>
 
           <div class="ds-field" style="margin-bottom:0">
@@ -146,12 +155,13 @@
 
 <script>
 import MediaUpload from './MediaUpload'
+import AiAssist from './AiAssist'
 import PublishControls from './PublishControls'
 import { payload, errorMessage, toUtcIso, toLocalInput } from '../network/MobileApp'
 
 export default {
   name: 'SermonForm',
-  components: { MediaUpload, PublishControls },
+  components: { AiAssist, MediaUpload, PublishControls },
   props: {
     isEdit: { type: Boolean, default: false }
   },
@@ -181,6 +191,10 @@ export default {
     }
   },
   computed: {
+    /** What a redraft should improve rather than replace. */
+    aiCurrent () {
+      return { title: this.form.title, speaker: this.form.speaker, scripture: this.form.scripture, summary: this.form.summary }
+    },
     isProcessing () {
       return this.videoState === 'processing' || this.audioState === 'processing'
     },
@@ -200,6 +214,28 @@ export default {
     }
   },
   methods: {
+
+    /**
+     * Fold a draft into the form. Only fields the draft returned are touched,
+     * so a redraft that says nothing about the date leaves the date alone.
+     * Everything stays editable afterwards.
+     */
+    applyDraft (fields) {
+      const set = (key, value) => { if (value !== undefined && value !== null && value !== '') { this.$set(this.form, key, value) } }
+      set('title', fields.title)
+      set('speaker', fields.speaker)
+      set('preachedOn', fields.preachedOn)
+      set('series', fields.series)
+      set('scripture', fields.scripture)
+      set('summary', fields.summary)
+      if (Array.isArray(fields.tags) && fields.tags.length) { this.form.tags = fields.tags }
+    },
+
+    /** Attach a confirmed YouTube link to the video box. */
+    useVideo (video) {
+      const box = this.$refs.video
+      if (box) { box.attachUrl(video.url) }
+    },
     addTag () {
       const tag = this.tagDraft.trim()
       if (tag && this.form.tags.indexOf(tag) === -1) {

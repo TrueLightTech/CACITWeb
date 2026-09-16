@@ -19,6 +19,15 @@
 
     <form v-else class="ds-card" style="max-width:720px" @submit.prevent="submit">
       <div class="ds-card__body">
+        <AiAssist
+          resource="video"
+          noun="video"
+          :current="aiCurrent"
+          :has-content="!!form.title"
+          @apply="applyDraft"
+          @use-video="useVideo"
+        />
+
         <div class="ds-formsection">
           <div class="ds-formsection__head">
             <h2 class="ds-h3">The video</h2>
@@ -55,7 +64,7 @@
           <div class="ds-formsection__head">
             <h2 class="ds-h3">Recording</h2>
           </div>
-          <MediaUpload v-model="form.mediaId" kind="video" :label="form.title" @state="mediaState = $event" />
+          <MediaUpload ref="media" v-model="form.mediaId" kind="video" :label="form.title" @state="mediaState = $event" />
           <p v-if="mediaState === 'processing'" class="ds-help" style="margin-top:12px">
             Still being prepared. You can save now — it appears once Cloudflare finishes.
           </p>
@@ -83,12 +92,13 @@
 
 <script>
 import MediaUpload from './MediaUpload'
+import AiAssist from './AiAssist'
 import PublishControls from './PublishControls'
 import { payload, errorMessage, toUtcIso, toLocalInput } from '../network/MobileApp'
 
 export default {
   name: 'VideoForm',
-  components: { MediaUpload, PublishControls },
+  components: { AiAssist, MediaUpload, PublishControls },
   props: {
     isEdit: { type: Boolean, default: false }
   },
@@ -119,7 +129,33 @@ export default {
       this.form.publishedOn = toLocalInput(new Date().toISOString())
     }
   },
+  computed: {
+    /** What the draft should improve rather than replace. */
+    aiCurrent () {
+      return { title: this.form.title, category: this.form.category, description: this.form.description }
+    }
+  },
+
   methods: {
+
+    /**
+     * Fold a draft into the form. Only fields the draft actually returned are
+     * touched, so a redraft that says nothing about the date leaves the date
+     * alone, and everything stays editable afterwards.
+     */
+    applyDraft (fields) {
+      const set = (key, value) => { if (value !== undefined && value !== null && value !== '') { this.$set(this.form, key, value) } }
+      set('title', fields.title)
+      set('category', fields.category)
+      set('description', fields.description)
+      set('publishedOn', fields.publishedOn)
+    },
+
+    /** Attach a confirmed YouTube link to the media box. */
+    useVideo (video) {
+      const box = this.$refs.media
+      if (box) { box.attachUrl(video.url) }
+    },
     loadCategories () {
       this.$axios.get('videos/categories')
         .then(response => { this.knownCategories = payload(response) || [] })

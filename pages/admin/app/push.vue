@@ -14,6 +14,14 @@
         </div>
 
         <div class="ds-card__body">
+          <AiAssist
+            resource="push"
+            noun="message"
+            :current="aiCurrent"
+            :has-content="!!form.title"
+            @apply="applyDraft"
+          />
+
           <div class="ds-field" :class="{ 'is-invalid': showErrors && !form.title }">
             <label class="ds-label" for="pushTitle">Title</label>
             <input id="pushTitle" v-model="form.title" class="ds-input" type="text" maxlength="60">
@@ -113,11 +121,12 @@
 
 <script>
 import ConfirmDialog from '../../../components/ConfirmDialog'
+import AiAssist from '../../../components/AiAssist'
 import { payload, errorMessage } from '../../../network/MobileApp'
 
 export default {
   name: 'AdminAppPush',
-  components: { ConfirmDialog },
+  components: { AiAssist, ConfirmDialog },
   data () {
     return {
       families: [],
@@ -135,6 +144,10 @@ export default {
     }
   },
   computed: {
+    /** What a redraft should improve rather than replace. */
+    aiCurrent () {
+      return { title: this.form.title, body: this.form.body }
+    },
     confirmMessage () {
       const count = this.audience.memberCount
       const where = this.audience.audienceLabel || 'the whole congregation'
@@ -147,6 +160,17 @@ export default {
     this.loadAudience()
   },
   methods: {
+
+    /**
+     * Fold a draft into the form. Only fields the draft returned are touched,
+     * and everything stays editable afterwards.
+     */
+    applyDraft (fields) {
+      const set = (key, value) => { if (value !== undefined && value !== null && value !== '') { this.$set(this.form, key, value) } }
+      set('title', fields.title)
+      set('body', fields.body)
+      set('category', fields.category)
+    },
     loadFamilies () {
       this.$axios.get('churchfamilies')
         .then(response => { this.families = payload(response) || [] })
