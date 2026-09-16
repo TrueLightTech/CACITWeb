@@ -98,3 +98,5 @@
   }
 </script>
 
+<style src="~/assets/auth.css"></style>
+

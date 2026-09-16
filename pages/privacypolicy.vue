@@ -1,8 +1,6 @@
 <template>
-  <main>
-    <div class="container">
-      <div class="row justify-content-center">
-        <div class="col-md-7 my-4">
+  <main class="policy">
+    <div class="policy__sheet">
           <h3>Privacy Policy for Christ Apostolic Church International</h3>
 
           <p>
@@ -98,8 +96,6 @@
           </ul>
 
           By using our services, you agree to the terms of this Privacy Policy.
-        </div>
-      </div>
     </div>
   </main>
 </template>
@@ -116,7 +112,46 @@ export default {
 </script>
 
 <style scoped>
-h4, h3 {
-  color: #146efd;
+.policy {
+  min-height: 100vh;
+  background: var(--ds-bg);
+  padding: 40px 16px 72px;
+  font-family: var(--ds-font-sans);
+  color: var(--ds-text);
+}
+
+.policy__sheet {
+  width: min(720px, 100%);
+  margin: 0 auto;
+  background: var(--ds-surface);
+  border: 1px solid var(--ds-border);
+  border-radius: var(--ds-radius-md);
+  padding: 40px;
+}
+
+.policy__sheet h3 {
+  font-size: var(--ds-text-xl);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin: 0 0 20px;
+  text-wrap: balance;
+}
+
+.policy__sheet h4 {
+  font-size: var(--ds-text-md);
+  font-weight: 600;
+  margin: 28px 0 8px;
+  color: var(--ds-text);
+}
+
+.policy__sheet p {
+  margin: 0 0 12px;
+  color: var(--ds-text-2);
+  line-height: 1.65;
+  max-width: 68ch;
+}
+
+@media (max-width: 640px) {
+  .policy__sheet { padding: 24px; }
 }
 </style>
