@@ -1,114 +1,136 @@
 <template>
-  <div class="container">
-    <div class="row justify-content-center mt-10">
-      <div v-if="!pageRefresh" class="col-md-7">
-        <div class="card">
-          <div class="card-body">
-            <ul class="list-unstyled">
-              <li class="mb-3">
-                <img :src="getAnnouncementImage(announcement.image)"
-                     style="height: 450px; object-fit: cover;"
-                     class="card-img-top d-flex align-self-center justify-content-center w-100" alt="...">
-              </li>
-              <li>
-                <div class="d-flex justify-content-between">
+  <div>
+    <div v-if="pageRefresh" class="ds-card" style="max-width:760px">
+      <span class="ds-skeleton" style="height:300px;border-radius:6px 6px 0 0;display:block"></span>
+      <div class="ds-card__body" style="display:grid;gap:12px">
+        <span class="ds-skeleton" style="height:20px;width:55%"></span>
+        <span class="ds-skeleton" style="height:12px;width:30%"></span>
+        <span class="ds-skeleton" style="height:12px"></span>
+        <span class="ds-skeleton" style="height:12px;width:85%"></span>
+      </div>
+    </div>
 
-                  <h5>{{announcement.title}}</h5>
+    <template v-else>
+      <div class="ds-page-head">
+        <div class="ds-page-head__copy">
+          <h1 class="ds-h1">{{ announcement.title }}</h1>
+          <p>
+            <time :datetime="announcement.createdAt">
+              Published {{ $moment(announcement.createdAt).format('D MMMM YYYY') }}
+            </time>
+          </p>
+        </div>
 
-                  <div class="dropdown" v-if="loggedInUser.data.roleId === '1'">
-                    <button class="btn btn-outline-primary dropdown-toggle" type="button" id="dropdownMenuButton1"
-                            data-bs-toggle="dropdown" aria-expanded="false">
-                      <i class="fas fa-ellipsis-v"></i>
-                    </button>
-                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                      <li>
-                        <NuxtLink class="dropdown-item" :to="'/admin/announcements/'+announcement.id+'/edit'">Update
-                        </NuxtLink>
-                      </li>
-                      <li><a data-bs-target="#warningModal" data-bs-toggle="modal" class="dropdown-item text-danger"
-                             href="#">Delete</a></li>
-                    </ul>
-                  </div>
-                </div>
-
-              </li>
-              <li>
-                <small class="text-muted"> {{$moment(announcement.createdAt).format('Do MMMM, YYYY')}}</small>
-              </li>
-              <li class="mt-3">
-                <p>
-                  {{announcement.body}}
-                </p>
-              </li>
-              <li></li>
-            </ul>
-          </div>
+        <div v-if="isChurchManager" class="ds-page-head__actions">
+          <NuxtLink class="ds-btn ds-btn--secondary" :to="`/admin/announcements/${announcement.id}/edit`">
+            Edit
+          </NuxtLink>
+          <button class="ds-btn ds-btn--danger" type="button" @click="confirmOpen = true">
+            Delete
+          </button>
         </div>
       </div>
-      <page-loader v-else></page-loader>
-      <warning-modal v-bind:title="'Are you sure?'" :message="'You are about to delete this announcement.'"
-                     @onclick="modalState($event)"></warning-modal>
-    </div>
+
+      <article class="ds-card" style="max-width:760px;overflow:hidden">
+        <img :src="getAnnouncementImage(announcement.image)" alt="" class="announcement__image">
+        <div class="ds-card__body">
+          <p class="announcement__body">{{ announcement.body }}</p>
+        </div>
+      </article>
+    </template>
+
+    <ConfirmDialog
+      :open="confirmOpen"
+      :busy="isDeleting"
+      title="Delete this announcement?"
+      :message="`&quot;${announcement.title}&quot; will be removed from every member's dashboard. This cannot be undone.`"
+      confirm-label="Delete announcement"
+      @cancel="confirmOpen = false"
+      @confirm="deleteAnnouncement"
+    />
   </div>
 </template>
 
 <script>
-  import {mapGetters} from 'vuex'
-  import {Announcement} from "../../../../network/Announcement";
-  import {profileImageBaseUrl} from "../../../../resources/constants";
+import { mapGetters } from 'vuex'
+import { Announcement } from '../../../../network/Announcement'
+import { profileImageBaseUrl } from '../../../../resources/constants'
+import { ROLE_CHURCH_MANAGER } from '../../../../resources/navigation'
+import ConfirmDialog from '../../../../components/ConfirmDialog'
 
-  let id
-
-  export default {
-    name: "index",
-    computed: {
-      ...mapGetters(['isAuthenticated', 'loggedInUser'])
+export default {
+  name: 'announcement-detail',
+  components: { ConfirmDialog },
+  data () {
+    return {
+      pageRefresh: false,
+      isDeleting: false,
+      confirmOpen: false,
+      announcement: Announcement
+    }
+  },
+  computed: {
+    ...mapGetters(['isAuthenticated', 'loggedInUser']),
+    isChurchManager () {
+      return this.loggedInUser && this.loggedInUser.data &&
+        this.loggedInUser.data.roleId === ROLE_CHURCH_MANAGER
+    }
+  },
+  beforeMount () {
+    this.getAnnouncement(this.$route.params.id)
+  },
+  methods: {
+    getAnnouncement (id) {
+      this.pageRefresh = true
+      this.$axios.get(`announcements/${id}`).then(response => {
+        this.announcement = Object.assign({}, Announcement, response.data.data)
+        this.pageRefresh = false
+      }).catch(() => {
+        this.pageRefresh = false
+      })
     },
-    data() {
-      return {
-        pageRefresh: false,
-        announcement: Announcement
+    getAnnouncementImage (image) {
+      if (image) {
+        return `${profileImageBaseUrl}/${image}`
       }
+      return require('~/assets/imgs/no_image.png')
     },
-    beforeMount() {
-      id = this.$route.params.id
-      this.getAnnouncement(id)
-    },
-    methods: {
-      modalState(data) {
-        if (data.toString().toLowerCase() === 'positive') {
-          this.deleteAnnouncement(this.announcement.id)
-        }
-      },
-      deleteAnnouncement(id) {
-        this.$axios.delete(`announcements/${id}`).then(response => {
-          this.$router.push('/admin/announcements')
-          this.$toast.success("Announcement successfully deleted.")
-        }).catch(error => {
-          console.log(error)
-        })
-      },
-      getAnnouncement(id) {
-        this.pageRefresh = true
-        this.$axios.get(`announcements/${id}`).then(response => {
-          this.announcement = Object.assign(this.announcement, response.data.data)
-
-          this.pageRefresh = false
-        }).catch(error => {
-          // this.update.profilePicture = this.getProfileImage('')
-          this.pageRefresh = false
-        })
-      },
-      getAnnouncementImage(image) {
-        if (image) {
-          return `${profileImageBaseUrl}/${image}`
-        }
-        return require(`~/assets/imgs/no_image.png`)
-      }
+    deleteAnnouncement () {
+      this.isDeleting = true
+      this.$axios.delete(`announcements/${this.announcement.id}`).then(() => {
+        this.isDeleting = false
+        this.confirmOpen = false
+        this.$toast.success('Announcement deleted')
+        this.$router.push('/admin/announcements')
+      }).catch(error => {
+        this.isDeleting = false
+        this.confirmOpen = false
+        const message = error && error.response && error.response.data && error.response.data.message
+          ? error.response.data.message
+          : 'Could not delete this announcement.'
+        this.$toast.error(message)
+      })
     }
   }
+}
 </script>
 
 <style scoped>
+.announcement__image {
+  width: 100%;
+  max-height: 380px;
+  object-fit: cover;
+  background: var(--ds-surface-2);
+  border-bottom: 1px solid var(--ds-border);
+  display: block;
+}
 
+.announcement__body {
+  margin: 0;
+  font-size: var(--ds-text-md);
+  line-height: 1.65;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+  max-width: 68ch;
+}
 </style>
