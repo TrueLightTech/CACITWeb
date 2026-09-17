@@ -84,6 +84,7 @@ export const navigation = [
       { label: 'Word for Today', to: '/admin/app/word', icon: 'verse', roles: STAFF },
       { label: 'Live Service', to: '/admin/app/live', icon: 'live', roles: [ROLE_CHURCH_MANAGER] },
       // Pastoral only — see the role note above.
+      { label: 'Comments', to: '/admin/app/comments', icon: 'comment', roles: STAFF },
       { label: 'Requests', to: '/admin/app/requests', icon: 'support', roles: PASTORAL },
       { label: 'Push Messages', to: '/admin/app/push', icon: 'push', roles: [ROLE_CHURCH_MANAGER] }
     ]

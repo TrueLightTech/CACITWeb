@@ -172,3 +172,28 @@ export function bytes (size) {
   }
   return `${value.toFixed(value < 10 && unit > 0 ? 1 : 0)} ${units[unit]}`
 }
+
+/**
+ * What a member can leave on a sermon, video, event or announcement. Words
+ * rather than emoji, so the console and the app can draw them differently and
+ * the meaning survives a redesign.
+ */
+export const REACTIONS = [
+  { value: 'amen', label: 'Amen', glyph: '🙏' },
+  { value: 'praise', label: 'Praise', glyph: '🙌' },
+  { value: 'love', label: 'Love', glyph: '❤️' },
+  { value: 'pray', label: 'Praying', glyph: '🕊️' },
+  { value: 'thanks', label: 'Thanks', glyph: '🤍' }
+]
+
+export const COMMENT_STATUS_LABELS = {
+  visible: 'Visible',
+  hidden: 'Hidden',
+  removed: 'Withdrawn'
+}
+
+export const COMMENT_STATUS_BADGE = {
+  visible: 'ds-badge--success',
+  hidden: 'ds-badge--warning',
+  removed: 'ds-badge--neutral'
+}
