@@ -3,7 +3,7 @@
     <div class="ds-page-head">
       <div class="ds-page-head__copy">
         <h1 class="ds-h1">Comments</h1>
-        <p>What members have written on sermons, videos, events and announcements.</p>
+        <p>What members have written on sermons, videos, shorts, events and announcements.</p>
       </div>
     </div>
 
@@ -30,6 +30,7 @@
             <option value="">Everything</option>
             <option value="sermon">Sermons</option>
             <option value="video">Videos</option>
+            <option value="short">Shorts</option>
             <option value="event">Events</option>
             <option value="announcement">Announcements</option>
           </select>
@@ -187,7 +188,7 @@ export default {
       if (this.view === 'reported') { return 'Comments members flag appear here first.' }
       return this.view === 'hidden'
         ? 'Comments you hide stay here, and can be restored.'
-        : 'Comments members leave on sermons, videos, events and announcements appear here.'
+        : 'Comments members leave on sermons, videos, shorts, events and announcements appear here.'
     },
     deleteMessage () {
       const replies = this.pendingDelete && this.pendingDelete.replyCount
