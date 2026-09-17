@@ -10,18 +10,45 @@ export default {
 
   // Global page headers: https://go.nuxtjs.dev/config-head
   head: {
-    title: 'CACI - Taifa APP',
+    title: 'CACI Taifa Central Assembly | Miracle Centre',
+    titleTemplate: '%s',
     htmlAttrs: {
       lang: 'en'
     },
     meta: [
-      {charset: 'utf-8'},
-      {name: 'viewport', content: 'width=device-width, initial-scale=1'},
-      {hid: 'description', name: 'description', content: ''},
-      {name: 'format-detection', content: 'telephone=no'}
+      { charset: 'utf-8' },
+      { name: 'viewport', content: 'width=device-width, initial-scale=1, shrink-to-fit=no' },
+      { hid: 'description', name: 'description', content: 'Official platform of Christ Apostolic Church International, Taifa Central Assembly (Miracle Centre), Accra, Ghana. Worship schedules, sermon archives, digital tithes & offerings, and mobile app download.' },
+      { hid: 'keywords', name: 'keywords', content: 'Christ Apostolic Church International, CACI Taifa, CACI Taifa Central, Miracle Centre, Church in Taifa Accra, Christian Church Ghana, CACI Mobile App, Tithe and Offering, CACI Hymns Dwom' },
+      { name: 'author', content: 'Christ Apostolic Church International - Taifa Central' },
+      { name: 'theme-color', content: '#0f172a' },
+      { name: 'format-detection', content: 'telephone=no' },
+
+      // Mobile Web App
+      { name: 'mobile-web-app-capable', content: 'yes' },
+      { name: 'apple-mobile-web-app-capable', content: 'yes' },
+      { name: 'apple-mobile-web-app-title', content: 'CACI Taifa' },
+      { name: 'apple-mobile-web-app-status-bar-style', content: 'black-translucent' },
+
+      // Open Graph / Facebook / WhatsApp
+      { hid: 'og:type', property: 'og:type', content: 'website' },
+      { hid: 'og:site_name', property: 'og:site_name', content: 'CACI Taifa Central Assembly' },
+      { hid: 'og:title', property: 'og:title', content: 'Christ Apostolic Church International — Taifa Central Assembly (Miracle Centre)' },
+      { hid: 'og:description', property: 'og:description', content: 'Join us for Sunday Glorious Services, midweek Solution Hour, and access church services anywhere on our official mobile app.' },
+      { hid: 'og:image', property: 'og:image', content: '/og-image.jpg' },
+      { hid: 'og:locale', property: 'og:locale', content: 'en_GH' },
+
+      // Twitter Card
+      { hid: 'twitter:card', name: 'twitter:card', content: 'summary_large_image' },
+      { hid: 'twitter:title', name: 'twitter:title', content: 'CACI Taifa Central Assembly | Miracle Centre' },
+      { hid: 'twitter:description', name: 'twitter:description', content: 'Official church website and mobile app for Christ Apostolic Church International - Taifa Central, Accra, Ghana.' },
+      { hid: 'twitter:image', name: 'twitter:image', content: '/og-image.jpg' }
     ],
     link: [
-      {rel: 'icon', type: 'image/x-icon', href: '/favicon.ico'}
+      { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' },
+      { rel: 'icon', type: 'image/png', sizes: '32x32', href: '/favicon-32x32.png' },
+      { rel: 'icon', type: 'image/png', sizes: '16x16', href: '/favicon-16x16.png' },
+      { rel: 'apple-touch-icon', sizes: '180x180', href: '/apple-touch-icon.png' }
     ],
     // Bootstrap's JS bundle is loaded once, locally. The Chart.js, Popper and
     // Bootstrap CDN tags that also sat here were removed: Chart.js had no

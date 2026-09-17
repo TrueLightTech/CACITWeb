@@ -6,6 +6,9 @@
     <section class="hero">
       <div class="hero__bg-overlay"></div>
       <div class="pub-container hero__content">
+        <div class="hero__logo-wrapper">
+          <img src="~assets/imgs/caci_taifa_logo.png" alt="Christ Apostolic Church International Taifa Central Emblem" class="hero__logo" />
+        </div>
         <div class="hero__badge">
           <span class="hero__badge-pulse"></span>
           <span>Christ Apostolic Church International • Taifa Central</span>
@@ -382,13 +385,72 @@ export default {
   auth: false,
   name: 'IndexPage',
   head() {
+    const churchSchema = {
+      '@context': 'https://schema.org',
+      '@type': 'Church',
+      name: 'Christ Apostolic Church International, Taifa Central Assembly',
+      alternateName: ['CACI Taifa Central', 'Miracle Centre Assembly'],
+      description: 'Official website of Christ Apostolic Church International, Taifa Central Assembly (Miracle Centre), Accra, Ghana. Weekly worship schedules, sermon archives, digital tithes & offerings, and mobile app.',
+      url: 'https://cacitaifa.org',
+      logo: 'https://cacitaifa.org/android-chrome-512x512.png',
+      image: 'https://cacitaifa.org/og-image.jpg',
+      telephone: '+233242969760',
+      email: 'cactaifacentral@gmail.com',
+      address: {
+        '@type': 'PostalAddress',
+        streetAddress: 'Loquat Street, Taifa Central',
+        addressLocality: 'Taifa, Accra',
+        addressRegion: 'Greater Accra',
+        addressCountry: 'GH'
+      },
+      sameAs: [
+        'https://web.facebook.com/CACTaifaCentral/'
+      ],
+      openingHoursSpecification: [
+        {
+          '@type': 'OpeningHoursSpecification',
+          dayOfWeek: ['Sunday'],
+          opens: '07:00',
+          closes: '12:00'
+        },
+        {
+          '@type': 'OpeningHoursSpecification',
+          dayOfWeek: ['Wednesday'],
+          opens: '18:00',
+          closes: '20:00'
+        },
+        {
+          '@type': 'OpeningHoursSpecification',
+          dayOfWeek: ['Friday'],
+          opens: '18:30',
+          closes: '21:00'
+        }
+      ]
+    }
+
     return {
-      title: 'Christ Apostolic Church Int. - Taifa Central Assembly (Miracle Centre)',
+      title: 'Christ Apostolic Church Int. - Taifa Central Assembly | Miracle Centre',
       meta: [
         {
           hid: 'description',
           name: 'description',
-          content: 'Official website of Christ Apostolic Church International, Taifa Central Assembly (Miracle Centre), Accra Ghana. Weekly service times, ministries, mobile app downloads, and member login.'
+          content: 'Official website of Christ Apostolic Church International, Taifa Central Assembly (Miracle Centre), Accra, Ghana. Weekly service times, ministries, mobile app downloads, and member login.'
+        },
+        {
+          hid: 'og:title',
+          property: 'og:title',
+          content: 'Christ Apostolic Church Int. - Taifa Central Assembly | Miracle Centre'
+        },
+        {
+          hid: 'og:description',
+          property: 'og:description',
+          content: 'Join us in worship, prayer, and fellowship at Taifa Central. Experience God’s presence and access church services on our mobile app.'
+        }
+      ],
+      script: [
+        {
+          type: 'application/ld+json',
+          json: churchSchema
         }
       ]
     }
@@ -433,6 +495,30 @@ export default {
   max-width: 860px;
   text-align: center;
   margin: 0 auto;
+}
+
+.hero__logo-wrapper {
+  margin-bottom: 24px;
+  display: flex;
+  justify-content: center;
+}
+
+.hero__logo {
+  width: 120px;
+  height: 120px;
+  object-fit: contain;
+  border-radius: 50%;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+  animation: heroLogoFloat 4s ease-in-out infinite alternate;
+}
+
+@keyframes heroLogoFloat {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-8px);
+  }
 }
 
 .hero__badge {

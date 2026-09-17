@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+Allow: /privacypolicy
+Allow: /terms
+Allow: /support
+Allow: /delete-account
+Allow: /login
+Allow: /register
+Disallow: /admin/
+
+Sitemap: https://cacitaifa.org/sitemap.xml

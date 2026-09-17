@@ -78,6 +78,18 @@
 <script>
   export default {
     name: "login",
+    head() {
+      return {
+        title: 'Member Sign In | CACI Taifa Central Assembly',
+        meta: [
+          {
+            hid: 'description',
+            name: 'description',
+            content: 'Sign in to the official CACI Taifa Central member portal to access giving history, digital tithe receipts, and church dashboard services.'
+          }
+        ]
+      }
+    },
     data() {
       return {
         isLoading: false,
