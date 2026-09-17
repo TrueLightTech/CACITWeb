@@ -197,3 +197,25 @@ export const COMMENT_STATUS_BADGE = {
   hidden: 'ds-badge--warning',
   removed: 'ds-badge--neutral'
 }
+
+/**
+ * What a hero card is about. The kind changes the app's treatment and supplies
+ * defaults — never the shape, which stays eyebrow, headline, line beneath,
+ * photograph and one button.
+ */
+export const HERO_KINDS = [
+  { value: 'promo', label: 'General', note: 'The default look.' },
+  { value: 'sermon', label: 'A sermon', note: 'Play icon on the button.' },
+  { value: 'event', label: 'An event', note: 'Calendar icon on the button.' },
+  { value: 'scripture', label: 'Scripture', note: 'Set in a serif, so members read it as the Bible.' }
+]
+
+/** Where a hero's button can send a member. Same app paths shorts use. */
+export const HERO_ACTION_TARGETS = [
+  { value: 'word', label: 'The word for today', path: '/word-for-today' },
+  { value: 'sermon', label: 'A sermon', path: '/sermon/' },
+  { value: 'event', label: 'An event', path: '/event/' },
+  { value: 'announcement', label: 'An announcement', path: '/announcement/' },
+  { value: 'video', label: 'A video', path: '/video/' },
+  { value: 'giving', label: 'Giving', path: '/giving' }
+]

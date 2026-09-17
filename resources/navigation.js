@@ -76,6 +76,7 @@ export const navigation = [
     title: 'Mobile App',
     items: [
       { label: 'App Overview', to: '/admin/app', icon: 'dashboard', roles: STAFF },
+      { label: 'Home Screen', to: '/admin/app/hero', icon: 'home', roles: STAFF },
       { label: 'Sermons', to: '/admin/app/sermons', icon: 'sermon', roles: STAFF },
       { label: 'Shorts', to: '/admin/app/shorts', icon: 'shorts', roles: STAFF },
       { label: 'Events', to: '/admin/app/events', icon: 'calendar', roles: STAFF },
