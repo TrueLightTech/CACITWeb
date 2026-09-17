@@ -1,6 +1,16 @@
 <template>
   <main class="auth-page">
     <section class="auth-shell" aria-labelledby="login-title">
+      <div class="auth-top-nav">
+        <NuxtLink to="/" class="back-home-link">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+          </svg>
+          <span>Back to Church Home</span>
+        </NuxtLink>
+      </div>
+
       <div class="brand-lockup" aria-hidden="true">
         <img src="~assets/imgs/caci_logo.png" alt="CACI Taifa" />
       </div>
@@ -53,6 +63,14 @@
         <span aria-hidden="true"></span>
         <NuxtLink to="/register">Create account</NuxtLink>
       </nav>
+
+      <div class="auth-footer-strip">
+        <NuxtLink to="/privacypolicy">Privacy</NuxtLink>
+        <span>•</span>
+        <NuxtLink to="/terms">Terms</NuxtLink>
+        <span>•</span>
+        <NuxtLink to="/support">Support</NuxtLink>
+      </div>
     </section>
   </main>
 </template>
@@ -99,4 +117,48 @@
 </script>
 
 <style src="~/assets/auth.css"></style>
+
+<style scoped>
+.auth-top-nav {
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.back-home-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #475569;
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.back-home-link:hover {
+  color: #1a56db;
+}
+
+.auth-footer-strip {
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-size: 0.78rem;
+  color: #94a3b8;
+}
+
+.auth-footer-strip a {
+  color: #64748b;
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.auth-footer-strip a:hover {
+  color: #1a56db;
+}
+</style>
 
