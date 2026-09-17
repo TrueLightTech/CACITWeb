@@ -128,6 +128,7 @@
         <PublishControls
           :status.sync="form.status"
           :publish-at.sync="form.publishAt"
+          :send-push.sync="form.sendPush"
           noun="event"
           :show-errors="showErrors"
           :allow-archive="isEdit"
@@ -177,7 +178,8 @@ export default {
         statusNote: '',
         registrationRequired: false,
         status: 'draft',
-        publishAt: ''
+        publishAt: '',
+        sendPush: true
       }
     }
   },
@@ -291,7 +293,8 @@ export default {
         statusNote: this.form.eventStatus === 'confirmed' ? null : (this.form.statusNote || null),
         registrationRequired: this.form.registrationRequired,
         status: this.form.status,
-        publishAt: this.form.status === 'scheduled' ? toUtcIso(this.form.publishAt) : null
+        publishAt: this.form.status === 'scheduled' ? toUtcIso(this.form.publishAt) : null,
+        sendPush: this.form.sendPush
       }
 
       const request = this.isEdit

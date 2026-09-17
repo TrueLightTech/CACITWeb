@@ -54,6 +54,11 @@
           <input id="liveNext" v-model="form.nextServiceAt" class="ds-input" type="datetime-local">
           <span class="ds-help">Shown when nothing is streaming, so the home screen is never blank.</span>
         </div>
+
+        <label v-if="!status.isLive" class="ds-check" style="margin-top:16px">
+          <input v-model="form.sendPush" type="checkbox">
+          <span>Send push notification to congregation when going live</span>
+        </label>
       </div>
 
       <div class="ds-card__foot lv__foot">
@@ -107,7 +112,7 @@ export default {
       isSaving: false,
       confirmOpen: false,
       pollTimer: null,
-      form: { title: '', subtitle: '', nextServiceAt: '' }
+      form: { title: '', subtitle: '', nextServiceAt: '', sendPush: true }
     }
   },
   beforeMount () {
@@ -144,7 +149,8 @@ export default {
         isLive,
         title: this.form.title || null,
         subtitle: this.form.subtitle || null,
-        nextServiceAt: this.form.nextServiceAt ? toUtcIso(this.form.nextServiceAt) : null
+        nextServiceAt: this.form.nextServiceAt ? toUtcIso(this.form.nextServiceAt) : null,
+        sendPush: isLive ? this.form.sendPush : false
       }).then(response => {
         this.status = payload(response) || { isLive }
         this.isSaving = false

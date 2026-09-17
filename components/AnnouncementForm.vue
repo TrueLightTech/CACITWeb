@@ -74,6 +74,7 @@
           :status.sync="form.status"
           :publish-at.sync="form.publishAt"
           :is-pinned.sync="form.isPinned"
+          :send-push.sync="form.sendPush"
           pinnable
           pin-note=" of the announcements list"
           noun="announcement"
@@ -122,7 +123,8 @@ export default {
         image: '',
         isPinned: false,
         status: 'published',
-        publishAt: ''
+        publishAt: '',
+        sendPush: true
       }
     }
   },
@@ -216,7 +218,8 @@ export default {
         announcementSummaryMessage: this.form.announcementSummaryMessage,
         isPinned: this.form.isPinned,
         status: this.form.status,
-        publishAt: this.form.status === 'scheduled' ? toUtcIso(this.form.publishAt) : null
+        publishAt: this.form.status === 'scheduled' ? toUtcIso(this.form.publishAt) : null,
+        sendPush: this.form.sendPush
       }
 
       if (!this.isEdit || this.hasImageEdited) {

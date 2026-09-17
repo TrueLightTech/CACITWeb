@@ -111,6 +111,11 @@
             </select>
             <span v-if="showErrors && !serviceId" class="ds-error">Choose which service this was given at.</span>
           </div>
+
+          <label class="ds-check" style="margin-top:16px">
+            <input v-model="sendPush" type="checkbox">
+            <span>Send push notification to member's phone</span>
+          </label>
         </div>
 
         <div class="ds-modal__foot">
@@ -155,6 +160,7 @@ export default {
       weeks: [1, 2, 3, 4, 5],
       services: ServiceList,
       serviceId: '',
+      sendPush: true,
       months: MONTHS,
       monthNames: MONTH_NAMES
     }
@@ -259,7 +265,8 @@ export default {
         serviceName: service[0].name,
         month: this.month,
         amountPaid: parseFloat(this.amountPaid),
-        week: this.week
+        week: this.week,
+        sendPush: this.sendPush
       }
 
       this.isSaving = true

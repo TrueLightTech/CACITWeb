@@ -104,6 +104,7 @@
             noun="home screen message"
             :show-errors="showErrors"
             allow-archive
+            :allow-push="false"
           />
         </div>
 

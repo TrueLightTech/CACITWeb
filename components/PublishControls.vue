@@ -52,6 +52,11 @@
       <input type="checkbox" :checked="isPinned" @change="$emit('update:isPinned', $event.target.checked)">
       <span>Pin to the top{{ pinNote }}</span>
     </label>
+
+    <label v-if="allowPush && (status === 'published' || status === 'scheduled')" class="ds-check pc__push">
+      <input type="checkbox" :checked="sendPush" @change="$emit('update:sendPush', $event.target.checked)">
+      <span>Send push notification to congregation</span>
+    </label>
   </div>
 </template>
 
@@ -75,7 +80,9 @@ export default {
     pinNote: { type: String, default: '' },
     noun: { type: String, default: 'item' },
     showErrors: { type: Boolean, default: false },
-    allowArchive: { type: Boolean, default: false }
+    allowArchive: { type: Boolean, default: false },
+    sendPush: { type: Boolean, default: true },
+    allowPush: { type: Boolean, default: true }
   },
   data () {
     uid += 1
@@ -164,4 +171,5 @@ export default {
 
 .pc__when { margin-bottom: 0; max-width: 320px; }
 .pc__pin { margin-top: 14px; }
+.pc__push { margin-top: 12px; }
 </style>

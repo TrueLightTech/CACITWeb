@@ -3,11 +3,46 @@
     <div class="ds-page-head">
       <div class="ds-page-head__copy">
         <h1 class="ds-h1">Push Messages</h1>
-        <p>A one-off message to the congregation. Publishing a sermon or moving an event already notifies members on its own.</p>
+        <p>Manage and deliver notifications directly to congregants' phones via Firebase Cloud Messaging.</p>
       </div>
     </div>
 
-    <div class="ph__layout">
+    <!-- Navigation Tabs -->
+    <div class="ph__tabs" role="tablist" aria-label="Push Message sections">
+      <button
+        class="ph__tab"
+        :class="{ 'is-active': activeTab === 'compose' }"
+        type="button"
+        role="tab"
+        :aria-selected="activeTab === 'compose'"
+        @click="activeTab = 'compose'"
+      >
+        Send Broadcast
+      </button>
+      <button
+        class="ph__tab"
+        :class="{ 'is-active': activeTab === 'history' }"
+        type="button"
+        role="tab"
+        :aria-selected="activeTab === 'history'"
+        @click="activeTab = 'history'; loadHistory()"
+      >
+        Broadcast History ({{ historyTotal }})
+      </button>
+      <button
+        class="ph__tab"
+        :class="{ 'is-active': activeTab === 'test' }"
+        type="button"
+        role="tab"
+        :aria-selected="activeTab === 'test'"
+        @click="activeTab = 'test'"
+      >
+        Test Device Delivery
+      </button>
+    </div>
+
+    <!-- TAB 1: COMPOSE BROADCAST -->
+    <div v-show="activeTab === 'compose'" class="ph__layout">
       <form class="ds-card ph__form" @submit.prevent="review">
         <div class="ds-card__head">
           <h2 class="ds-h3">Write the message</h2>
@@ -68,7 +103,7 @@
       </form>
 
       <aside class="ph__side">
-        <!-- What it looks like on a phone, which is the only place it is read -->
+        <!-- What it looks like on a phone -->
         <section class="ds-card">
           <div class="ds-card__head"><h2 class="ds-h3">On a phone</h2></div>
           <div class="ds-card__body">
@@ -102,10 +137,133 @@
       </aside>
     </div>
 
-    <!--
-      Sending to two thousand people should not feel like saving a draft, so the
-      confirmation names the number rather than asking "are you sure?".
-    -->
+    <!-- TAB 2: BROADCAST HISTORY -->
+    <div v-show="activeTab === 'history'" class="ph__history-tab">
+      <div class="ds-card">
+        <div class="ds-card__head" style="display:flex;justify-content:space-between;align-items:center">
+          <h2 class="ds-h3">Recent Broadcasts</h2>
+          <button class="ds-btn ds-btn--ghost ds-btn--sm" type="button" :disabled="isLoadingHistory" @click="loadHistory">
+            Refresh
+          </button>
+        </div>
+
+        <div v-if="isLoadingHistory" class="ds-card__body" style="display:grid;gap:12px">
+          <div v-for="n in 4" :key="n" class="ds-skeleton" style="height:56px;border-radius:6px"></div>
+        </div>
+
+        <div v-else-if="!historyItems.length" class="ds-card__body" style="text-align:center;padding:48px 16px">
+          <p class="ds-muted" style="font-size:16px;margin:0 0 8px">No broadcasts sent yet.</p>
+          <p class="ds-help" style="margin:0">Messages broadcasted to the church will appear here for auditing.</p>
+        </div>
+
+        <div v-else class="ds-table-wrap">
+          <table class="ds-table">
+            <thead>
+              <tr>
+                <th style="width:140px">Date & Time</th>
+                <th style="width:110px">Category</th>
+                <th>Title & Message</th>
+                <th style="width:140px">Audience</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="item in historyItems" :key="item.id">
+                <td class="ds-muted" style="font-size:12.5px;white-space:nowrap">
+                  {{ formatDate(item.createdAt) }}
+                </td>
+                <td>
+                  <span class="ph__badge" :class="'ph__badge--' + (item.category || 'general')">
+                    {{ item.category || 'general' }}
+                  </span>
+                </td>
+                <td>
+                  <strong style="display:block;margin-bottom:2px">{{ item.title }}</strong>
+                  <span class="ds-muted" style="font-size:13px;display:block;max-width:550px">
+                    {{ item.body }}
+                  </span>
+                </td>
+                <td>
+                  <span class="ds-muted" style="font-size:12.5px">
+                    {{ item.audienceFamilyId ? 'Family Group' : 'All Members' }}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: TEST DEVICE DELIVERY -->
+    <div v-show="activeTab === 'test'" class="ph__test-tab">
+      <div class="ds-card" style="max-width:680px">
+        <div class="ds-card__head">
+          <h2 class="ds-h3">Send a Test Push to a Device</h2>
+          <p class="ds-help" style="margin-top:4px">
+            Verifies live delivery from Firebase Cloud Messaging to an iOS or Android device token.
+          </p>
+        </div>
+
+        <form class="ds-card__body" @submit.prevent="runTestPush">
+          <div class="ds-field" :class="{ 'is-invalid': testErrors && !testForm.deviceToken }">
+            <label class="ds-label" for="testToken">FCM Device Token</label>
+            <textarea
+              id="testToken"
+              v-model="testForm.deviceToken"
+              class="ds-textarea"
+              rows="3"
+              placeholder="Paste FCM registration token (from device or debug console)"
+            ></textarea>
+            <span class="ds-help">The unique token generated by the handset when the app starts.</span>
+            <span v-if="testErrors && !testForm.deviceToken" class="ds-error">Please enter a device token.</span>
+          </div>
+
+          <div class="ds-field">
+            <label class="ds-label" for="testTitle">Test Title</label>
+            <input
+              id="testTitle"
+              v-model="testForm.title"
+              class="ds-input"
+              type="text"
+              placeholder="Test Notification"
+            >
+          </div>
+
+          <div class="ds-field" style="margin-bottom:0">
+            <label class="ds-label" for="testBody">Test Message</label>
+            <textarea
+              id="testBody"
+              v-model="testForm.body"
+              class="ds-textarea"
+              rows="2"
+              placeholder="Hello from CACI Taifa Admin Portal!"
+            ></textarea>
+          </div>
+
+          <!-- Result feedback -->
+          <div v-if="testResult" class="ph__test-result" :class="{ 'is-success': testResult.success, 'is-failure': !testResult.success }">
+            <div style="font-weight:600;display:flex;align-items:center;gap:6px">
+              <span>{{ testResult.success ? '✓ Delivery Succeeded' : '✕ Delivery Failed' }}</span>
+            </div>
+            <div v-if="testResult.messageId" style="font-family:monospace;font-size:12px;margin-top:4px">
+              FCM Message ID: {{ testResult.messageId }}
+            </div>
+            <div v-if="testResult.error" style="margin-top:4px;font-size:13px">
+              Reason: {{ testResult.error }}
+            </div>
+          </div>
+
+          <div style="margin-top:20px;display:flex;justify-content:flex-end">
+            <button class="ds-btn ds-btn--primary" type="submit" :disabled="isTestingPush">
+              <span v-if="isTestingPush" class="ds-btn__spinner"></span>
+              {{ isTestingPush ? 'Transmitting...' : 'Send Test Notification' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Confirmation Dialog for Broadcast -->
     <ConfirmDialog
       :open="confirmOpen"
       :busy="isSending"
@@ -129,6 +287,7 @@ export default {
   components: { AiAssist, ConfirmDialog },
   data () {
     return {
+      activeTab: 'compose',
       families: [],
       audience: { memberCount: 0, deviceCount: 0, audienceLabel: '' },
       isLoadingAudience: false,
@@ -140,11 +299,23 @@ export default {
         body: '',
         category: 'general',
         audienceFamilyId: ''
-      }
+      },
+      // Broadcast history
+      historyItems: [],
+      historyTotal: 0,
+      isLoadingHistory: false,
+      // Test push
+      testForm: {
+        deviceToken: '',
+        title: 'Test Notification',
+        body: 'Hello from CACI Taifa Admin Portal!'
+      },
+      testErrors: false,
+      isTestingPush: false,
+      testResult: null
     }
   },
   computed: {
-    /** What a redraft should improve rather than replace. */
     aiCurrent () {
       return { title: this.form.title, body: this.form.body }
     },
@@ -158,13 +329,9 @@ export default {
   beforeMount () {
     this.loadFamilies()
     this.loadAudience()
+    this.loadHistory()
   },
   methods: {
-
-    /**
-     * Fold a draft into the form. Only fields the draft returned are touched,
-     * and everything stays editable afterwards.
-     */
     applyDraft (fields) {
       const set = (key, value) => { if (value !== undefined && value !== null && value !== '') { this.$set(this.form, key, value) } }
       set('title', fields.title)
@@ -190,6 +357,25 @@ export default {
         this.isLoadingAudience = false
       })
     },
+    loadHistory () {
+      this.isLoadingHistory = true
+      this.$axios.get('admin/push', { params: { PageSize: 30 } })
+        .then(response => {
+          const data = payload(response) || {}
+          this.historyItems = data.results || []
+          this.historyTotal = data.totalCount || this.historyItems.length
+          this.isLoadingHistory = false
+        })
+        .catch(() => {
+          this.historyItems = []
+          this.isLoadingHistory = false
+        })
+    },
+    formatDate (val) {
+      if (!val) { return '' }
+      const d = new Date(val)
+      return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+    },
     review () {
       if (!this.form.title || !this.form.body) {
         this.showErrors = true
@@ -213,10 +399,39 @@ export default {
         this.$toast.success(`Sent to ${result.membersNotified || 0} members`)
         this.form.title = ''
         this.form.body = ''
+        this.loadHistory()
       }).catch(error => {
         this.isSending = false
         this.confirmOpen = false
         this.$toast.error(errorMessage(error, 'Could not send that message.'))
+      })
+    },
+    runTestPush () {
+      if (!this.testForm.deviceToken) {
+        this.testErrors = true
+        return
+      }
+      this.testErrors = false
+      this.isTestingPush = true
+      this.testResult = null
+
+      this.$axios.post('admin/push/test', {
+        deviceToken: this.testForm.deviceToken.trim(),
+        title: this.testForm.title.trim(),
+        body: this.testForm.body.trim()
+      }).then(response => {
+        const data = payload(response) || {}
+        this.testResult = data
+        this.isTestingPush = false
+        if (data.success) {
+          this.$toast.success('Test notification delivered!')
+        } else {
+          this.$toast.error(data.error || 'Failed to deliver test notification.')
+        }
+      }).catch(err => {
+        this.isTestingPush = false
+        this.testResult = { success: false, error: errorMessage(err, 'Failed to call test endpoint') }
+        this.$toast.error('Test delivery request failed.')
       })
     }
   }
@@ -224,6 +439,34 @@ export default {
 </script>
 
 <style scoped>
+.ph__tabs {
+  display: flex;
+  gap: 8px;
+  border-bottom: 1px solid var(--ds-border);
+  margin-bottom: 24px;
+}
+
+.ph__tab {
+  padding: 10px 16px;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ds-text-muted);
+  cursor: pointer;
+  transition: color .15s, border-color .15s;
+}
+
+.ph__tab:hover {
+  color: var(--ds-text);
+}
+
+.ph__tab.is-active {
+  color: var(--ds-primary);
+  border-bottom-color: var(--ds-primary);
+}
+
 .ph__layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 320px); gap: 20px; align-items: start; }
 @media (max-width: 900px) { .ph__layout { grid-template-columns: 1fr; } }
 
@@ -249,4 +492,38 @@ export default {
 .ph__count { margin: 0; font-size: 34px; font-weight: 700; line-height: 1; }
 .ph__countlabel { margin: 6px 0 0; font-size: var(--ds-text-sm); }
 .ph__devices { margin: 10px 0 0; }
+
+.ph__badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  padding: 3px 7px;
+  border-radius: 4px;
+  background: var(--ds-surface-2);
+  color: var(--ds-text-muted);
+}
+.ph__badge--announcement { background: #eef2ff; color: #4338ca; }
+.ph__badge--giving { background: #ecfdf5; color: #047857; }
+.ph__badge--event { background: #fef3c7; color: #b45309; }
+.ph__badge--sermon { background: #fae8ff; color: #86198f; }
+.ph__badge--live { background: #fee2e2; color: #b91c1c; }
+
+.ph__test-result {
+  margin-top: 16px;
+  padding: 12px 16px;
+  border-radius: 6px;
+  border: 1px solid var(--ds-border);
+}
+.ph__test-result.is-success {
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+  color: #166534;
+}
+.ph__test-result.is-failure {
+  background: #fef2f2;
+  border-color: #fecaca;
+  color: #991b1b;
+}
 </style>

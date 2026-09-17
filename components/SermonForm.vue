@@ -134,6 +134,7 @@
         <PublishControls
           :status.sync="form.status"
           :publish-at.sync="form.publishAt"
+          :send-push.sync="form.sendPush"
           noun="sermon"
           :show-errors="showErrors"
           :allow-archive="isEdit"
@@ -186,7 +187,8 @@ export default {
         audioMediaId: '',
         tags: [],
         status: 'draft',
-        publishAt: ''
+        publishAt: '',
+        sendPush: true
       }
     }
   },
@@ -306,7 +308,8 @@ export default {
         audioMediaId: this.form.audioMediaId || null,
         tags: this.form.tags,
         status: this.form.status,
-        publishAt: this.form.status === 'scheduled' ? toUtcIso(this.form.publishAt) : null
+        publishAt: this.form.status === 'scheduled' ? toUtcIso(this.form.publishAt) : null,
+        sendPush: this.form.sendPush
       }
 
       const request = this.isEdit
