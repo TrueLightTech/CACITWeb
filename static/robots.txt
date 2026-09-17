@@ -8,4 +8,4 @@ Allow: /login
 Allow: /register
 Disallow: /admin/
 
-Sitemap: https://cacitaifa.org/sitemap.xml
+Sitemap: https://cacitaifa.com/sitemap.xml

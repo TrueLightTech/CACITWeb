@@ -391,9 +391,9 @@ export default {
       name: 'Christ Apostolic Church International, Taifa Central Assembly',
       alternateName: ['CACI Taifa Central', 'Miracle Centre Assembly'],
       description: 'Official website of Christ Apostolic Church International, Taifa Central Assembly (Miracle Centre), Accra, Ghana. Weekly worship schedules, sermon archives, digital tithes & offerings, and mobile app.',
-      url: 'https://cacitaifa.org',
-      logo: 'https://cacitaifa.org/android-chrome-512x512.png',
-      image: 'https://cacitaifa.org/og-image.jpg',
+      url: 'https://cacitaifa.com',
+      logo: 'https://cacitaifa.com/android-chrome-512x512.png',
+      image: 'https://cacitaifa.com/og-image.jpg',
       telephone: '+233242969760',
       email: 'cactaifacentral@gmail.com',
       address: {
