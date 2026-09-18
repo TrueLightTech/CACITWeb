@@ -92,11 +92,24 @@
                 :kind="form.kind"
                 :label="form.title"
                 @state="mediaState = $event"
+                @file="clipFile = $event"
               />
               <span v-if="showErrors && !content.mediaId" class="ds-error">
                 Upload the {{ form.kind === 'video' ? 'clip' : 'recording' }} first.
               </span>
             </div>
+
+            <!--
+              A clip on R2 has no thumbnail of its own, so without this the
+              short is a blank tile in the rail. Taken from the clip, and
+              replaceable like any other cover.
+            -->
+            <ThumbnailField
+              v-if="form.kind === 'video'"
+              v-model="content.artworkUrl"
+              :suggest-from="clipFile"
+              :label="form.title"
+            />
 
             <div v-if="form.kind === 'audio'" class="ds-field" style="margin-bottom:0">
               <label class="ds-label" for="shortArtwork">Artwork URL</label>
@@ -298,6 +311,7 @@
 
 <script>
 import MediaUpload from './MediaUpload'
+import ThumbnailField from './ThumbnailField'
 import AiAssist from './AiAssist'
 import PublishControls from './PublishControls'
 import {
@@ -312,7 +326,7 @@ import {
  */
 export default {
   name: 'ShortForm',
-  components: { AiAssist, MediaUpload, PublishControls },
+  components: { AiAssist, MediaUpload, PublishControls, ThumbnailField },
   props: {
     isEdit: { type: Boolean, default: false }
   },
@@ -322,6 +336,8 @@ export default {
       isSaving: false,
       showErrors: false,
       mediaState: 'idle',
+      /** The chosen clip, so a cover frame can be taken from it. */
+      clipFile: null,
       imageMediaId: '',
       backgroundMediaId: '',
       actionTarget: '',
@@ -534,7 +550,7 @@ export default {
     buildContent () {
       switch (this.form.kind) {
         case 'video':
-          return { mediaId: this.content.mediaId }
+          return { mediaId: this.content.mediaId, artworkUrl: this.content.artworkUrl || null }
         case 'audio':
           return { mediaId: this.content.mediaId, artworkUrl: this.content.artworkUrl || null }
         case 'image':
