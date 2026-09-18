@@ -49,17 +49,13 @@ export default {
       { rel: 'icon', type: 'image/png', sizes: '32x32', href: '/favicon-32x32.png' },
       { rel: 'icon', type: 'image/png', sizes: '16x16', href: '/favicon-16x16.png' },
       { rel: 'apple-touch-icon', sizes: '180x180', href: '/apple-touch-icon.png' }
-    ],
-    // Bootstrap's JS bundle is loaded once, locally. The Chart.js, Popper and
-    // Bootstrap CDN tags that also sat here were removed: Chart.js had no
-    // remaining consumer, and the other two duplicated the local bundle.
-    script: [
-      {src: "/bootstrap/bootstrap.bundle.min.js", type: "text/javascript"}
     ]
+    // No `script` entries: interactive markup is driven by bootstrap-vue's
+    // components and by ConfirmDialog, neither of which needs Bootstrap's own
+    // JS bundle. A `/bootstrap/bootstrap.bundle.min.js` tag used to sit here
+    // pointing into `static/`, where that file was never added, so every page
+    // load 404'd on it.
   },
-//
-// <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js" integrity="sha384-IQsoLXl5PILFhosVNubq5LC7Qb9DXgDA9i+tQ8Zj3iwWAwPtgFTxbJ8NT4GN1R8p" crossorigin="anonymous"></script>
-//   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.min.js" integrity="sha384-cVKIPhGWiC2Al4u+LWgxfKTRIcfu0JTxR+EQDz/bgldoEyl4H0zUF0QKbrJ0EcQF" crossorigin="anonymous"></script>
 
   // Global CSS: https://go.nuxtjs.dev/config-css
   css: [

@@ -27,6 +27,14 @@
         <span class="ds-skeleton" style="height:14px;width:70%"></span>
       </div>
 
+      <div v-else-if="error" class="receipt__error">
+        <p class="receipt__error-msg">{{ error }}</p>
+        <p class="receipt__note">
+          If you opened this from a message sent by the church, please contact
+          the church office and quote the link you received.
+        </p>
+      </div>
+
       <template v-else>
         <dl class="receipt__meta">
           <div>
@@ -114,6 +122,7 @@ export default {
   data () {
     return {
       pageRefresh: false,
+      error: '',
       receipt: Object.assign({}, EMPTY_RECEIPT)
     }
   },
@@ -126,7 +135,10 @@ export default {
     }
   },
   beforeMount () {
-    this.getReceipt(this.$route.params.id)
+    // The API mails/SMSes receipt links as `/receipt?id=<id>` (query), while the
+    // app's own links use `/receipt/<id>` (route param). Accept both, or links
+    // already sent to members render an empty receipt.
+    this.getReceipt(this.$route.params.id || this.$route.query.id)
   },
   methods: {
     formatMoney (value) {
@@ -136,12 +148,28 @@ export default {
       window.print()
     },
     getReceipt (id) {
-      if (!id) { return }
+      // Each failure below sets `error`. Failing silently renders an empty
+      // receipt indistinguishable from a real one carrying no transactions,
+      // which is how a missing id went unnoticed on links sent to members.
+      if (!id) {
+        this.error = 'This link is missing a receipt reference.'
+        return
+      }
+      this.error = ''
       this.pageRefresh = true
       this.$axios.get(`tithes/receipt/${id}`).then(response => {
-        this.receipt = Object.assign({}, EMPTY_RECEIPT, response.data.data)
+        const data = response.data && response.data.data
+        if (data) {
+          this.receipt = Object.assign({}, EMPTY_RECEIPT, data)
+        } else {
+          this.error = 'No receipt was found for this link.'
+        }
         this.pageRefresh = false
-      }).catch(() => {
+      }).catch(error => {
+        const status = error.response && error.response.status
+        this.error = status === 404
+          ? 'No receipt was found for this link.'
+          : 'This receipt could not be loaded. Please check your connection and try again.'
         this.pageRefresh = false
       })
     }
@@ -245,6 +273,9 @@ export default {
 }
 
 .receipt__empty { color: var(--ds-text-3); text-align: center; padding: 20px 0; }
+
+.receipt__error { padding: 24px 0; text-align: center; }
+.receipt__error-msg { margin: 0 0 8px; font-size: var(--ds-text-base); font-weight: 500; }
 
 .receipt__foot {
   display: flex;
