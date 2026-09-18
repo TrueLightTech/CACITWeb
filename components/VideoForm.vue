@@ -64,10 +64,14 @@
           <div class="ds-formsection__head">
             <h2 class="ds-h3">Recording</h2>
           </div>
-          <MediaUpload ref="media" v-model="form.mediaId" kind="video" :label="form.title" @state="mediaState = $event" />
+          <MediaUpload ref="media" v-model="form.mediaId" kind="video" :label="form.title"
+                       @state="mediaState = $event" @file="videoFile = $event" />
           <p v-if="mediaState === 'processing'" class="ds-help" style="margin-top:12px">
             Still being prepared. You can save now — it appears once Cloudflare finishes.
           </p>
+
+          <!-- Taken from the recording, and replaceable when the frame is poor. -->
+          <ThumbnailField v-model="form.thumbnailUrl" :suggest-from="videoFile" :label="form.title" />
         </div>
 
         <PublishControls
@@ -92,13 +96,14 @@
 
 <script>
 import MediaUpload from './MediaUpload'
+import ThumbnailField from './ThumbnailField'
 import AiAssist from './AiAssist'
 import PublishControls from './PublishControls'
 import { payload, errorMessage, toUtcIso, toLocalInput } from '../network/MobileApp'
 
 export default {
   name: 'VideoForm',
-  components: { AiAssist, MediaUpload, PublishControls },
+  components: { AiAssist, MediaUpload, PublishControls, ThumbnailField },
   props: {
     isEdit: { type: Boolean, default: false }
   },
@@ -108,6 +113,8 @@ export default {
       isSaving: false,
       showErrors: false,
       mediaState: 'idle',
+      /** The chosen video file, so a cover frame can be taken from it. */
+      videoFile: null,
       knownCategories: [],
       form: {
         title: '',

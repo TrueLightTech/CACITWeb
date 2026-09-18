@@ -432,6 +432,11 @@ export default {
     async upload (file) {
       this.stopPolling()
       this.lastFile = file
+      // Handed up so a cover can be taken from the same file. Emitted on the
+      // way in rather than after upload, so the frame is ready by the time a
+      // long sermon finishes sending.
+      this.$emit('file', file)
+
       this.fileName = file.name
       this.fileSize = formatBytes(file.size)
       this.failureReason = ''

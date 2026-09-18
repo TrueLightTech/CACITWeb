@@ -95,13 +95,21 @@
 
           <div class="ds-field">
             <label class="ds-label">Video</label>
-            <MediaUpload ref="video" v-model="form.videoMediaId" kind="video" :label="form.title" @state="videoState = $event" />
+            <MediaUpload ref="video" v-model="form.videoMediaId" kind="video" :label="form.title"
+                         @state="videoState = $event" @file="videoFile = $event" />
           </div>
 
-          <div class="ds-field" style="margin-bottom:0">
+          <div class="ds-field">
             <label class="ds-label">Audio</label>
             <MediaUpload v-model="form.audioMediaId" kind="audio" :label="form.title" @state="audioState = $event" />
           </div>
+
+          <!--
+            One cover for the sermon, however it was recorded. Taken from the
+            video when there is one; asked for when the sermon is audio only,
+            because a recording has no frame to take.
+          -->
+          <ThumbnailField v-model="form.thumbnailUrl" :suggest-from="videoFile" :label="form.title" />
 
           <p v-if="isProcessing" class="ds-help sf__processing">
             A recording is still being prepared. You can save now — it appears in the app
@@ -156,13 +164,14 @@
 
 <script>
 import MediaUpload from './MediaUpload'
+import ThumbnailField from './ThumbnailField'
 import AiAssist from './AiAssist'
 import PublishControls from './PublishControls'
 import { payload, errorMessage, toUtcIso, toLocalInput } from '../network/MobileApp'
 
 export default {
   name: 'SermonForm',
-  components: { AiAssist, MediaUpload, PublishControls },
+  components: { AiAssist, MediaUpload, PublishControls, ThumbnailField },
   props: {
     isEdit: { type: Boolean, default: false }
   },
@@ -174,6 +183,8 @@ export default {
       tagDraft: '',
       videoState: 'idle',
       audioState: 'idle',
+      /** The chosen video file, so a cover frame can be taken from it. */
+      videoFile: null,
       knownSeries: [],
       knownSpeakers: [],
       form: {
@@ -185,6 +196,7 @@ export default {
         summary: '',
         videoMediaId: '',
         audioMediaId: '',
+        thumbnailUrl: '',
         tags: [],
         status: 'draft',
         publishAt: '',
@@ -271,6 +283,7 @@ export default {
           summary: data.summary || '',
           videoMediaId: (data.video && data.video.id) || '',
           audioMediaId: (data.audio && data.audio.id) || '',
+          thumbnailUrl: data.thumbnailUrl || '',
           tags: Array.isArray(data.tags) ? data.tags.slice() : [],
           status: data.status || 'draft',
           publishAt: toLocalInput(data.publishAt)
@@ -306,6 +319,7 @@ export default {
         summary: this.form.summary,
         videoMediaId: this.form.videoMediaId || null,
         audioMediaId: this.form.audioMediaId || null,
+        thumbnailUrl: this.form.thumbnailUrl || null,
         tags: this.form.tags,
         status: this.form.status,
         publishAt: this.form.status === 'scheduled' ? toUtcIso(this.form.publishAt) : null,
