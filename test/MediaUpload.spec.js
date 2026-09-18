@@ -127,6 +127,51 @@ describe('when the server cannot take uploads', () => {
     expect(wrapper.vm.canUploadThisKind).toBe(true)
     expect(wrapper.vm.mode).toBe('upload')
   })
+
+  /**
+   * Without a Stream subscription, video uploads go to R2, which stores the
+   * file exactly as given. Uploading works, so the old "it is off" path does
+   * not apply -- but the office still has to be told, because a 1080p export
+   * is what every member then downloads.
+   */
+  const videoOnR2 = {
+    canUploadVideo: true,
+    canUploadFiles: true,
+    videoUploadNote: 'Videos are stored as you upload them. Export at 720p before uploading.'
+  }
+
+  it('still offers the file picker when video falls back to R2', async () => {
+    const wrapper = mountWith(videoOnR2)
+    await wrapper.vm.$nextTick()
+    await wrapper.vm.$nextTick()
+
+    expect(wrapper.vm.canUploadThisKind).toBe(true)
+    expect(wrapper.vm.mode).toBe('upload')
+  })
+
+  it('warns about the size, even though uploading works', async () => {
+    const wrapper = mountWith(videoOnR2)
+    await wrapper.vm.$nextTick()
+    await wrapper.vm.$nextTick()
+
+    expect(wrapper.vm.uploadCaveat).toContain('720p')
+  })
+
+  it('does not nag about size on a server that transcodes', async () => {
+    const wrapper = mountWith({ canUploadVideo: true, canUploadFiles: true, videoUploadNote: null })
+    await wrapper.vm.$nextTick()
+    await wrapper.vm.$nextTick()
+
+    expect(wrapper.vm.uploadCaveat).toBe('')
+  })
+
+  it('keeps the caveat off kinds it does not describe', async () => {
+    const wrapper = mountWith(videoOnR2, { kind: 'image' })
+    await wrapper.vm.$nextTick()
+    await wrapper.vm.$nextTick()
+
+    expect(wrapper.vm.uploadCaveat).toBe('')
+  })
 })
 
 describe('applying an asset', () => {

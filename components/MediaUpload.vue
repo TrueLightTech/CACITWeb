@@ -87,6 +87,7 @@
           or drag one here
         </p>
         <p class="ds-help mu__hint">{{ hint }}</p>
+        <p v-if="uploadCaveat" class="ds-help mu__hint">{{ uploadCaveat }}</p>
       </div>
     </div>
 
@@ -228,7 +229,7 @@ export default {
     return {
       canUploadVideo: true,
       canUploadFiles: true,
-      unavailableNote: '',
+      serverNote: '',
       inputId: `mediaUpload${uid}`,
       linkId: `mediaLink${uid}`,
       mode: 'upload',
@@ -251,6 +252,17 @@ export default {
     }
   },
   computed: {
+    /**
+     * The server's note, said where it applies. It covers two cases now: video
+     * upload being off entirely, and video upload working but storing the file
+     * as uploaded, which the office needs to know before exporting at 1080p.
+     */
+    unavailableNote () {
+      return this.serverNote || 'Uploading is off on this server. Paste a link instead.'
+    },
+    uploadCaveat () {
+      return this.kind === 'video' && this.canUploadThisKind ? this.serverNote : ''
+    },
     canUploadThisKind () {
       return this.kind === 'video' ? this.canUploadVideo : this.canUploadFiles
     },
@@ -327,8 +339,7 @@ export default {
     loadCapabilities(this.$axios).then(available => {
       this.canUploadVideo = available.canUploadVideo !== false
       this.canUploadFiles = available.canUploadFiles !== false
-      this.unavailableNote = available.videoUploadNote ||
-        'Uploading is off on this server. Paste a link instead.'
+      this.serverNote = available.videoUploadNote || ''
 
       // Land on the tab that works, so nobody picks a file that cannot go
       // anywhere. Only when a link is an option at all.
