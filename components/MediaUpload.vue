@@ -297,13 +297,19 @@ export default {
     },
     hint () {
       if (this.kind === 'video') {
-        return 'MP4 or MOV. Large files are fine — the upload goes straight to Cloudflare.'
+        return 'Any video file. Large ones are fine — the upload goes straight to Cloudflare.'
       }
       if (this.kind === 'image') {
         return 'JPG or PNG. A wide image works best on a phone.'
       }
       if (this.kind === 'audio') {
-        return 'MP3 or M4A.'
+        // Any audio file. The picker has always accepted `audio/*` and the
+        // server reads the container out of the file rather than its name,
+        // then converts anything the phones cannot play -- a WhatsApp voice
+        // note, a phone recorder's .m4a or .amr, something off a laptop. Only
+        // this line ever said otherwise, and naming two formats reads as a
+        // restriction to whoever is holding a third.
+        return 'Any audio file — a voice note or a phone recording is fine.'
       }
       return 'PDF or Word document.'
     },

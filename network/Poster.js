@@ -10,8 +10,8 @@
  * frame. The browser can: it already has the file, and it has a decoder. We
  * take one frame during upload and store it as an ordinary image.
  *
- * Audio is deliberately not handled here. There is no frame in an MP3, so a
- * cover for a recording has to be supplied by the office.
+ * Audio is deliberately not handled here. A recording has no frames whatever
+ * it was recorded on, so a cover for one has to be supplied by the office.
  */
 
 /**
