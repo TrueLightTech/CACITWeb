@@ -1,45 +1,32 @@
-name: ci
+# Tests on pull requests.
+#
+# This used to trigger on main and master. The default branch is dev and always
+# has been, so neither name ever matched and the workflow had never run once.
+name: CI
 
 on:
-  push:
-    branches:
-      - main
-      - master
   pull_request:
     branches:
-      - main
-      - master
+      - dev
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  ci:
-    runs-on: ${{ matrix.os }}
-
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-        node: [14]
-
+  test:
+    name: Test
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout 🛎
-        uses: actions/checkout@master
+      - uses: actions/checkout@v4
 
-      - name: Setup node env 🏗
-        uses: actions/setup-node@v2.1.5
+      # 20.x, matching package.json engines and the Dockerfile that actually
+      # builds this in production. The old workflow pinned 14.
+      - uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node }}
-          check-latest: true
+          node-version: '20'
+          cache: npm
 
-      - name: Cache node_modules 📦
-        uses: actions/cache@v2.1.4
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
+      - run: npm ci
 
-      - name: Install dependencies 👨🏻‍💻
-        run: npm ci --prefer-offline --no-audit
-
-
-      - name: Run tests 🧪
-        run: npm run test
+      - run: npm test

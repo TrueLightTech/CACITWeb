@@ -1,0 +1,62 @@
+# Production deploy.
+#
+# cacitaifa.com runs on Railway. There was no deploy workflow at all: the Azure
+# pipeline builds the site and publishes the output as an artifact that nothing
+# consumes, so every release came down to somebody running the deploy by hand.
+# That is how a commit once sat on dev for a day without reaching members.
+name: Deploy
+
+on:
+  push:
+    branches:
+      - dev
+  workflow_dispatch:
+
+# One production deploy at a time, and never cancel one midway: a half-applied
+# release is worse than a queued one.
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm test
+
+  deploy:
+    name: Deploy to Railway
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Said plainly here rather than as an opaque failure three steps later.
+      - name: Check the Railway token is set
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: |
+          if [ -z "$RAILWAY_TOKEN" ]; then
+            echo "::error::RAILWAY_TOKEN is not set. Create a project token in the Railway dashboard (project cacit-taifa, environment production) and add it to this repository's Actions secrets as RAILWAY_TOKEN."
+            exit 1
+          fi
+
+      - run: npm install -g @railway/cli
+
+      # --ci streams the build and exits non-zero when it fails, so a broken
+      # release fails this job instead of reporting green and quietly not
+      # shipping.
+      - name: Deploy
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: railway up --service CACITWeb --environment production --ci
