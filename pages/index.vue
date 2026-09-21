@@ -226,44 +226,21 @@
           </div>
         </div>
 
-        <!-- Phone Mockup Container -->
+        <!--
+          The real app, photographed from the real app. This was a phone drawn
+          in CSS showing invented screens -- a giving card reading "Verified &
+          Instant" and a row of emoji -- none of which exists in the app a
+          visitor would then download.
+        -->
         <div class="app-visual">
-          <div class="phone-frame">
-            <div class="phone-frame__notch"></div>
-            <div class="phone-screen">
-              <div class="screen-header">
-                <img src="~assets/imgs/caci_logo.png" alt="CACI" class="screen-header__logo" />
-                <span>CACI Taifa Central</span>
-              </div>
-              <div class="screen-card screen-card--balance">
-                <div class="screen-card__label">Member Giving & Tithe</div>
-                <div class="screen-card__num">Verified & Instant</div>
-                <div class="screen-card__tag">Official Electronic Receipt</div>
-              </div>
-              <div class="screen-quick-grid">
-                <div class="screen-quick-item">
-                  <span>🙏</span>
-                  <p>Prayer</p>
-                </div>
-                <div class="screen-quick-item">
-                  <span>📖</span>
-                  <p>Dwom</p>
-                </div>
-                <div class="screen-quick-item">
-                  <span>🎧</span>
-                  <p>Sermons</p>
-                </div>
-                <div class="screen-quick-item">
-                  <span>💛</span>
-                  <p>Give</p>
-                </div>
-              </div>
-              <div class="screen-notice">
-                <strong>Sunday Service Stream</strong>
-                <p>Miracle Centre Live Audio & Hymn Lyrics</p>
-              </div>
-            </div>
-          </div>
+          <img
+            src="~assets/imgs/app_preview.jpg"
+            alt="The CACI Taifa app showing the home screen with the day's bible verse and the church feed, beside the events screen"
+            class="app-visual__shot"
+            width="800"
+            height="720"
+            loading="lazy"
+          >
         </div>
       </div>
     </section>
@@ -966,120 +943,20 @@ export default {
   justify-content: center;
 }
 
-.phone-frame {
-  width: 290px;
-  height: 560px;
-  background: #020617;
-  border: 10px solid #334155;
-  border-radius: 40px;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
-  position: relative;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
+.app-visual__shot {
+  width: 100%;
+  max-width: 420px;
+  height: auto;
+  border-radius: 16px;
+  /* The shot carries its own royal blue, which does not meet this section's
+     navy. Framed deliberately rather than pretending it bleeds. */
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
 }
 
-.phone-frame__notch {
-  width: 120px;
-  height: 18px;
-  background: #334155;
-  border-radius: 0 0 12px 12px;
-  margin: 0 auto;
+@media (max-width: 900px) {
+  .app-visual__shot { max-width: 340px; }
 }
 
-.phone-screen {
-  flex: 1;
-  background: #0f172a;
-  padding: 18px 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-.screen-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: #ffffff;
-  font-size: 0.85rem;
-  font-weight: 700;
-}
-
-.screen-header__logo {
-  height: 24px;
-  width: auto;
-}
-
-.screen-card {
-  background: linear-gradient(135deg, #1d4ed8 0%, #1e3a8a 100%);
-  border-radius: 12px;
-  padding: 16px 14px;
-  color: #ffffff;
-}
-
-.screen-card__label {
-  font-size: 0.72rem;
-  opacity: 0.85;
-}
-
-.screen-card__num {
-  font-size: 1.15rem;
-  font-weight: 800;
-  margin: 4px 0 6px;
-}
-
-.screen-card__tag {
-  display: inline-block;
-  font-size: 0.65rem;
-  background: rgba(255, 255, 255, 0.2);
-  padding: 2px 8px;
-  border-radius: 9999px;
-}
-
-.screen-quick-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
-  text-align: center;
-}
-
-.screen-quick-item {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 8px;
-  padding: 10px 4px;
-}
-
-.screen-quick-item span {
-  font-size: 18px;
-  display: block;
-  margin-bottom: 2px;
-}
-
-.screen-quick-item p {
-  font-size: 0.65rem;
-  color: #cbd5e1;
-  margin: 0;
-}
-
-.screen-notice {
-  background: rgba(255, 255, 255, 0.04);
-  border-radius: 8px;
-  padding: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.screen-notice strong {
-  display: block;
-  font-size: 0.78rem;
-  color: #fde68a;
-  margin-bottom: 2px;
-}
-
-.screen-notice p {
-  font-size: 0.7rem;
-  color: #94a3b8;
-  margin: 0;
-}
 
 /* Ministries */
 .ministries-section {
@@ -1247,7 +1124,12 @@ export default {
     grid-template-columns: 1fr;
   }
   .app-visual {
-    display: none;
+    /* Shown on a phone now. It was hidden here while it was a mockup drawn in
+       CSS, which was worth no space. A screenshot of the app is the most
+       persuasive thing on a page about the app, and most of the people
+       reading this are already on the device it wants them to install it on. */
+    order: -1;
+    margin-bottom: 32px;
   }
   .portal-cta__inner {
     flex-direction: column;
