@@ -68,6 +68,9 @@
               <NuxtLink to="/support">App Support & Help Center</NuxtLink>
             </li>
             <li>
+              <NuxtLink to="/child-safety">Child Safety Standards</NuxtLink>
+            </li>
+            <li>
               <NuxtLink to="/delete-account">Request Account Deletion</NuxtLink>
             </li>
             <li>
@@ -121,6 +124,8 @@
           <NuxtLink to="/terms">Terms</NuxtLink>
           <span>•</span>
           <NuxtLink to="/support">Support</NuxtLink>
+          <span>•</span>
+          <NuxtLink to="/child-safety">Child Safety</NuxtLink>
           <span>•</span>
           <NuxtLink to="/delete-account">Data Deletion</NuxtLink>
         </div>
