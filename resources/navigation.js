@@ -46,7 +46,15 @@ export const navigation = [
   {
     title: 'People',
     items: [
-      { label: 'Members', to: '/admin/members', icon: 'manage', roles: STAFF }
+      { label: 'Members', to: '/admin/members', icon: 'manage', roles: STAFF },
+      // Church Manager only: who joins the congregation is a different
+      // decision from who is already in it.
+      {
+        label: 'Registrations',
+        to: '/admin/members/registrations',
+        icon: 'manage',
+        roles: [ROLE_CHURCH_MANAGER]
+      }
     ]
   },
   {

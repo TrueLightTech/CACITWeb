@@ -129,6 +129,18 @@
                     >
                       Archive {{ singular }}
                     </button>
+                    <!--
+                      Church Manager only, and below archive, because archiving
+                      is the answer almost every time this menu is opened.
+                    -->
+                    <button
+                      v-if="isChurchManager"
+                      class="ds-menu__item ds-menu__item--danger"
+                      type="button"
+                      @click="askPurge(row); close()"
+                    >
+                      Delete permanently
+                    </button>
                   </template>
                 </RowMenu>
               </td>
@@ -187,12 +199,24 @@
       @cancel="confirmOpen = false"
       @confirm="confirmArchive"
     />
+
+    <ConfirmDialog
+      :open="purgeOpen"
+      :busy="isPurging"
+      :title="`Delete this ${singular} for good?`"
+      :message="purgeMessage"
+      :confirm-label="`Delete permanently`"
+      @cancel="purgeOpen = false"
+      @confirm="confirmPurge"
+    />
   </div>
 </template>
 
 <script>
 import RowMenu from './RowMenu'
 import ConfirmDialog from './ConfirmDialog'
+import { mapGetters } from 'vuex'
+import { ROLE_CHURCH_MANAGER } from '../resources/navigation'
 import { rowsOf, pagingOf, errorMessage, STATUS_LABELS, STATUS_BADGE } from '../network/MobileApp'
 
 const SEARCH_DEBOUNCE_MS = 350
@@ -234,12 +258,16 @@ export default {
       isArchiving: false,
       confirmOpen: false,
       pendingArchive: null,
+      pendingPurge: null,
+      purgeOpen: false,
+      isPurging: false,
       query: '',
       status: '',
       searchTimer: null
     }
   },
   computed: {
+    ...mapGetters(['loggedInUser']),
     statusTabs () {
       return [
         { value: '', label: 'All' },
@@ -267,6 +295,23 @@ export default {
     },
     statusWord () {
       return (STATUS_LABELS[this.status] || '').toLowerCase()
+    },
+    isChurchManager () {
+      return this.loggedInUser && this.loggedInUser.data &&
+        this.loggedInUser.data.roleId === ROLE_CHURCH_MANAGER
+    },
+    /**
+     * Names what goes, rather than asking "are you sure?".
+     *
+     * Archive's message reassures that nothing is deleted. This one has to do
+     * the opposite job, and the recording is the part nobody expects to lose:
+     * it is the only thing here that cannot be typed back in.
+     */
+    purgeMessage () {
+      const label = this.pendingPurge ? this.primaryOf(this.pendingPurge) : `This ${this.singular}`
+      return `${label} will be deleted for good, along with any recording, and the`
+        + ` comments and reactions members left on it. This cannot be undone.`
+        + ` Archive it instead if you only want it out of the app.`
     },
     archiveMessage () {
       const label = this.pendingArchive ? this.primaryOf(this.pendingArchive) : `This ${this.singular}`
@@ -353,6 +398,28 @@ export default {
         this.load(this.paging.page)
       }).catch(error => {
         this.$toast.error(errorMessage(error, `Could not publish this ${this.singular}.`))
+      })
+    },
+    askPurge (row) {
+      this.pendingPurge = row
+      this.purgeOpen = true
+    },
+    confirmPurge () {
+      if (!this.pendingPurge) { return }
+      this.isPurging = true
+
+      // A separate route from archive's DELETE, so the destructive one cannot
+      // be reached by a wrong flag on the reversible one.
+      this.$axios.delete(`${this.endpoint}/${this.pendingPurge.id}/purge`).then(() => {
+        this.isPurging = false
+        this.purgeOpen = false
+        this.pendingPurge = null
+        this.$toast.success(`${this.capitalise(this.singular)} deleted`)
+        this.load(this.paging.page)
+      }).catch(error => {
+        this.isPurging = false
+        this.purgeOpen = false
+        this.$toast.error(errorMessage(error, `Could not delete this ${this.singular}.`))
       })
     },
     askArchive (row) {
