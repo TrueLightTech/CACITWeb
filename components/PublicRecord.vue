@@ -98,7 +98,7 @@ const MONTHS = [
 ]
 
 /**
- * One public page for a sermon, a video or an event.
+ * One public page for a sermon, a video, a short or an event.
  *
  * These addresses were already being handed out — the API puts a `shareUrl`
  * on every one of these records and the app's copy-link button gives it to
@@ -112,7 +112,7 @@ const MONTHS = [
 export default {
   name: 'PublicRecord',
   props: {
-    /** sermons | videos | events — also the API collection. */
+    /** sermons | videos | shorts | events — also the API collection. */
     kind: { type: String, required: true }
   },
   data () {
@@ -141,6 +141,12 @@ export default {
   },
   computed: {
     media () {
+      // A short keeps its payload under `content`, and that payload is a
+      // media item only for the kinds that play — a picture short's is a
+      // URL and a scripture short's is words. `sourceUrl` is what tells
+      // the two apart without this having to know the kinds.
+      const content = this.record.content
+      if (content && content.sourceUrl) { return content }
       return this.record.video || this.record.media || null
     },
     playableUrl () {
@@ -151,16 +157,25 @@ export default {
       return (this.record.audio && this.record.audio.sourceUrl) || ''
     },
     posterUrl () {
+      const content = this.record.content || {}
       return this.record.thumbnailUrl || this.record.imageUrl ||
-        (this.media && this.media.thumbnailUrl) || ''
+        content.imageUrl || content.artworkUrl ||
+        (this.media && this.media.thumbnailUrl) ||
+        (content.slides && content.slides.length ? content.slides[0].imageUrl : '') ||
+        ''
     },
     kicker () {
       if (this.kind === 'sermons') { return 'Sermon' }
       if (this.kind === 'videos') { return this.record.category || 'Video' }
+      if (this.kind === 'shorts') { return 'From the church' }
       return this.record.category || 'Event'
     },
     bodyText () {
-      return this.record.summary || this.record.description || ''
+      // A scripture short is the one whose words are the whole point, and
+      // they live in the content rather than in a caption.
+      const content = this.record.content || {}
+      return this.record.summary || this.record.description ||
+        this.record.caption || content.text || ''
     },
     /** Only the facts this record actually has, so nothing renders as a dash. */
     facts () {
@@ -173,6 +188,15 @@ export default {
         if (this.record.scripture) { rows.push({ label: 'Scripture', value: this.record.scripture }) }
       } else if (this.kind === 'videos') {
         if (this.record.publishedOn) { rows.push({ label: 'Published', value: this.formatDate(this.record.publishedOn) }) }
+      } else if (this.kind === 'shorts') {
+        const content = this.record.content || {}
+        if (this.record.author && this.record.author.name) {
+          rows.push({ label: 'Posted by', value: this.record.author.name })
+        }
+        if (this.record.publishedAt) { rows.push({ label: 'Posted', value: this.formatDate(this.record.publishedAt) }) }
+        if (content.reference) { rows.push({ label: 'Scripture', value: content.reference }) }
+        if (content.location) { rows.push({ label: 'Where', value: content.location }) }
+        if (content.startsAt) { rows.push({ label: 'Starts', value: this.formatDateTime(content.startsAt, false) }) }
       } else {
         if (this.record.startsAt) { rows.push({ label: 'Starts', value: this.formatDateTime(this.record.startsAt, this.record.isAllDay) }) }
         if (this.record.endsAt) { rows.push({ label: 'Ends', value: this.formatDateTime(this.record.endsAt, this.record.isAllDay) }) }
@@ -231,6 +255,7 @@ export default {
       return {
         sermons: 'That sermon is no longer available.',
         videos: 'That video is no longer available.',
+        shorts: 'That post is no longer available.',
         events: 'That event is no longer available.'
       }[this.kind] || 'That is no longer available.'
     }
@@ -283,12 +308,26 @@ export default {
 .pr__frame { position: relative; width: 100%; aspect-ratio: 16 / 9; background: #000; }
 .pr__iframe { position: absolute; inset: 0; width: 100%; height: 100%; }
 
-.pr__video,
-.pr__poster {
+.pr__video {
   display: block;
   width: 100%;
   aspect-ratio: 16 / 9;
   object-fit: cover;
+  background: #000;
+}
+
+/*
+  Shown whole, not cropped to 16:9. What arrives here as a picture is most
+  often a flyer, and a flyer prints its dates and its venue along the
+  bottom edge — exactly what a cover fit to a landscape box throws away.
+  Capped by the viewport so a tall poster still leaves the title and the
+  facts under it visible without scrolling.
+*/
+.pr__poster {
+  display: block;
+  width: 100%;
+  max-height: 72vh;
+  object-fit: contain;
   background: #000;
 }
 
