@@ -33,6 +33,7 @@ export const ROLE_PASTORAL = '4'
 const EVERYONE = [ROLE_CHURCH_MANAGER, ROLE_FAMILY_MANAGER, ROLE_MEMBER, ROLE_PASTORAL]
 const STAFF = [ROLE_CHURCH_MANAGER, ROLE_FAMILY_MANAGER]
 const PASTORAL = [ROLE_PASTORAL, ROLE_CHURCH_MANAGER]
+const MANAGER_ONLY = [ROLE_CHURCH_MANAGER]
 
 export { STAFF, PASTORAL }
 
@@ -81,19 +82,23 @@ export const navigation = [
     ]
   },
   {
+    // The whole mobile app console is the church manager's. Family group
+    // managers run their family's giving and members; they do not publish to
+    // the app. Requests is the one exception: it is pastoral work, and the
+    // pastoral policy already excludes family managers.
     title: 'Mobile App',
     items: [
-      { label: 'App Overview', to: '/admin/app', icon: 'dashboard', roles: STAFF },
-      { label: 'Home Screen', to: '/admin/app/hero', icon: 'home', roles: STAFF },
-      { label: 'Sermons', to: '/admin/app/sermons', icon: 'sermon', roles: STAFF },
-      { label: 'Shorts', to: '/admin/app/shorts', icon: 'shorts', roles: STAFF },
-      { label: 'Events', to: '/admin/app/events', icon: 'calendar', roles: STAFF },
-      { label: 'Videos', to: '/admin/app/videos', icon: 'video', roles: STAFF },
-      { label: 'Hymnal (Dwom)', to: '/admin/app/hymns', icon: 'hymn', roles: STAFF },
-      { label: 'Word for Today', to: '/admin/app/word', icon: 'verse', roles: STAFF },
+      { label: 'App Overview', to: '/admin/app', icon: 'dashboard', roles: MANAGER_ONLY },
+      { label: 'Home Screen', to: '/admin/app/hero', icon: 'home', roles: MANAGER_ONLY },
+      { label: 'Sermons', to: '/admin/app/sermons', icon: 'sermon', roles: MANAGER_ONLY },
+      { label: 'Shorts', to: '/admin/app/shorts', icon: 'shorts', roles: MANAGER_ONLY },
+      { label: 'Events', to: '/admin/app/events', icon: 'calendar', roles: MANAGER_ONLY },
+      { label: 'Videos', to: '/admin/app/videos', icon: 'video', roles: MANAGER_ONLY },
+      { label: 'Hymnal (Dwom)', to: '/admin/app/hymns', icon: 'hymn', roles: MANAGER_ONLY },
+      { label: 'Word for Today', to: '/admin/app/word', icon: 'verse', roles: MANAGER_ONLY },
       { label: 'Live Service', to: '/admin/app/live', icon: 'live', roles: [ROLE_CHURCH_MANAGER] },
       // Pastoral only — see the role note above.
-      { label: 'Comments', to: '/admin/app/comments', icon: 'comment', roles: STAFF },
+      { label: 'Comments', to: '/admin/app/comments', icon: 'comment', roles: MANAGER_ONLY },
       { label: 'Requests', to: '/admin/app/requests', icon: 'support', roles: PASTORAL },
       { label: 'Push Messages', to: '/admin/app/push', icon: 'push', roles: [ROLE_CHURCH_MANAGER] }
     ]

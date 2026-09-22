@@ -147,7 +147,9 @@ export default {
     }
   },
   router: {
-    middleware: ['auth']
+    // role-guard runs after auth: auth decides whether you are signed in,
+    // role-guard whether this screen is yours. See middleware/role-guard.js.
+    middleware: ['auth', 'role-guard']
   },
   auth: {
     redirect: {
