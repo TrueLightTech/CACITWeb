@@ -1,9 +1,22 @@
+// Absolute URLs are not optional in a link preview: a crawler fetching the
+// page has no base to resolve '/og-image.jpg' against, and silently drops it.
+const SITE_URL = (process.env.SITE_URL || 'https://cacitaifa.com').replace(/\/+$/, '')
+
 export default {
   // Disable server-side rendering: https://go.nuxtjs.dev/ssr-mode
   ssr: false,
 
   // Target: https://go.nuxtjs.dev/config-target
-  target: 'static',
+  //
+  // 'server', not 'static', so serverMiddleware runs on every request and can
+  // put a record's own link preview into the HTML before it is sent. Rendering
+  // is unchanged — ssr stays false above, so pages are still built entirely in
+  // the browser and nothing here can break on a server render.
+  //
+  // 'static' would freeze the head at build time, and the church publishes
+  // weekly: anything added after a deploy would preview as the generic card
+  // until the next one.
+  target: 'server',
   env: {
     IMAGE_BASE_URL: process.env.IMAGE_BASE_URL || "https://pub-78c3b0ef114642b8859d4d64c75e96c3.r2.dev"
   },
@@ -35,14 +48,15 @@ export default {
       { hid: 'og:site_name', property: 'og:site_name', content: 'CACI Taifa Central Assembly' },
       { hid: 'og:title', property: 'og:title', content: 'Christ Apostolic Church International — Taifa Central Assembly (Miracle Centre)' },
       { hid: 'og:description', property: 'og:description', content: 'Join us for Sunday Glorious Services, midweek Solution Hour, and access church services anywhere on our official mobile app.' },
-      { hid: 'og:image', property: 'og:image', content: '/og-image.jpg' },
+      { hid: 'og:image', property: 'og:image', content: `${SITE_URL}/og-image.jpg` },
+      { hid: 'og:url', property: 'og:url', content: SITE_URL },
       { hid: 'og:locale', property: 'og:locale', content: 'en_GH' },
 
       // Twitter Card
       { hid: 'twitter:card', name: 'twitter:card', content: 'summary_large_image' },
       { hid: 'twitter:title', name: 'twitter:title', content: 'CACI Taifa Central Assembly | Miracle Centre' },
       { hid: 'twitter:description', name: 'twitter:description', content: 'Official church website and mobile app for Christ Apostolic Church International - Taifa Central, Accra, Ghana.' },
-      { hid: 'twitter:image', name: 'twitter:image', content: '/og-image.jpg' }
+      { hid: 'twitter:image', name: 'twitter:image', content: `${SITE_URL}/og-image.jpg` }
     ],
     link: [
       { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' },
@@ -62,6 +76,13 @@ export default {
     '~/assets/main.css',
     '~/assets/admin.css',
     '~/assets/design-system.css'
+  ],
+
+  // Rewrites the head for /sermons/:id, /videos/:id, /events/:id and
+  // /shorts/:id so a shared link previews as that record rather than as the
+  // site. Falls through untouched if the API cannot answer.
+  serverMiddleware: [
+    '~/server-middleware/share-meta.js'
   ],
 
   // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins

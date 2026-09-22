@@ -8,7 +8,11 @@ COPY package*.json .npmrc ./
 RUN npm ci
 
 COPY . .
-RUN npm run generate
+# `build`, not `generate`. Generate emits frozen HTML per route at build time,
+# which cannot carry a link preview for anything published afterwards, and
+# does not run serverMiddleware at all. `nuxt start` then serves the SPA
+# through the Nuxt server, where share-meta can rewrite the head per request.
+RUN npm run build
 
 EXPOSE 3000
 
