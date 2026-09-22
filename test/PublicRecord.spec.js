@@ -21,7 +21,8 @@ function mount (kind, record, { fail } = {}) {
       $axios: { get },
       $route: { params: { id: record ? record.id : 'missing' } }
     },
-    stubs: { NuxtLink: true }
+    // Nuxt auto-registers these at runtime; the test runner does not.
+    stubs: { NuxtLink: true, PublicHeader: true, PublicFooter: true, AppStoreLinks: true }
   })
 
   return { wrapper, get }

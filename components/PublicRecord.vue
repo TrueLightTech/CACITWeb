@@ -1,11 +1,11 @@
 <template>
   <div class="pr">
-    <header class="pr__masthead">
-      <a href="/" class="pr__brand">
-        <img src="~assets/imgs/caci_logo.png" alt="" class="pr__logo">
-        <span class="pr__brandtext">CACI Taifa</span>
-      </a>
-    </header>
+    <!--
+      The site's own header, the same one every other public page uses. This
+      was a bespoke masthead, which meant a shared link looked like a
+      different website from the one it belongs to.
+    -->
+    <PublicHeader />
 
     <main class="pr__main">
       <div v-if="loading" class="pr__card">
@@ -79,13 +79,21 @@
           </div>
 
           <footer class="pr__foot">
-            <p class="ds-help pr__note">
-              More sermons, videos and church life are in the CACI Taifa app.
-            </p>
+            <div class="pr__app">
+              <div class="pr__appcopy">
+                <p class="pr__apptitle">Get the CACI Taifa app</p>
+                <p class="pr__note">
+                  Sermons, videos, church life and giving — on your phone.
+                </p>
+              </div>
+              <AppStoreLinks variant="light" />
+            </div>
           </footer>
         </div>
       </article>
     </main>
+
+    <PublicFooter />
   </div>
 </template>
 
@@ -271,25 +279,6 @@ export default {
   color: var(--ds-text);
 }
 
-.pr__masthead {
-  padding: 16px;
-  border-bottom: 1px solid var(--ds-border);
-  background: var(--ds-surface);
-}
-
-.pr__brand {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  width: min(760px, 100%);
-  margin: 0 auto;
-  text-decoration: none;
-  color: inherit;
-}
-
-.pr__logo { width: 32px; height: 32px; object-fit: contain; }
-.pr__brandtext { font-weight: 600; font-size: var(--ds-text-base); }
-
 .pr__main { padding: 24px 16px 64px; }
 
 .pr__card {
@@ -375,7 +364,24 @@ export default {
 }
 .pr__audioel { width: 100%; }
 
-.pr__foot { margin-top: 28px; padding-top: 16px; border-top: 1px solid var(--ds-border); }
+.pr__foot { margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--ds-border); }
+
+.pr__app {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.pr__appcopy { min-width: 0; }
+
+.pr__apptitle {
+  margin: 0 0 4px;
+  font-size: var(--ds-text-md);
+  font-weight: 600;
+  color: var(--ds-text);
+}
 .pr__note { margin: 0; }
 
 @media (max-width: 560px) {

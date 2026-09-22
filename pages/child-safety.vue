@@ -135,6 +135,9 @@
  * the risk rather than claiming safeguards we do not operate.
  */
 export default {
+  // Public site, not the admin app: no AppShell, so a signed-in visitor
+  // does not get the admin sidebar stacked above this page's own header.
+  layout: 'public',
   auth: false,
   name: 'ChildSafetyPage',
   head () {
