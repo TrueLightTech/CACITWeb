@@ -68,11 +68,27 @@ export default {
       this.login.phoneNumber = this.$route.query.phone
 
       if (this.isInputFieldsValid()) {
+        // The API will not set a password without the token the verify step
+        // was given for this number. Without one -- a reload after it
+        // expired, or a link opened straight onto this step -- start again.
+        const resetToken = sessionStorage.getItem(`resetToken:${this.login.phoneNumber}`)
+        if (!resetToken) {
+          this.$toast.info("That reset has expired. Ask for a new code.", {duration: 3000})
+          await this.$router.push('/forgotPassword/start')
+          return
+        }
+
+        if (this.login.password.trim().length < 6) {
+          this.$toast.info("Choose a password of at least 6 characters.", {duration: 3000})
+          return
+        }
+
         try {
           if (!this.passwordsMatch()) {
             this.isLoading = true
-            await this.$axios.post('auth/passwordreset', this.login)
-            this.$toast.success("Password Successfully Updated !!")
+            await this.$axios.post('auth/passwordreset', {...this.login, resetToken})
+            sessionStorage.removeItem(`resetToken:${this.login.phoneNumber}`)
+            this.$toast.success("Your password has been changed. Sign in with it now.")
 
             await this.$router.push('/login')
           } else {
@@ -90,7 +106,10 @@ export default {
       if (this.login.phoneNumber) {
         try {
           this.isLoading = true
-          const {data} = await this.$axios.post('auth/passwordreset/initiate', {'phoneNumber': this.login.phoneNumber})
+          const {data} = await this.$axios.post('auth/passwordreset/initiate', {
+            phoneNumber: this.login.phoneNumber,
+            countryCode: this.login.countryCode
+          })
 
 
           if (data.code !== '200') {
@@ -147,6 +166,9 @@ export default {
           }
           this.$toast.success("OTP Verified !!")
           localStorage.removeItem(`requestId:${this.login.phoneNumber}`)
+          // Session storage, not local: it is a ten-minute credential and
+          // should not outlive the tab it was issued to.
+          sessionStorage.setItem(`resetToken:${this.login.phoneNumber}`, data.data.resetToken)
           this.isLoading = false
           await this.$router.push({
             path: '/forgotPassword/reset',
