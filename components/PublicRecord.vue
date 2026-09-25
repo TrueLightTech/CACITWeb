@@ -7,7 +7,7 @@
     -->
     <PublicHeader />
 
-    <main class="pr__main">
+    <main id="main" class="pr__main">
       <div v-if="loading" class="pr__card">
         <span class="ds-skeleton" style="height:220px;width:100%;border-radius:8px"></span>
         <span class="ds-skeleton" style="height:22px;width:70%;margin-top:20px"></span>
@@ -16,10 +16,10 @@
 
       <div v-else-if="error" class="pr__card pr__card--message">
         <h1 class="pr__missing">{{ error }}</h1>
-        <p class="ds-help">
+        <p class="pub-muted">
           It may have been removed, or the link may be incomplete.
         </p>
-        <a href="/" class="ds-btn ds-btn--secondary ds-btn--sm pr__back">Go to the church home page</a>
+        <NuxtLink to="/" class="pub-btn pub-btn--secondary pub-btn--sm pr__back">Go to the church home page</NuxtLink>
       </div>
 
       <article v-else class="pr__card">
@@ -272,26 +272,25 @@ export default {
 </script>
 
 <style scoped>
-.pr {
-  min-height: 100vh;
-  background: var(--ds-bg);
-  font-family: var(--ds-font-sans);
-  color: var(--ds-text);
-}
+.pr { display: contents; }
 
-.pr__main { padding: 24px 16px 64px; }
+.pr__main {
+  flex: 1;
+  padding: clamp(24px, 5vw, 56px) var(--pub-gutter) var(--pub-section);
+  background: var(--pub-bg-soft);
+}
 
 .pr__card {
   width: min(760px, 100%);
   margin: 0 auto;
-  background: var(--ds-surface);
-  border: 1px solid var(--ds-border);
-  border-radius: var(--ds-radius-md);
+  background: var(--pub-bg);
+  border: 1px solid var(--pub-line);
+  border-radius: var(--pub-radius);
   overflow: hidden;
 }
 
 .pr__card--message { padding: 40px 24px; text-align: center; }
-.pr__missing { font-size: var(--ds-text-lg); margin: 0 0 8px; }
+.pr__missing { font-family: var(--pub-serif); font-size: 1.75rem; font-weight: 500; letter-spacing: -0.015em; margin: 0 0 8px; }
 .pr__back { margin-top: 16px; display: inline-flex; }
 
 .pr__frame { position: relative; width: 100%; aspect-ratio: 16 / 9; background: #000; }
@@ -320,18 +319,26 @@ export default {
   background: #000;
 }
 
-.pr__body { padding: 24px; }
+.pr__body { padding: clamp(24px, 4vw, 40px); }
 
 .pr__kicker {
-  margin: 0 0 6px;
-  font-size: var(--ds-text-xs);
+  margin: 0 0 10px;
+  font-size: var(--pub-micro);
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--ds-text-3);
+  color: var(--pub-navy);
 }
 
-.pr__title { margin: 0; font-size: var(--ds-text-xl); font-weight: 600; letter-spacing: -0.01em; }
+.pr__title {
+  margin: 0;
+  font-family: var(--pub-serif);
+  font-size: clamp(1.75rem, 1.3rem + 1.8vw, 2.5rem);
+  font-weight: 500;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
 
 .pr__facts {
   display: grid;
@@ -341,30 +348,26 @@ export default {
 }
 
 .pr__facts dt {
-  font-size: var(--ds-text-xs);
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--ds-text-3);
+  font-size: var(--pub-micro);
+  font-weight: 500;
+  color: var(--pub-text-3);
   margin-bottom: 4px;
 }
 
-.pr__facts dd { margin: 0; font-size: var(--ds-text-base); overflow-wrap: anywhere; }
+.pr__facts dd { margin: 0; font-size: var(--pub-small); overflow-wrap: anywhere; }
 
-.pr__text { margin: 20px 0 0; font-size: var(--ds-text-base); line-height: 1.6; white-space: pre-line; }
+.pr__text { margin: 24px 0 0; font-size: var(--pub-body); line-height: 1.7; color: var(--pub-text-2); white-space: pre-line; }
 
 .pr__audio { margin-top: 24px; }
 .pr__label {
   margin: 0 0 6px;
-  font-size: var(--ds-text-xs);
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--ds-text-3);
+  font-size: var(--pub-micro);
+  font-weight: 500;
+  color: var(--pub-text-3);
 }
 .pr__audioel { width: 100%; }
 
-.pr__foot { margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--ds-border); }
+.pr__foot { margin-top: 40px; padding-top: 28px; border-top: 1px solid var(--pub-line); }
 
 .pr__app {
   display: flex;
@@ -378,11 +381,11 @@ export default {
 
 .pr__apptitle {
   margin: 0 0 4px;
-  font-size: var(--ds-text-md);
+  font-size: 1rem;
   font-weight: 600;
-  color: var(--ds-text);
+  color: var(--pub-text);
 }
-.pr__note { margin: 0; }
+.pr__note { margin: 0; font-size: var(--pub-small); color: var(--pub-text-2); }
 
 @media (max-width: 560px) {
   .pr__body { padding: 20px 16px; }

@@ -1,413 +1,310 @@
 <template>
-  <header class="pub-header">
-    <div class="pub-container pub-header__inner">
-      <NuxtLink to="/" class="pub-brand" aria-label="CACI Taifa Central Home">
-        <img src="~assets/imgs/caci_logo.png" alt="CACI Logo" class="pub-brand__logo" />
-        <div class="pub-brand__text">
-          <span class="pub-brand__title">CACI TAIFA CENTRAL</span>
-          <span class="pub-brand__sub">Miracle Centre • Accra, Ghana</span>
-        </div>
-      </NuxtLink>
-
-      <!-- Desktop Navigation -->
-      <nav class="pub-nav" aria-label="Main Navigation">
-        <NuxtLink to="/" class="pub-nav__link">Home</NuxtLink>
-        <NuxtLink to="/#services" class="pub-nav__link">Service Times</NuxtLink>
-        <NuxtLink to="/#ministries" class="pub-nav__link">Ministries</NuxtLink>
-        <NuxtLink to="/#app-download" class="pub-nav__link">Mobile App</NuxtLink>
-        <NuxtLink to="/support" class="pub-nav__link">Support</NuxtLink>
-      </nav>
-
-      <!-- Header CTAs -->
-      <div class="pub-header__actions">
-        <NuxtLink to="/login" class="pub-btn pub-btn--login">
-          <svg class="pub-btn__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
-            <polyline points="10 17 15 12 10 7" />
-            <line x1="15" y1="12" x2="3" y2="12" />
-          </svg>
-          <span>Member Sign In</span>
+  <!--
+    display: contents, so the header stays sticky against the page. The menu
+    sits outside <header> because the header's backdrop-filter makes it the
+    containing block for anything fixed inside it, which clipped the menu to
+    the header's own height.
+  -->
+  <div class="ph-root">
+    <header class="ph">
+      <div class="pub-container ph__inner">
+        <NuxtLink to="/" class="ph__brand" aria-label="CACI Taifa Central, home">
+          <img src="~assets/imgs/caci_mark.png" alt="" class="ph__mark" width="36" height="36">
+          <span class="ph__name">
+            <span class="ph__title">CACI Taifa Central</span>
+            <span class="ph__sub">Miracle Centre · Accra</span>
+          </span>
         </NuxtLink>
 
-        <!-- Mobile Menu Toggle Button -->
-        <button
-          class="pub-header__toggle"
-          type="button"
-          :aria-expanded="isMobileNavOpen ? 'true' : 'false'"
-          aria-label="Toggle navigation menu"
-          @click="toggleMobileNav"
-        >
-          <span class="pub-hamburger" :class="{ 'is-open': isMobileNavOpen }"></span>
-        </button>
+        <nav class="ph__nav" aria-label="Main">
+          <NuxtLink v-for="item in links" :key="item.to" :to="item.to" class="ph__link">
+            {{ item.label }}
+          </NuxtLink>
+        </nav>
+
+        <div class="ph__actions">
+          <NuxtLink to="/login" class="pub-btn pub-btn--secondary pub-btn--sm ph__signin">Sign in</NuxtLink>
+
+          <button
+            ref="toggle"
+            class="ph__toggle"
+            type="button"
+            aria-controls="ph-menu"
+            :aria-expanded="open ? 'true' : 'false'"
+            @click="open ? close() : show()"
+          >
+            <span class="ph__bars" :class="{ 'is-open': open }" aria-hidden="true"></span>
+            <span class="ph__sr">{{ open ? 'Close menu' : 'Open menu' }}</span>
+          </button>
+        </div>
       </div>
-    </div>
+    </header>
 
-    <!-- Mobile Drawer -->
-    <transition name="pub-slide">
-      <div v-if="isMobileNavOpen" class="pub-mobile-drawer">
-        <div class="pub-mobile-drawer__backdrop" @click="closeMobileNav"></div>
-        <div class="pub-mobile-drawer__panel">
-          <div class="pub-mobile-drawer__header">
-            <div class="pub-brand">
-              <img src="~assets/imgs/caci_logo.png" alt="CACI Logo" class="pub-brand__logo" />
-              <div class="pub-brand__text">
-                <span class="pub-brand__title">CACI TAIFA</span>
-                <span class="pub-brand__sub">Miracle Centre</span>
-              </div>
-            </div>
-            <button class="pub-mobile-drawer__close" aria-label="Close menu" @click="closeMobileNav">
-              &times;
-            </button>
-          </div>
-
-          <nav class="pub-mobile-nav">
-            <NuxtLink to="/" class="pub-mobile-nav__link" @click.native="closeMobileNav">Home</NuxtLink>
-            <NuxtLink to="/#services" class="pub-mobile-nav__link" @click.native="closeMobileNav">Service Times</NuxtLink>
-            <NuxtLink to="/#ministries" class="pub-mobile-nav__link" @click.native="closeMobileNav">Ministries</NuxtLink>
-            <NuxtLink to="/#app-download" class="pub-mobile-nav__link" @click.native="closeMobileNav">Mobile App</NuxtLink>
-            <NuxtLink to="/support" class="pub-mobile-nav__link" @click.native="closeMobileNav">App Support</NuxtLink>
-            <NuxtLink to="/privacypolicy" class="pub-mobile-nav__link" @click.native="closeMobileNav">Privacy Policy</NuxtLink>
-            <NuxtLink to="/terms" class="pub-mobile-nav__link" @click.native="closeMobileNav">Terms of Service</NuxtLink>
-            <NuxtLink to="/delete-account" class="pub-mobile-nav__link" @click.native="closeMobileNav">Delete Account</NuxtLink>
+    <transition name="ph-menu">
+      <div
+        v-if="open"
+        id="ph-menu"
+        class="ph__menu"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Menu"
+      >
+        <div class="ph__scrim" @click="close"></div>
+        <div ref="panel" class="ph__panel">
+          <nav aria-label="Main">
+            <ul class="ph__menulist">
+              <li v-for="item in links" :key="item.to">
+                <NuxtLink :to="item.to" class="ph__menulink" @click.native="close">{{ item.label }}</NuxtLink>
+              </li>
+            </ul>
           </nav>
 
-          <div class="pub-mobile-drawer__footer">
-            <NuxtLink to="/login" class="pub-btn pub-btn--primary pub-btn--full" @click.native="closeMobileNav">
-              Member Sign In
-            </NuxtLink>
-          </div>
+          <ul class="ph__menulegal">
+            <li v-for="item in legal" :key="item.to">
+              <NuxtLink :to="item.to" @click.native="close">{{ item.label }}</NuxtLink>
+            </li>
+          </ul>
+
+          <NuxtLink to="/login" class="pub-btn pub-btn--primary ph__menucta" @click.native="close">
+            Sign in
+          </NuxtLink>
         </div>
       </div>
     </transition>
-  </header>
+  </div>
 </template>
 
 <script>
 export default {
   name: 'PublicHeader',
-  data() {
+  data () {
     return {
-      isMobileNavOpen: false
+      open: false,
+      links: [
+        { to: '/#services', label: 'Service times' },
+        { to: '/#ministries', label: 'Ministries' },
+        { to: '/#app-download', label: 'The app' },
+        { to: '/support', label: 'Support' }
+      ],
+      legal: [
+        { to: '/privacypolicy', label: 'Privacy' },
+        { to: '/terms', label: 'Terms' },
+        { to: '/child-safety', label: 'Child safety' },
+        { to: '/delete-account', label: 'Delete account' }
+      ]
     }
   },
   watch: {
-    '$route'() {
-      this.closeMobileNav()
-    }
+    $route () { this.close() }
+  },
+  beforeDestroy () {
+    document.body.style.overflow = ''
+    document.removeEventListener('keydown', this.onKeydown)
   },
   methods: {
-    toggleMobileNav() {
-      this.isMobileNavOpen = !this.isMobileNavOpen
-      if (this.isMobileNavOpen) {
-        document.body.style.overflow = 'hidden'
-      } else {
-        document.body.style.overflow = ''
-      }
+    show () {
+      this.open = true
+      document.body.style.overflow = 'hidden'
+      document.addEventListener('keydown', this.onKeydown)
+      this.$nextTick(() => {
+        const first = this.$refs.panel && this.$refs.panel.querySelector('a')
+        if (first) { first.focus() }
+      })
     },
-    closeMobileNav() {
-      this.isMobileNavOpen = false
+    close () {
+      if (!this.open) { return }
+      this.open = false
       document.body.style.overflow = ''
+      document.removeEventListener('keydown', this.onKeydown)
+      this.$nextTick(() => { this.$refs.toggle && this.$refs.toggle.focus() })
+    },
+    onKeydown (event) {
+      if (event.key === 'Escape') { this.close() }
+      if (event.key === 'Tab') { this.trapFocus(event) }
+    },
+    // Keeps Tab inside the open menu, which is the page as far as the
+    // visitor is concerned; the toggle stays reachable so it can be closed.
+    trapFocus (event) {
+      const panel = this.$refs.panel
+      if (!panel) { return }
+      const focusable = [this.$refs.toggle, ...panel.querySelectorAll('a')]
+      const first = focusable[0]
+      const last = focusable[focusable.length - 1]
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault()
+        last.focus()
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault()
+        first.focus()
+      }
     }
   }
 }
 </script>
 
 <style scoped>
-.pub-header {
+.ph-root { display: contents; }
+
+.ph {
   position: sticky;
   top: 0;
   z-index: 1000;
-  background: rgba(255, 255, 255, 0.96);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid rgba(226, 232, 240, 0.9);
-  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05);
+  background: rgba(255, 255, 255, 0.86);
+  -webkit-backdrop-filter: saturate(180%) blur(16px);
+  backdrop-filter: saturate(180%) blur(16px);
+  border-bottom: 1px solid var(--pub-line);
 }
 
-.pub-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 24px;
-}
-
-.pub-header__inner {
+.ph__inner {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  height: 76px;
+  gap: 32px;
+  height: var(--pub-header-h);
 }
 
-.pub-brand {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  text-decoration: none;
-}
-
-.pub-brand__logo {
-  height: 48px;
-  width: auto;
-  object-fit: contain;
-  transition: transform 0.2s ease;
-}
-
-.pub-brand:hover .pub-brand__logo {
-  transform: scale(1.04);
-}
-
-.pub-brand__text {
-  display: flex;
-  flex-direction: column;
-}
-
-.pub-brand__title {
-  font-size: 1.05rem;
-  font-weight: 800;
-  letter-spacing: -0.01em;
-  color: #0f172a;
-  line-height: 1.2;
-}
-
-.pub-brand__sub {
-  font-size: 0.72rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: #d97706;
-}
-
-/* Desktop Nav */
-.pub-nav {
-  display: flex;
-  align-items: center;
-  gap: 28px;
-}
-
-.pub-nav__link {
-  font-size: 0.925rem;
-  font-weight: 500;
-  color: #475569;
-  text-decoration: none;
-  transition: color 0.15s ease;
-  position: relative;
-  padding: 4px 0;
-}
-
-.pub-nav__link:hover,
-.pub-nav__link.nuxt-link-exact-active {
-  color: #1a56db;
-}
-
-.pub-nav__link.nuxt-link-exact-active::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 2px;
-  background: #1a56db;
-  border-radius: 2px;
-}
-
-/* Actions */
-.pub-header__actions {
+.ph__brand {
   display: flex;
   align-items: center;
   gap: 12px;
+  text-decoration: none;
+  color: var(--pub-text);
+  margin-right: auto;
+  min-width: 0;
 }
 
-.pub-btn {
+.ph__mark { width: 36px; height: 36px; flex-shrink: 0; }
+
+.ph__name { display: grid; line-height: 1.2; min-width: 0; }
+.ph__title { font-size: 0.9375rem; font-weight: 600; letter-spacing: -0.01em; color: var(--pub-text); }
+.ph__sub { font-size: 0.8125rem; color: var(--pub-text-3); white-space: nowrap; }
+
+.ph__nav { display: flex; align-items: center; gap: 4px; }
+
+.ph__link {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 10px 20px;
-  font-size: 0.88rem;
-  font-weight: 600;
-  border-radius: 9999px;
+  min-height: 40px;
+  padding: 0 12px;
+  border-radius: 999px;
+  font-size: 0.9375rem;
+  color: var(--pub-text-2);
   text-decoration: none;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  cursor: pointer;
-  border: none;
+  transition: color var(--pub-fast) var(--pub-ease), background-color var(--pub-fast) var(--pub-ease);
 }
+.ph__link:hover { color: var(--pub-text); background: var(--pub-bg-soft); }
+.ph__link.nuxt-link-active:not([href^="/#"]) { color: var(--pub-text); font-weight: 500; }
 
-.pub-btn__icon {
-  width: 16px;
-  height: 16px;
-}
+.ph__actions { display: flex; align-items: center; gap: 8px; }
 
-.pub-btn--login {
-  background: #0f172a;
-  color: #ffffff !important;
-  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.15);
-}
-
-.pub-btn--login:hover {
-  background: #1e293b;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.25);
-  color: #ffffff !important;
-}
-
-.pub-btn--primary {
-  background: linear-gradient(135deg, #1a56db 0%, #1e40af 100%);
-  color: #ffffff !important;
-}
-
-.pub-btn--primary:hover {
-  background: linear-gradient(135deg, #1e40af 0%, #172554 100%);
-  color: #ffffff !important;
-}
-
-.pub-btn--full {
-  width: 100%;
-}
-
-/* Mobile Toggle */
-.pub-header__toggle {
+.ph__toggle {
   display: none;
+  width: 44px;
+  height: 44px;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 999px;
   background: transparent;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  padding: 8px 10px;
   cursor: pointer;
 }
+.ph__toggle:hover { background: var(--pub-bg-soft); }
 
-.pub-hamburger {
+.ph__bars,
+.ph__bars::before,
+.ph__bars::after {
   display: block;
-  width: 20px;
-  height: 2px;
-  background: #0f172a;
-  position: relative;
-  transition: background 0.2s ease;
+  width: 18px;
+  height: 1.5px;
+  border-radius: 2px;
+  background: var(--pub-text);
+  transition: transform 200ms var(--pub-ease), background-color 200ms var(--pub-ease);
 }
+.ph__bars { position: relative; }
+.ph__bars::before,
+.ph__bars::after { content: ''; position: absolute; left: 0; }
+.ph__bars::before { transform: translateY(-5px); }
+.ph__bars::after { transform: translateY(5px); }
+.ph__bars.is-open { background: transparent; }
+.ph__bars.is-open::before { transform: rotate(45deg); }
+.ph__bars.is-open::after { transform: rotate(-45deg); }
 
-.pub-hamburger::before,
-.pub-hamburger::after {
-  content: '';
+.ph__sr {
   position: absolute;
-  left: 0;
-  width: 100%;
-  height: 2px;
-  background: #0f172a;
-  transition: transform 0.2s ease;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
 }
 
-.pub-hamburger::before {
-  top: -6px;
-}
-
-.pub-hamburger::after {
-  bottom: -6px;
-}
-
-.pub-hamburger.is-open {
-  background: transparent;
-}
-
-.pub-hamburger.is-open::before {
-  transform: translateY(6px) rotate(45deg);
-}
-
-.pub-hamburger.is-open::after {
-  transform: translateY(-6px) rotate(-45deg);
-}
-
-/* Mobile Drawer */
-.pub-mobile-drawer {
+/* Menu — below the header, so the toggle stays where the thumb left it. */
+.ph__menu {
   position: fixed;
-  inset: 0;
-  z-index: 2000;
-  display: flex;
+  inset: var(--pub-header-h) 0 0;
+  z-index: 999;
 }
 
-.pub-mobile-drawer__backdrop {
-  position: absolute;
-  inset: 0;
-  background: rgba(15, 23, 42, 0.6);
-  backdrop-filter: blur(4px);
-}
+.ph__scrim { position: absolute; inset: 0; background: rgba(11, 27, 69, 0.24); }
 
-.pub-mobile-drawer__panel {
+.ph__panel {
   position: relative;
-  width: 320px;
-  max-width: 85vw;
-  margin-left: auto;
-  background: #ffffff;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  padding: 24px;
-  box-shadow: -10px 0 30px rgba(0, 0, 0, 0.2);
-  z-index: 2;
+  max-height: 100%;
+  overflow-y: auto;
+  background: #FFFFFF;
+  border-bottom: 1px solid var(--pub-line);
+  padding: 8px var(--pub-gutter) 28px;
+  display: grid;
+  gap: 24px;
 }
 
-.pub-mobile-drawer__header {
+.ph__menulist { list-style: none; padding: 0; }
+.ph__menulist li + li { border-top: 1px solid var(--pub-line); }
+
+.ph__menulink {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding-bottom: 20px;
-  border-bottom: 1px solid #e2e8f0;
-}
-
-.pub-mobile-drawer__close {
-  background: transparent;
-  border: none;
-  font-size: 28px;
-  line-height: 1;
-  color: #64748b;
-  cursor: pointer;
-}
-
-.pub-mobile-nav {
-  display: flex;
-  flex-direction: column;
-  padding: 24px 0;
-  gap: 16px;
-  flex: 1;
-  overflow-y: auto;
-}
-
-.pub-mobile-nav__link {
-  font-size: 1.05rem;
+  min-height: 56px;
+  font-family: var(--pub-serif);
+  font-size: 1.5rem;
   font-weight: 500;
-  color: #1e293b;
+  letter-spacing: -0.01em;
+  color: var(--pub-text) !important;
   text-decoration: none;
-  padding: 8px 0;
-  border-bottom: 1px solid #f1f5f9;
 }
 
-.pub-mobile-nav__link:hover {
-  color: #1a56db;
+.ph__menulegal {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 20px;
+}
+.ph__menulegal a {
+  display: inline-flex;
+  min-height: 36px;
+  align-items: center;
+  font-size: var(--pub-small);
+  color: var(--pub-text-2);
+  text-decoration: none;
 }
 
-.pub-mobile-drawer__footer {
-  padding-top: 16px;
-  border-top: 1px solid #e2e8f0;
+.ph__menucta { width: 100%; }
+
+.ph-menu-enter-active,
+.ph-menu-leave-active { transition: opacity 180ms var(--pub-ease); }
+.ph-menu-enter-active .ph__panel,
+.ph-menu-leave-active .ph__panel { transition: transform 220ms var(--pub-ease); }
+.ph-menu-enter,
+.ph-menu-leave-to { opacity: 0; }
+.ph-menu-enter .ph__panel,
+.ph-menu-leave-to .ph__panel { transform: translateY(-8px); }
+
+@media (max-width: 880px) {
+  .ph__nav { display: none; }
+  .ph__toggle { display: inline-flex; }
 }
 
-@media (max-width: 900px) {
-  .pub-nav {
-    display: none;
-  }
-  .pub-header__toggle {
-    display: block;
-  }
-  .pub-btn--login {
-    padding: 8px 14px;
-    font-size: 0.82rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .pub-brand__text {
-    display: none;
-  }
-  .pub-header__inner {
-    height: 64px;
-  }
-  .pub-brand__logo {
-    height: 40px;
-  }
+@media (max-width: 420px) {
+  .ph__signin { display: none; }
 }
 </style>

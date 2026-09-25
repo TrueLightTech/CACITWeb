@@ -56,14 +56,13 @@ export default {
   display: inline-flex;
   align-items: center;
   gap: 12px;
-  padding: 10px 18px 10px 14px;
-  border-radius: 10px;
+  min-height: 52px;
+  padding: 8px 20px 8px 16px;
+  border-radius: 12px;
   text-decoration: none;
   border: 1px solid transparent;
-  transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+  transition: background-color 0.16s ease, border-color 0.16s ease;
 }
-
-.stores__badge:hover { transform: translateY(-1px); }
 
 .stores__icon { width: 26px; height: 26px; flex-shrink: 0; }
 
@@ -84,11 +83,11 @@ export default {
 
 /* On a white card */
 .stores--light .stores__badge {
-  background: #111827;
-  border-color: #111827;
+  background: #0B1B45;
+  border-color: #0B1B45;
   color: #ffffff;
 }
-.stores--light .stores__badge:hover { background: #1f2937; border-color: #1f2937; }
+.stores--light .stores__badge:hover { background: #1B3D8F; border-color: #1B3D8F; }
 
 @media (max-width: 520px) {
   .stores { flex-direction: column; }
@@ -97,6 +96,5 @@ export default {
 
 @media (prefers-reduced-motion: reduce) {
   .stores__badge { transition: none; }
-  .stores__badge:hover { transform: none; }
 }
 </style>

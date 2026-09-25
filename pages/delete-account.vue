@@ -1,120 +1,106 @@
 <template>
-  <div class="delete-page">
+  <div class="deletion">
     <PublicHeader />
 
-    <main class="pub-container delete-page__content">
-      <div class="delete-card">
-        <div class="delete-card__header">
-          <span class="delete-tag">Apple &amp; Google Compliance</span>
-          <h1 class="delete-title">Account &amp; Data Deletion Request</h1>
-          <p class="delete-subtitle">
-            <strong>Christ Apostolic Church International — Taifa Central Assembly</strong><br />
-            We respect your privacy and provide transparent options to delete your member account and personal data.
+    <main id="main" class="pub-main">
+      <header class="pub-pagehead">
+        <div class="pub-container pub-pagehead__inner">
+          <p class="pub-eyebrow">Your account</p>
+          <h1 class="pub-display">Delete your account</h1>
+          <p class="pub-lead">
+            You can delete your CACI Taifa account and the personal data that goes with it at any time —
+            in the app, or by sending the church office a request.
           </p>
         </div>
+      </header>
 
-        <!-- Information Overview -->
-        <div class="delete-info-grid">
-          <div class="info-block">
-            <h3>Option 1: In-App Account Deletion (Recommended)</h3>
-            <p>If you still have the CACI Taifa mobile application installed on your device, you can delete your account instantly:</p>
-            <ol>
-              <li>Open the <strong>CACI Taifa App</strong> on your iPhone or Android device.</li>
-              <li>Sign in to your member account if not already signed in.</li>
-              <li>Tap on <strong>Settings</strong> or <strong>Profile</strong> (gear icon).</li>
-              <li>Select <strong>Account Settings</strong> &rarr; <strong>Delete Account</strong>.</li>
-              <li>Review the confirmation notice and tap <strong>Confirm Deletion</strong>. Your account will be immediately deactivated and scheduled for permanent purge.</li>
-            </ol>
+      <div class="pub-container routes">
+        <section class="route" aria-labelledby="in-app-title">
+          <p class="pub-eyebrow">Quickest</p>
+          <h2 id="in-app-title" class="pub-h3">In the app</h2>
+          <ol class="steps">
+            <li>Open the <strong>CACI Taifa</strong> app on your iPhone or Android phone, and sign in if you need to.</li>
+            <li>Tap <strong>Settings</strong> or <strong>Profile</strong> (the gear icon).</li>
+            <li>Choose <strong>Account Settings</strong>, then <strong>Delete Account</strong>.</li>
+            <li>Read the notice and tap <strong>Confirm Deletion</strong>. Your account is deactivated straight away and scheduled for permanent removal.</li>
+          </ol>
+        </section>
+
+        <section class="route pub-card" aria-labelledby="request-title">
+          <p class="pub-eyebrow">Without the app</p>
+          <h2 id="request-title" class="pub-h3">Send a request</h2>
+          <p class="pub-muted route__intro">
+            If you have uninstalled the app or cannot reach your phone, tell us which account is yours.
+            This opens your email app with the request ready to send.
+          </p>
+
+          <div v-if="handedOff" class="pub-notice" role="status">
+            <h3 class="pub-h3">Your request is ready in your email app</h3>
+            <p>
+              Send it from there. The church office will check the account is yours before removing it.
+              If no email app opened, write to <a :href="`mailto:${churchEmail}`">{{ churchEmail }}</a>
+              or call +233 24 296 9760.
+            </p>
+            <button type="button" class="pub-btn pub-btn--secondary pub-btn--sm route__again" @click="handedOff = false">
+              Start again
+            </button>
           </div>
 
-          <div class="info-block">
-            <h3>Option 2: Web Deletion Request Form</h3>
-            <p>If you have uninstalled the app or cannot access your mobile device, please fill out the verified deletion request form below:</p>
-
-            <div v-if="isSubmitted" class="alert-success">
-              <div class="alert-success__icon">✓</div>
-              <div>
-                <h4>Deletion Request Received</h4>
-                <p>
-                  Your request has been logged. An SMS or email confirmation will be sent to your registered contact to verify ownership. Once verified, your personal profile data will be permanently wiped within 14 business days.
-                </p>
-                <button class="btn-reset" @click="isSubmitted = false">Submit another request</button>
-              </div>
+          <form v-else class="pub-form" @submit.prevent="submitDeletionRequest">
+            <div class="pub-field">
+              <label for="fullName" class="pub-label">Name on the account</label>
+              <input
+                id="fullName"
+                v-model.trim="form.fullName"
+                type="text"
+                required
+                autocomplete="name"
+                class="pub-input"
+              >
             </div>
 
-            <form v-else class="delete-form" @submit.prevent="submitDeletionRequest">
-              <div class="form-group">
-                <label for="fullName">Full Name on Church Account *</label>
-                <input
-                  id="fullName"
-                  v-model.trim="form.fullName"
-                  type="text"
-                  required
-                  class="form-input"
-                  placeholder="e.g. Kwame Mensah"
-                />
-              </div>
+            <div class="pub-field">
+              <label for="phone" class="pub-label">Phone number you registered with</label>
+              <input
+                id="phone"
+                v-model.trim="form.phone"
+                type="tel"
+                required
+                autocomplete="tel"
+                class="pub-input"
+                placeholder="024 123 4567"
+              >
+            </div>
 
-              <div class="form-group">
-                <label for="phone">Registered Mobile Phone Number *</label>
-                <input
-                  id="phone"
-                  v-model.trim="form.phone"
-                  type="tel"
-                  required
-                  class="form-input"
-                  placeholder="e.g. 024 123 4567"
-                />
-                <span class="field-hint">The phone number you used during member registration.</span>
-              </div>
+            <div class="pub-field">
+              <label for="reason" class="pub-label">Reason <span class="pub-optional">(optional)</span></label>
+              <select id="reason" v-model="form.reason" class="pub-input">
+                <option value="">Choose a reason</option>
+                <option v-for="reason in reasons" :key="reason" :value="reason">{{ reason }}</option>
+              </select>
+            </div>
 
-              <div class="form-group">
-                <label for="email">Registered Email Address (Optional)</label>
-                <input
-                  id="email"
-                  v-model.trim="form.email"
-                  type="email"
-                  class="form-input"
-                  placeholder="e.g. kwame@example.com"
-                />
-              </div>
+            <label class="pub-check">
+              <input v-model="form.confirmed" type="checkbox" required>
+              <span>I am the account holder, and I understand that deleting my account is permanent.</span>
+            </label>
 
-              <div class="form-group">
-                <label for="reason">Reason for Account Deletion (Optional)</label>
-                <select id="reason" v-model="form.reason" class="form-input form-select">
-                  <option value="">Select a reason</option>
-                  <option value="relocated">Relocated to another branch or city</option>
-                  <option value="no_longer_using">No longer using the mobile app</option>
-                  <option value="privacy">Privacy / Data concerns</option>
-                  <option value="duplicate">Duplicate account</option>
-                  <option value="other">Other reason</option>
-                </select>
-              </div>
+            <button type="submit" class="pub-btn pub-btn--primary route__submit" :disabled="!form.confirmed">
+              Continue in email
+            </button>
+          </form>
+        </section>
+      </div>
 
-              <div class="form-group checkbox-group">
-                <label class="checkbox-label">
-                  <input v-model="form.confirmed" type="checkbox" required />
-                  <span>
-                    I confirm that I am the account holder and I understand that account deletion is permanent and cannot be undone.
-                  </span>
-                </label>
-              </div>
-
-              <button type="submit" class="submit-delete-btn" :disabled="isSubmitting || !form.confirmed">
-                <span v-if="!isSubmitting">Request Account &amp; Data Deletion</span>
-                <span v-else>Submitting Request...</span>
-              </button>
-            </form>
+      <section class="pub-section pub-section--soft" aria-labelledby="data-title">
+        <div class="pub-container">
+          <div class="pub-heading">
+            <h2 id="data-title" class="pub-h2">What happens to your data</h2>
           </div>
-        </div>
 
-        <!-- Data Policy Breakdown -->
-        <div class="data-policy-breakdown">
-          <h2>Data Deletion &amp; Retention Details</h2>
-
-          <div class="policy-columns">
-            <div class="policy-box policy-box--deleted">
-              <h4>What Data is Permanently Deleted</h4>
+          <div class="data">
+            <div class="data__col">
+              <h3 class="pub-h3">Permanently deleted</h3>
               <ul>
                 <li>Your member login credentials (phone number, hashed password, security tokens).</li>
                 <li>Your profile details (full name, email, residential address, date of birth, photo).</li>
@@ -123,8 +109,8 @@
               </ul>
             </div>
 
-            <div class="policy-box policy-box--retained">
-              <h4>What Data May Be Retained &amp; Why</h4>
+            <div class="data__col">
+              <h3 class="pub-h3">Kept, and why</h3>
               <ul>
                 <li>
                   <strong>Financial &amp; Contribution Records:</strong> Past records of tithes, offerings, and welfare payments are retained in an anonymized, audited format solely to comply with statutory accounting and financial audit regulations for non-profit and religious entities in Ghana.
@@ -136,15 +122,13 @@
             </div>
           </div>
 
-          <div class="contact-officer">
-            <p>
-              If you have any questions regarding your data or need help with the deletion process, please contact our Church Data Administrator directly at
-              <a href="mailto:cactaifacentral@gmail.com">cactaifacentral@gmail.com</a> or call
-              <a href="tel:+233242969760">+233 24 296 9760</a>.
-            </p>
-          </div>
+          <p class="pub-muted data__contact">
+            Questions about your data? Contact the church data administrator at
+            <a :href="`mailto:${churchEmail}`">{{ churchEmail }}</a> or
+            <a href="tel:+233242969760">+233 24 296 9760</a>.
+          </p>
         </div>
-      </div>
+      </section>
     </main>
 
     <PublicFooter />
@@ -152,6 +136,10 @@
 </template>
 
 <script>
+import { mailtoLink } from '../resources/mailto'
+
+const CHURCH_EMAIL = 'cactaifacentral@gmail.com'
+
 export default {
   // Public site, not the admin app: no AppShell, so a signed-in visitor
   // does not get the admin sidebar stacked above this page's own header.
@@ -172,352 +160,130 @@ export default {
   },
   data() {
     return {
+      churchEmail: CHURCH_EMAIL,
+      reasons: [
+        'Relocated to another branch or city',
+        'No longer using the app',
+        'Privacy or data concerns',
+        'Duplicate account',
+        'Another reason'
+      ],
       form: {
         fullName: '',
         phone: '',
-        email: '',
         reason: '',
         confirmed: false
       },
-      isSubmitting: false,
-      isSubmitted: false
+      handedOff: false
     }
   },
   methods: {
-    async submitDeletionRequest() {
-      if (!this.form.confirmed) return
-
-      this.isSubmitting = true
-      // Simulate submission handling
-      setTimeout(() => {
-        this.isSubmitting = false
-        this.isSubmitted = true
-        if (this.$toast) {
-          this.$toast.success('Account deletion request submitted successfully.', { duration: 4000 })
-        }
-      }, 750)
+    // This form used to wait 750ms and report that the request had been
+    // logged and would be verified by SMS — none of which happened, since
+    // nothing was sent. A deletion request that silently goes nowhere is
+    // the worst failure this page can have, so it goes out by email, the
+    // one channel that reaches the office without an account.
+    submitDeletionRequest() {
+      if (!this.form.confirmed) { return }
+      window.location.href = mailtoLink(CHURCH_EMAIL, {
+        subject: `Account deletion request — ${this.form.fullName}`,
+        lines: [
+          'Please delete my CACI Taifa account and the personal data linked to it.',
+          '',
+          `Name on the account: ${this.form.fullName}`,
+          `Registered phone number: ${this.form.phone}`,
+          ...(this.form.reason ? [`Reason: ${this.form.reason}`] : []),
+          '',
+          'I confirm I am the account holder and understand that deletion is permanent.'
+        ]
+      })
+      this.handedOff = true
     }
   }
 }
 </script>
 
 <style scoped>
-.delete-page {
-  background: #f8fafc;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  color: #0f172a;
-  font-family: var(--ds-font-sans, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif);
-}
+.deletion { display: contents; }
 
-.pub-container {
-  max-width: 980px;
-  margin: 0 auto;
-  padding: 0 24px;
-}
-
-.delete-page__content {
-  flex: 1;
-  padding: 48px 24px 80px;
-}
-
-.delete-card {
-  background: #ffffff;
-  border-radius: 16px;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.04);
-  padding: 44px;
-}
-
-.delete-card__header {
-  border-bottom: 1px solid #e2e8f0;
-  padding-bottom: 24px;
-  margin-bottom: 36px;
-}
-
-.delete-tag {
-  display: inline-block;
-  font-size: 0.78rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: #b91c1c;
-  background: #fef2f2;
-  padding: 4px 12px;
-  border-radius: 9999px;
-  margin-bottom: 12px;
-}
-
-.delete-title {
-  font-size: 2.25rem;
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  color: #0f172a;
-  margin: 0 0 12px;
-}
-
-.delete-subtitle {
-  color: #64748b;
-  font-size: 0.95rem;
-  line-height: 1.5;
-  margin: 0;
-}
-
-.delete-info-grid {
+.routes {
   display: grid;
-  grid-template-columns: 1fr 1.15fr;
-  gap: 36px;
-  margin-bottom: 48px;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: clamp(32px, 5vw, 64px);
+  align-items: start;
+  padding-top: clamp(40px, 5vw, 64px);
+  padding-bottom: var(--pub-section);
 }
 
-.info-block {
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  padding: 24px;
+.route { display: grid; gap: 12px; align-content: start; }
+.route__intro { margin-bottom: 12px; }
+.route__submit { justify-self: start; }
+.route__again { justify-self: start; margin-top: 4px; }
+
+.steps {
+  list-style: none;
+  padding: 0;
+  margin-top: 12px;
+  counter-reset: step;
+  display: grid;
 }
 
-.info-block h3 {
-  font-size: 1.15rem;
-  font-weight: 700;
-  color: #0f172a;
-  margin: 0 0 12px;
-}
-
-.info-block p {
-  font-size: 0.9rem;
-  color: #475569;
+.steps li {
+  counter-increment: step;
+  position: relative;
+  padding: 16px 0 16px 48px;
   line-height: 1.6;
-  margin-bottom: 14px;
+  color: var(--pub-text-2);
+  border-top: 1px solid var(--pub-line);
 }
+.steps li:last-child { border-bottom: 1px solid var(--pub-line); }
+.steps strong { color: var(--pub-text); font-weight: 600; }
 
-.info-block ol {
-  padding-left: 20px;
-  color: #334155;
-  font-size: 0.88rem;
-  line-height: 1.6;
-}
-
-.info-block li {
-  margin-bottom: 10px;
-}
-
-/* Form */
-.delete-form {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  margin-top: 16px;
-}
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.form-group label {
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: #334155;
-}
-
-.field-hint {
-  font-size: 0.75rem;
-  color: #64748b;
-}
-
-.form-input {
-  width: 100%;
-  border: 1px solid #cbd5e1;
-  border-radius: 8px;
-  padding: 9px 12px;
-  font-size: 0.9rem;
-  color: #0f172a;
-  background: #ffffff;
-  font-family: inherit;
-}
-
-.form-input:focus {
-  outline: none;
-  border-color: #2563eb;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
-}
-
-.checkbox-group {
-  margin-top: 4px;
-}
-
-.checkbox-label {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  font-size: 0.82rem;
-  color: #475569;
-  line-height: 1.5;
-  cursor: pointer;
-}
-
-.checkbox-label input {
-  margin-top: 3px;
-}
-
-.submit-delete-btn {
-  background: #dc2626;
-  color: #ffffff;
-  border: none;
-  border-radius: 8px;
-  padding: 12px 20px;
-  font-size: 0.92rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.15s ease;
-}
-
-.submit-delete-btn:hover:not(:disabled) {
-  background: #b91c1c;
-}
-
-.submit-delete-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.alert-success {
-  background: #f0fdf4;
-  border: 1px solid #bbf7d0;
-  border-radius: 10px;
-  padding: 20px;
-  display: flex;
-  gap: 14px;
-}
-
-.alert-success__icon {
-  width: 32px;
-  height: 32px;
-  background: #16a34a;
-  color: #ffffff;
+.steps li::before {
+  content: counter(step);
+  position: absolute;
+  left: 0;
+  top: 16px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-  flex-shrink: 0;
-}
-
-.alert-success h4 {
-  font-size: 1rem;
-  color: #166534;
-  margin: 0 0 4px;
-}
-
-.alert-success p {
-  font-size: 0.85rem;
-  color: #15803d;
-  margin: 0 0 10px;
-  line-height: 1.5;
-}
-
-.btn-reset {
-  background: #16a34a;
-  color: #ffffff;
-  border: none;
-  padding: 5px 12px;
-  border-radius: 6px;
-  font-size: 0.82rem;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-/* Data Policy Breakdown */
-.data-policy-breakdown {
-  border-top: 1px solid #e2e8f0;
-  padding-top: 36px;
-}
-
-.data-policy-breakdown h2 {
-  font-size: 1.35rem;
-  font-weight: 700;
-  color: #0f172a;
-  margin-bottom: 20px;
-}
-
-.policy-columns {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
-  margin-bottom: 24px;
+  place-items: center;
+  background: var(--pub-navy-soft);
+  color: var(--pub-navy);
+  font-size: var(--pub-micro);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
 }
 
-.policy-box {
-  border-radius: 10px;
-  padding: 20px;
+.data {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
 }
 
-.policy-box--deleted {
-  background: #fef2f2;
-  border: 1px solid #fee2e2;
+.data__col {
+  display: grid;
+  gap: 16px;
+  align-content: start;
+  padding: clamp(24px, 3vw, 32px);
+  background: var(--pub-bg);
+  border: 1px solid var(--pub-line);
+  border-radius: var(--pub-radius);
 }
 
-.policy-box--deleted h4 {
-  color: #991b1b;
-  margin: 0 0 10px;
-  font-size: 0.95rem;
-  font-weight: 700;
+.data__col ul { padding-left: 1.2em; display: grid; gap: 10px; color: var(--pub-text-2); font-size: var(--pub-small); line-height: 1.65; }
+.data__col li::marker { color: var(--pub-text-3); }
+.data__col strong { color: var(--pub-text); font-weight: 600; }
+
+.data__contact { margin-top: 32px; max-width: 64ch; }
+
+@media (max-width: 900px) {
+  .routes,
+  .data { grid-template-columns: 1fr; }
 }
 
-.policy-box--retained {
-  background: #eff6ff;
-  border: 1px solid #dbeafe;
-}
-
-.policy-box--retained h4 {
-  color: #1e40af;
-  margin: 0 0 10px;
-  font-size: 0.95rem;
-  font-weight: 700;
-}
-
-.policy-box ul {
-  padding-left: 18px;
-  margin: 0;
-  font-size: 0.85rem;
-  line-height: 1.55;
-  color: #334155;
-}
-
-.policy-box li {
-  margin-bottom: 6px;
-}
-
-.contact-officer {
-  background: #f1f5f9;
-  border-radius: 8px;
-  padding: 16px;
-  font-size: 0.88rem;
-  color: #334155;
-  line-height: 1.5;
-}
-
-.contact-officer a {
-  color: #2563eb;
-  text-decoration: underline;
-}
-
-@media (max-width: 840px) {
-  .delete-info-grid,
-  .policy-columns {
-    grid-template-columns: 1fr;
-  }
-}
-
-@media (max-width: 600px) {
-  .delete-card {
-    padding: 20px;
-  }
-  .delete-title {
-    font-size: 1.75rem;
-  }
+@media (max-width: 480px) {
+  .route__submit { width: 100%; }
 }
 </style>
