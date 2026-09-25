@@ -6,7 +6,7 @@
           <img src="~assets/imgs/caci_mark.png" alt="" class="pf__mark" width="48" height="48" loading="lazy">
           <div>
             <p class="pf__name">Christ Apostolic Church International</p>
-            <p class="pf__assembly">Taifa Central Assembly · Miracle Centre</p>
+            <p class="pf__assembly">Taifa Central Assembly · Miracle Centre · Since 1986</p>
           </div>
         </div>
 
@@ -14,8 +14,8 @@
           <div class="pf__col pf__col--wide">
             <h2 class="pf__heading">Visit</h2>
             <address class="pf__address">
-              <span>Loquat Street, Taifa Central<br>Accra, Ghana</span>
-              <span class="pf__times">Sundays 7:00 &amp; 9:45 AM</span>
+              <span>Loquat Street, Taifa<br>Accra, Ghana<br>GPS: GE-331-4852</span>
+              <span class="pf__times">Sunday Divine Service, 9:00&nbsp;AM</span>
             </address>
           </div>
 
@@ -28,6 +28,16 @@
               <li>
                 <a href="https://web.facebook.com/CACTaifaCentral/" target="_blank" rel="noopener noreferrer">
                   Facebook<span class="pf__ext" aria-hidden="true">↗</span>
+                </a>
+              </li>
+              <li>
+                <a href="https://www.instagram.com/cacitaifacentral/" target="_blank" rel="noopener noreferrer">
+                  Instagram<span class="pf__ext" aria-hidden="true">↗</span>
+                </a>
+              </li>
+              <li>
+                <a href="https://x.com/cactaifacentral" target="_blank" rel="noopener noreferrer">
+                  X<span class="pf__ext" aria-hidden="true">↗</span>
                 </a>
               </li>
             </ul>

@@ -355,7 +355,29 @@ select.pub-input {
   cursor: pointer;
 }
 
-/* Confirmation shown after a form hands over to the visitor's email app. */
+/* A field only a bot fills in. Off-screen rather than display:none, which
+   some bots know to skip. */
+.pub-trap {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.pub-alert {
+  display: grid;
+  gap: 12px;
+  justify-items: start;
+  padding: 16px 18px;
+  border-radius: var(--pub-radius-sm);
+  background: #FBEDEE;
+  color: #8A1320;
+  font-size: var(--pub-small);
+  line-height: 1.55;
+}
+
+/* Confirmation shown once a form has been sent. */
 .pub-notice {
   display: grid;
   gap: 10px;

@@ -47,7 +47,7 @@ export default {
       { hid: 'og:type', property: 'og:type', content: 'website' },
       { hid: 'og:site_name', property: 'og:site_name', content: 'CACI Taifa Central Assembly' },
       { hid: 'og:title', property: 'og:title', content: 'Christ Apostolic Church International — Taifa Central Assembly (Miracle Centre)' },
-      { hid: 'og:description', property: 'og:description', content: 'Join us for Sunday Glorious Services, midweek Solution Hour, and access church services anywhere on our official mobile app.' },
+      { hid: 'og:description', property: 'og:description', content: 'Join us for the Sunday Divine Service at 9:00 AM, and midweek services on Wednesdays and Fridays, at the Miracle Centre on Loquat Street, Taifa.' },
       { hid: 'og:image', property: 'og:image', content: `${SITE_URL}/og-image.jpg` },
       { hid: 'og:url', property: 'og:url', content: SITE_URL },
       { hid: 'og:locale', property: 'og:locale', content: 'en_GH' },

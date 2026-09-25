@@ -1,36 +1,63 @@
 <template>
   <div class="stores" :class="`stores--${variant}`">
-    <a
-      v-for="store in stores"
-      :key="store.key"
-      :href="store.href"
-      class="stores__badge"
-      target="_blank"
-      rel="noopener"
-    >
-      <svg class="stores__icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-        <path :d="store.path" />
-      </svg>
-      <span class="stores__copy">
-        <span class="stores__sub">{{ store.sub }}</span>
-        <span class="stores__name">{{ store.name }}</span>
-      </span>
-    </a>
+    <template v-if="launched">
+      <a
+        v-for="store in stores"
+        :key="store.key"
+        :href="store.href"
+        class="stores__badge"
+        target="_blank"
+        rel="noopener"
+      >
+        <svg class="stores__icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path :d="store.path" />
+        </svg>
+        <span class="stores__copy">
+          <span class="stores__sub">{{ store.sub }}</span>
+          <span class="stores__name">{{ store.name }}</span>
+        </span>
+      </a>
+    </template>
+
+    <!-- Until launch the listings are not live, so a badge says when. -->
+    <template v-else>
+      <button
+        v-for="store in stores"
+        :key="store.key"
+        type="button"
+        class="stores__badge"
+        aria-haspopup="dialog"
+        @click="comingSoon = true"
+      >
+        <svg class="stores__icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path :d="store.path" />
+        </svg>
+        <span class="stores__copy">
+          <span class="stores__sub">Coming {{ launch.short }}</span>
+          <span class="stores__name">{{ store.name }}</span>
+        </span>
+      </button>
+
+      <AppComingSoon :open="comingSoon" @close="comingSoon = false" />
+    </template>
   </div>
 </template>
 
 <script>
-import { APP_STORES } from '../resources/appLinks'
+import { APP_STORES, APP_LAUNCH, isAppLaunched } from '../resources/appLinks'
+import AppComingSoon from './AppComingSoon'
 
 /**
- * The two store badges, as real links.
+ * The two store badges, as real links once the app is out.
  *
  * The home page carried this markup as plain divs — the badges looked like
  * buttons and went nowhere, so the only route to the app was to search for it
- * by name.
+ * by name. Before launch they open AppComingSoon; they become links by
+ * themselves on the day.
  */
 export default {
   name: 'AppStoreLinks',
+  components: { AppComingSoon },
   props: {
     /** `dark` sits on the navy app section; `light` on a white card. */
     variant: {
@@ -40,7 +67,12 @@ export default {
     }
   },
   data () {
-    return { stores: APP_STORES }
+    return {
+      stores: APP_STORES,
+      launch: APP_LAUNCH,
+      launched: isAppLaunched(),
+      comingSoon: false
+    }
   }
 }
 </script>
@@ -53,6 +85,9 @@ export default {
 }
 
 .stores__badge {
+  font: inherit;
+  cursor: pointer;
+  text-align: left;
   display: inline-flex;
   align-items: center;
   gap: 12px;

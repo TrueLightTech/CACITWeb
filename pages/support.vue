@@ -17,11 +17,10 @@
       <section class="pub-container channels" aria-label="Ways to reach us">
         <div class="channel">
           <h2 class="pub-h3">Call</h2>
-          <p class="pub-meta">Monday to Friday, 8:00 AM – 5:00 PM</p>
+          <p class="pub-meta">The church office, by phone or WhatsApp.</p>
           <ul class="channel__links">
             <li><a href="tel:+233242969760">+233 24 296 9760</a></li>
             <li><a href="tel:+233596270150">+233 59 627 0150</a></li>
-            <li><a href="tel:+233559585861">+233 55 958 5861</a></li>
           </ul>
         </div>
 
@@ -38,7 +37,7 @@
           <p class="pub-meta">The church secretariat, for help in person.</p>
           <address class="channel__address">
             Miracle Centre, Loquat Street<br>
-            Taifa Central, Accra
+            Taifa, Accra · GE-331-4852
           </address>
         </div>
       </section>
@@ -47,21 +46,24 @@
         <section class="pub-card help__form" aria-labelledby="form-title">
           <div class="help__head">
             <h2 id="form-title" class="pub-h3">Write to us</h2>
-            <p class="pub-muted">This opens your email app with your message ready to send to the church office.</p>
+            <p class="pub-muted">Your message goes straight to the church office, and they will call or message you back.</p>
           </div>
 
-          <div v-if="handedOff" class="pub-notice" role="status">
-            <h3 class="pub-h3">Your message is ready in your email app</h3>
-            <p>
-              Send it from there and the office will reply. If no email app opened, write to
-              <a :href="`mailto:${churchEmail}`">{{ churchEmail }}</a> or call +233 24 296 9760.
-            </p>
+          <div v-if="state === 'sent'" class="pub-notice" role="status">
+            <h3 class="pub-h3">Thank you — your message has been sent</h3>
+            <p>The church office will get back to you on {{ form.phone }}.</p>
             <button type="button" class="pub-btn pub-btn--secondary pub-btn--sm help__again" @click="resetForm">
               Write another message
             </button>
           </div>
 
           <form v-else class="pub-form" @submit.prevent="submitSupportForm">
+            <!-- Hidden from people; a bot fills in every field it finds. -->
+            <div class="pub-trap" aria-hidden="true">
+              <label for="website">Website</label>
+              <input id="website" v-model="form.website" type="text" tabindex="-1" autocomplete="off">
+            </div>
+
             <div class="pub-form__row">
               <div class="pub-field">
                 <label for="fullName" class="pub-label">Full name</label>
@@ -109,7 +111,14 @@
               ></textarea>
             </div>
 
-            <button type="submit" class="pub-btn pub-btn--primary help__submit">Continue in email</button>
+            <div v-if="state === 'failed'" class="pub-alert" role="alert">
+              <p>{{ problem }}</p>
+              <a v-if="offerEmail" :href="emailFallback" class="pub-btn pub-btn--secondary pub-btn--sm">Email it instead</a>
+            </div>
+
+            <button type="submit" class="pub-btn pub-btn--primary help__submit" :disabled="state === 'sending'">
+              {{ state === 'sending' ? 'Sending…' : 'Send message' }}
+            </button>
           </form>
         </section>
 
@@ -171,6 +180,7 @@
 
 <script>
 import { mailtoLink } from '../resources/mailto'
+import { sendPublicMessage } from '../resources/publicMessages'
 
 const CHURCH_EMAIL = 'cactaifacentral@gmail.com'
 
@@ -202,37 +212,52 @@ export default {
         { value: 'prayer', label: 'Prayer request or counselling' },
         { value: 'other', label: 'Something else' }
       ],
-      form: {
-        fullName: '',
-        phone: '',
-        category: '',
-        message: ''
-      },
-      handedOff: false
+      form: this.emptyForm(),
+      state: 'idle',
+      problem: '',
+      offerEmail: false
+    }
+  },
+  computed: {
+    // Only offered when the office could not be reached; a message the API
+    // refused for a reason the visitor can fix is better fixed.
+    emailFallback() {
+      const topic = this.topics.find(t => t.value === this.form.category)
+      return mailtoLink(CHURCH_EMAIL, {
+        subject: `Support: ${topic ? topic.label : 'Enquiry'} — ${this.form.fullName}`,
+        lines: [this.form.message, '', `Name: ${this.form.fullName}`, `Phone: ${this.form.phone}`]
+      })
     }
   },
   methods: {
-    // There is no endpoint that accepts a message from someone who is not
-    // signed in, so this used to pretend: it waited 750ms and announced that
-    // the message had been received, and nothing was sent anywhere. Handing
-    // it to the visitor's own email app is the one route that reaches the
-    // office today.
-    submitSupportForm() {
-      const topic = this.topics.find(t => t.value === this.form.category)
-      window.location.href = mailtoLink(CHURCH_EMAIL, {
-        subject: `Support: ${topic ? topic.label : 'Enquiry'} — ${this.form.fullName}`,
-        lines: [
-          this.form.message,
-          '',
-          `Name: ${this.form.fullName}`,
-          `Phone: ${this.form.phone}`
-        ]
+    emptyForm() {
+      return { fullName: '', phone: '', category: '', message: '', website: '' }
+    },
+    async submitSupportForm() {
+      if (!this.form.fullName || !this.form.phone || !this.form.category || !this.form.message) {
+        this.state = 'failed'
+        this.problem = 'Fill in your name, phone number, topic and message.'
+        this.offerEmail = false
+        return
+      }
+
+      this.state = 'sending'
+      const result = await sendPublicMessage(this.$axios, {
+        kind: 'support',
+        name: this.form.fullName,
+        phone: this.form.phone,
+        topic: this.form.category,
+        message: this.form.message,
+        website: this.form.website
       })
-      this.handedOff = true
+
+      this.state = result.ok ? 'sent' : 'failed'
+      this.problem = result.message
+      this.offerEmail = result.unreachable
     },
     resetForm() {
-      this.form = { fullName: '', phone: '', category: '', message: '' }
-      this.handedOff = false
+      this.form = this.emptyForm()
+      this.state = 'idle'
     }
   }
 }

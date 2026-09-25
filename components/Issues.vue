@@ -4,7 +4,7 @@
       <div>
         <h2 class="ds-h2">Reported issues</h2>
         <p class="ds-muted" style="margin:4px 0 0;font-size:var(--ds-text-sm)">
-          Messages members have sent to the church office.
+          Messages sent to the church office from the app and the website.
         </p>
       </div>
 
@@ -41,8 +41,8 @@
             v-model="searchQuery"
             class="ds-input"
             type="search"
-            aria-label="Search issues by member name"
-            placeholder="Search by member name"
+            aria-label="Search issues by name"
+            placeholder="Search by name"
             @input="onSearchInput"
           >
           <button v-if="searchQuery" class="ds-search__clear" type="button" aria-label="Clear search" @click="clearSearch">
@@ -61,7 +61,7 @@
 
       <div v-if="isLoading" class="ds-tablescroll">
         <table class="ds-table">
-          <thead><tr><th>Member</th><th>Issue</th><th>Status</th><th class="ds-col-action">Actions</th></tr></thead>
+          <thead><tr><th>From</th><th>Issue</th><th>Status</th><th class="ds-col-action">Actions</th></tr></thead>
           <tbody>
             <tr v-for="n in 4" :key="n">
               <td><span class="ds-skeleton" style="width:120px"></span></td>
@@ -77,7 +77,7 @@
         <table class="ds-table ds-table--cards">
           <thead>
             <tr>
-              <th>Member</th>
+              <th>From</th>
               <th>Issue</th>
               <th>Status</th>
               <th v-if="isChurchManager" class="ds-col-action">Actions</th>
@@ -85,8 +85,17 @@
           </thead>
           <tbody>
             <tr v-for="(issue, index) in rows" :key="issue.id || index">
-              <td data-label="Member" style="font-weight:500">{{ issue.userName || '—' }}</td>
+              <td data-label="From" class="issue-from">
+                <span class="issue-from__name">{{ issue.userName || '—' }}</span>
+                <!-- A website message has no account to call back from, so
+                     the number it was sent with is shown here. -->
+                <a v-if="issue.contactPhone" :href="`tel:+${issue.contactPhone}`" class="issue-from__phone">
+                  +{{ issue.contactPhone }}
+                </a>
+              </td>
               <td data-label="Issue" class="issue-cell">
+                <span v-if="issue.kind === 'account_deletion'" class="ds-badge ds-badge--danger issue-cell__badge">Account deletion</span>
+                <span v-else-if="issue.source === 'website'" class="ds-badge ds-badge--info issue-cell__badge">Website</span>
                 <strong>{{ issue.title }}</strong>
                 <!-- The message was rendered untruncated in a table cell, so one
                      long report destroyed the row grid. -->
@@ -308,7 +317,13 @@ export default {
 <style scoped>
 .issue-cell { max-width: 460px; }
 .issue-cell strong { display: block; font-weight: 600; margin-bottom: 2px; }
-.issue-cell p { margin: 0; color: var(--ds-text-2); font-size: var(--ds-text-base); overflow-wrap: anywhere; }
+.issue-cell p { margin: 0; color: var(--ds-text-2); font-size: var(--ds-text-base); overflow-wrap: anywhere; white-space: pre-line; }
+.issue-cell__badge { margin-bottom: 6px; }
+
+.issue-from { display: grid; gap: 2px; align-content: start; }
+.issue-from__name { font-weight: 500; }
+.issue-from__phone { font-size: var(--ds-text-sm); color: var(--ds-text-2); text-decoration: none; white-space: nowrap; }
+.issue-from__phone:hover { color: var(--ds-navy); text-decoration: underline; }
 
 .issue-cell__toggle {
   border: 0;

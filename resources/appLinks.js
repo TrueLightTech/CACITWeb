@@ -27,3 +27,23 @@ export const APP_STORES = [
     path: 'M3.609 1.814L13.792 12 3.61 22.186a2.38 2.38 0 0 1-.61-.715V2.529c.176-.282.388-.528.609-.715zm11.306 11.306l2.35 2.35-12.062 6.892 9.712-9.242zm2.35-2.35l-2.35 2.35L5.203 3.878l12.062 6.892zm1.127 1.127l2.846 1.626c.725.414.725 1.09 0 1.504l-2.846 1.626-2.083-2.378 2.083-2.378z'
   }
 ]
+
+/**
+ * When the app reaches the stores. Until then every store badge opens the
+ * coming-soon screen instead of a listing; from midnight in Accra (UTC, no
+ * daylight saving) the badges become the real links, with no redeploy.
+ */
+export const APP_LAUNCH = {
+  at: Date.UTC(2026, 9, 15),
+  day: 'Thursday, 15 October 2026',
+  short: '15\u00a0October'
+}
+
+export function isAppLaunched (now = Date.now()) {
+  return now >= APP_LAUNCH.at
+}
+
+/** Whole days until launch, counting today as one while any of it is left. */
+export function daysUntilLaunch (now = Date.now()) {
+  return Math.max(0, Math.ceil((APP_LAUNCH.at - now) / 86400000))
+}

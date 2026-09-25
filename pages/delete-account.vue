@@ -31,22 +31,24 @@
           <h2 id="request-title" class="pub-h3">Send a request</h2>
           <p class="pub-muted route__intro">
             If you have uninstalled the app or cannot reach your phone, tell us which account is yours.
-            This opens your email app with the request ready to send.
+            Your request goes straight to the church office.
           </p>
 
-          <div v-if="handedOff" class="pub-notice" role="status">
-            <h3 class="pub-h3">Your request is ready in your email app</h3>
+          <div v-if="state === 'sent'" class="pub-notice" role="status">
+            <h3 class="pub-h3">Your request has been sent</h3>
             <p>
-              Send it from there. The church office will check the account is yours before removing it.
-              If no email app opened, write to <a :href="`mailto:${churchEmail}`">{{ churchEmail }}</a>
-              or call +233 24 296 9760.
+              The church office will check the account is yours before removing it, and may call you on
+              {{ form.phone }} to confirm.
             </p>
-            <button type="button" class="pub-btn pub-btn--secondary pub-btn--sm route__again" @click="handedOff = false">
-              Start again
-            </button>
           </div>
 
           <form v-else class="pub-form" @submit.prevent="submitDeletionRequest">
+            <!-- Hidden from people; a bot fills in every field it finds. -->
+            <div class="pub-trap" aria-hidden="true">
+              <label for="website">Website</label>
+              <input id="website" v-model="form.website" type="text" tabindex="-1" autocomplete="off">
+            </div>
+
             <div class="pub-field">
               <label for="fullName" class="pub-label">Name on the account</label>
               <input
@@ -85,8 +87,13 @@
               <span>I am the account holder, and I understand that deleting my account is permanent.</span>
             </label>
 
-            <button type="submit" class="pub-btn pub-btn--primary route__submit" :disabled="!form.confirmed">
-              Continue in email
+            <div v-if="state === 'failed'" class="pub-alert" role="alert">
+              <p>{{ problem }}</p>
+              <a v-if="offerEmail" :href="emailFallback" class="pub-btn pub-btn--secondary pub-btn--sm">Email it instead</a>
+            </div>
+
+            <button type="submit" class="pub-btn pub-btn--primary route__submit" :disabled="!form.confirmed || state === 'sending'">
+              {{ state === 'sending' ? 'Sending…' : 'Send deletion request' }}
             </button>
           </form>
         </section>
@@ -137,6 +144,7 @@
 
 <script>
 import { mailtoLink } from '../resources/mailto'
+import { sendPublicMessage } from '../resources/publicMessages'
 
 const CHURCH_EMAIL = 'cactaifacentral@gmail.com'
 
@@ -172,20 +180,20 @@ export default {
         fullName: '',
         phone: '',
         reason: '',
-        confirmed: false
+        confirmed: false,
+        website: ''
       },
-      handedOff: false
+      state: 'idle',
+      problem: '',
+      offerEmail: false
     }
   },
-  methods: {
-    // This form used to wait 750ms and report that the request had been
-    // logged and would be verified by SMS — none of which happened, since
-    // nothing was sent. A deletion request that silently goes nowhere is
-    // the worst failure this page can have, so it goes out by email, the
-    // one channel that reaches the office without an account.
-    submitDeletionRequest() {
-      if (!this.form.confirmed) { return }
-      window.location.href = mailtoLink(CHURCH_EMAIL, {
+  computed: {
+    // Only when the office could not be reached. A deletion request that
+    // silently goes nowhere is the worst failure this page can have, so
+    // there is always a second way to send it.
+    emailFallback() {
+      return mailtoLink(CHURCH_EMAIL, {
         subject: `Account deletion request — ${this.form.fullName}`,
         lines: [
           'Please delete my CACI Taifa account and the personal data linked to it.',
@@ -197,7 +205,24 @@ export default {
           'I confirm I am the account holder and understand that deletion is permanent.'
         ]
       })
-      this.handedOff = true
+    }
+  },
+  methods: {
+    async submitDeletionRequest() {
+      if (!this.form.confirmed) { return }
+
+      this.state = 'sending'
+      const result = await sendPublicMessage(this.$axios, {
+        kind: 'account_deletion',
+        name: this.form.fullName,
+        phone: this.form.phone,
+        reason: this.form.reason || null,
+        website: this.form.website
+      })
+
+      this.state = result.ok ? 'sent' : 'failed'
+      this.problem = result.message
+      this.offerEmail = result.unreachable
     }
   }
 }
@@ -218,7 +243,6 @@ export default {
 .route { display: grid; gap: 12px; align-content: start; }
 .route__intro { margin-bottom: 12px; }
 .route__submit { justify-self: start; }
-.route__again { justify-self: start; margin-top: 4px; }
 
 .steps {
   list-style: none;

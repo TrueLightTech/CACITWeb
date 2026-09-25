@@ -29,7 +29,7 @@
 
           <p class="hero__next">
             <span class="hero__dot" aria-hidden="true"></span>
-            <span>Sundays at <strong>7:00</strong> and <strong>9:45 AM</strong> · Loquat Street, Taifa</span>
+            <span>Sunday Divine Service at <strong>9:00 AM</strong> · Loquat Street, Taifa</span>
           </p>
         </div>
       </section>
@@ -53,7 +53,7 @@
             <p class="pub-eyebrow">Service times</p>
             <h2 id="services-title" class="pub-h2">Worship with us</h2>
             <p class="pub-lead">
-              We gather at the Miracle Centre on Loquat Street, Taifa Central. You are warmly welcome at any of our services.
+              We gather at the Miracle Centre on Loquat Street, Taifa. You are warmly welcome at any of our services.
             </p>
           </div>
 
@@ -66,8 +66,8 @@
                   <p class="pub-muted">{{ service.about }}</p>
                 </div>
                 <ul class="schedule__times">
-                  <li v-for="slot in service.times" :key="slot.label">
-                    <span class="schedule__label">{{ slot.label }}</span>
+                  <li v-for="slot in service.times" :key="slot.time">
+                    <span v-if="slot.label" class="schedule__label">{{ slot.label }}</span>
                     <span class="schedule__time">{{ slot.time }}</span>
                   </li>
                 </ul>
@@ -78,8 +78,8 @@
               <h3 id="place-title" class="pub-h3">Find us</h3>
               <address class="place__address">
                 Christ Apostolic Church International<br>
-                Taifa Central Assembly, Loquat Street<br>
-                Near Taifa Bank &amp; Market, Accra
+                Taifa Central (Miracle Centre)<br>
+                Loquat Street, Taifa, Accra
               </address>
               <a
                 :href="mapsUrl"
@@ -97,6 +97,10 @@
                     <a href="tel:+233242969760">+233 24 296 9760</a><br>
                     <a href="tel:+233596270150">+233 59 627 0150</a>
                   </dd>
+                </div>
+                <div>
+                  <dt>Ghana Post GPS</dt>
+                  <dd>GE-331-4852</dd>
                 </div>
                 <div>
                   <dt>Email</dt>
@@ -214,36 +218,34 @@ export default {
   name: 'IndexPage',
   data () {
     return {
-      mapsUrl: 'https://www.google.com/maps/search/?api=1&query=Christ+Apostolic+Church+International+Taifa+Central+Assembly+Accra',
+      // The church's own Maps listing, by place id, so directions end at the
+      // building rather than at whatever a name search finds first.
+      mapsUrl: 'https://www.google.com/maps/search/?api=1&query=Christ+Apostolic+Church+International+Taifa+Central&query_place_id=ChIJowBTHM-e3w8RBkwe7hfQsdE',
       expect: [
         { title: 'Christ-centred Word', text: 'Solid biblical teaching that anchors your daily walk in faith.' },
         { title: 'Spirit-filled worship', text: 'An atmosphere of prayer, deliverance and genuine breakthrough.' },
         { title: 'A warm family', text: 'An open, caring fellowship ready to walk with you every step.' }
       ],
+      // As the church's public listing gives them. Midweek services have no
+      // published clock times, so none are invented here.
       services: [
         {
           day: 'Sunday',
-          name: 'Glorious Services',
-          about: 'Praise, worship and the Word. Children’s and youth classes run alongside.',
-          times: [
-            { label: 'First service', time: '7:00 – 9:30 AM' },
-            { label: 'Second service', time: '9:45 AM – 12:00 PM' }
-          ]
+          name: 'Divine Service',
+          about: 'Praise, worship and the Word.',
+          times: [{ label: 'Morning service', time: '9:00 AM – 12:00 PM' }]
         },
         {
           day: 'Wednesday',
-          name: 'Solution Hour',
-          about: 'In-depth Bible teaching, discipleship and prayer. Bring your Bible.',
-          times: [{ label: 'Every week', time: '6:00 – 8:00 PM' }]
+          name: 'Midweek services',
+          about: 'Bible teaching and prayer. Call the office for this week’s times.',
+          times: [{ time: 'Morning' }, { time: 'Evening' }]
         },
         {
           day: 'Friday',
-          name: 'Deliverance Hour',
-          about: 'Intercession, spiritual warfare and prophetic prayer.',
-          times: [
-            { label: 'Every week', time: '6:30 – 9:00 PM' },
-            { label: 'Half-night, last Friday', time: '10:00 PM – 3:00 AM' }
-          ]
+          name: 'Prayer services',
+          about: 'Intercession and prayer. Call the office for this week’s times.',
+          times: [{ time: 'Morning' }, { time: 'Evening' }]
         }
       ],
       features: [
@@ -272,36 +274,36 @@ export default {
       url: 'https://cacitaifa.com',
       logo: 'https://cacitaifa.com/android-chrome-512x512.png',
       image: 'https://cacitaifa.com/og-image.jpg',
-      telephone: '+233242969760',
+      telephone: ['+233242969760', '+233596270150'],
       email: 'cactaifacentral@gmail.com',
       address: {
         '@type': 'PostalAddress',
-        streetAddress: 'Loquat Street, Taifa Central',
+        streetAddress: 'Loquat Street',
+        postOfficeBoxNumber: 'TA 184',
         addressLocality: 'Taifa, Accra',
         addressRegion: 'Greater Accra',
         addressCountry: 'GH'
       },
+      geo: {
+        '@type': 'GeoCoordinates',
+        latitude: 5.65924,
+        longitude: -0.25226
+      },
+      hasMap: 'https://www.google.com/maps/search/?api=1&query=Christ+Apostolic+Church+International+Taifa+Central&query_place_id=ChIJowBTHM-e3w8RBkwe7hfQsdE',
+      foundingDate: '1986-03-09',
       sameAs: [
-        'https://web.facebook.com/CACTaifaCentral/'
+        'https://web.facebook.com/CACTaifaCentral/',
+        'https://www.instagram.com/cacitaifacentral/',
+        'https://x.com/cactaifacentral'
       ],
+      // Only the service with published hours. Wednesday and Friday have
+      // morning and evening services but no public times yet.
       openingHoursSpecification: [
         {
           '@type': 'OpeningHoursSpecification',
           dayOfWeek: ['Sunday'],
-          opens: '07:00',
+          opens: '09:00',
           closes: '12:00'
-        },
-        {
-          '@type': 'OpeningHoursSpecification',
-          dayOfWeek: ['Wednesday'],
-          opens: '18:00',
-          closes: '20:00'
-        },
-        {
-          '@type': 'OpeningHoursSpecification',
-          dayOfWeek: ['Friday'],
-          opens: '18:30',
-          closes: '21:00'
         }
       ]
     }
