@@ -177,7 +177,7 @@
 
 <script>
 import { mapGetters } from 'vuex'
-import { profileImageBaseUrl } from '../../../../resources/constants'
+import { storedImageUrl } from '../../../../resources/constants'
 import { ChurchMember, MembershipFormOne, MembershipFormThree, MembershipFormTwo } from '../../../../network/Member'
 import { ROLE_CHURCH_MANAGER } from '../../../../resources/navigation'
 import RowMenu from '../../../../components/RowMenu'
@@ -340,7 +340,7 @@ export default {
         if (String(image).includes('user.svg')) {
           return require('~/assets/imgs/user.svg')
         }
-        return `${profileImageBaseUrl}/${image}`
+        return storedImageUrl(image)
       }
       return require('~/assets/imgs/user.svg')
     },

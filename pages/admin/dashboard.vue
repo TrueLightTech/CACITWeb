@@ -229,7 +229,7 @@
 <script>
 import { mapGetters } from 'vuex'
 import { AnnouncementList } from '../../network/Announcement'
-import { numberWithCommas, profileImageBaseUrl } from '../../resources/constants'
+import { numberWithCommas, storedImageUrl } from '../../resources/constants'
 import { ChurchFamilyList, DashboardAccountingTotal } from '../../network/Member'
 import { ROLE_CHURCH_MANAGER, ROLE_FAMILY_MANAGER } from '../../resources/navigation'
 
@@ -424,7 +424,7 @@ export default {
     },
     getImage (image) {
       if (image) {
-        return `${profileImageBaseUrl}/${image}`
+        return storedImageUrl(image)
       }
       return require('~/assets/imgs/no_image.png')
     }

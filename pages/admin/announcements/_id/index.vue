@@ -54,7 +54,7 @@
 <script>
 import { mapGetters } from 'vuex'
 import { Announcement } from '../../../../network/Announcement'
-import { profileImageBaseUrl } from '../../../../resources/constants'
+import { storedImageUrl } from '../../../../resources/constants'
 import { ROLE_CHURCH_MANAGER } from '../../../../resources/navigation'
 import ConfirmDialog from '../../../../components/ConfirmDialog'
 
@@ -91,7 +91,7 @@ export default {
     },
     getAnnouncementImage (image) {
       if (image) {
-        return `${profileImageBaseUrl}/${image}`
+        return storedImageUrl(image)
       }
       return require('~/assets/imgs/no_image.png')
     },

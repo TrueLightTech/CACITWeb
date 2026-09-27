@@ -160,6 +160,7 @@
 
 <script>
 import { payload, errorMessage, duration as formatDuration, bytes as formatBytes } from '../network/MobileApp'
+import { tusUpload } from '../resources/tusUpload'
 
 /** Providers that mean "hosted elsewhere", as opposed to uploaded here. */
 const LINKED_PROVIDERS = ['youtube', 'vimeo', 'facebook', 'external']
@@ -483,11 +484,22 @@ export default {
       }
     },
     /**
-     * R2 takes a presigned PUT of the raw file; Stream takes a multipart POST.
-     * XHR rather than fetch because it is the only one that reports progress,
-     * and a large sermon upload with no progress bar looks like a hung page.
+     * R2 takes a presigned PUT of the raw file; Images and Stream up to 200MB
+     * take a multipart POST; a longer Stream recording goes up resumably in
+     * chunks (tus). XHR rather than fetch because it is the only one that
+     * reports progress, and a large sermon upload with no progress bar looks
+     * like a hung page.
      */
     sendBytes (ticket, file) {
+      if ((ticket.uploadMethod || '').toLowerCase() === 'tus') {
+        return tusUpload({
+          url: ticket.uploadUrl,
+          file,
+          chunkSize: ticket.chunkSize || 16 * 1024 * 1024,
+          onProgress: fraction => { this.percent = Math.min(100, Math.round(fraction * 100)) }
+        })
+      }
+
       return new Promise((resolve, reject) => {
         const request = new XMLHttpRequest()
         const method = (ticket.uploadMethod || 'put').toUpperCase()

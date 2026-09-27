@@ -128,7 +128,7 @@
 
 <script>
 import { mapGetters } from 'vuex'
-import { profileImageBaseUrl } from '../../../resources/constants'
+import { storedImageUrl } from '../../../resources/constants'
 import { AnnouncementList } from '../../../network/Announcement'
 import { ROLE_CHURCH_MANAGER } from '../../../resources/navigation'
 import { STATUS_LABELS, STATUS_BADGE } from '../../../network/MobileApp'
@@ -261,7 +261,7 @@ export default {
     },
     getAnnouncementImage (image) {
       if (image) {
-        return `${profileImageBaseUrl}/${image}`
+        return storedImageUrl(image)
       }
       return require('~/assets/imgs/no_image.png')
     }

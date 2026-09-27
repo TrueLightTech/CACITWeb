@@ -226,7 +226,7 @@
 <script>
 import { mapGetters } from 'vuex'
 import { MemberList } from '../network/Member'
-import { profileImageBaseUrl } from '../resources/constants'
+import { storedImageUrl } from '../resources/constants'
 import { ROLE_CHURCH_MANAGER, ROLE_FAMILY_MANAGER } from '../resources/navigation'
 import RowMenu from './RowMenu'
 import ConfirmDialog from './ConfirmDialog'
@@ -334,7 +334,7 @@ export default {
   methods: {
     getProfileImage (image) {
       if (image) {
-        return `${profileImageBaseUrl}/${image}`
+        return storedImageUrl(image)
       }
       return require('~/assets/imgs/user.svg')
     },

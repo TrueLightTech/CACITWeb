@@ -96,7 +96,7 @@
 
 <script>
 import PublishControls from './PublishControls'
-import { profileImageBaseUrl } from '../resources/constants'
+import { storedImageUrl } from '../resources/constants'
 import { toUtcIso, toLocalInput } from '../network/MobileApp'
 
 /**
@@ -146,7 +146,7 @@ export default {
       if (String(this.form.image).indexOf('data:') === 0 || String(this.form.image).indexOf('http') === 0) {
         return this.form.image
       }
-      return `${profileImageBaseUrl}/${this.form.image}`
+      return storedImageUrl(this.form.image)
     }
   },
   beforeMount () {

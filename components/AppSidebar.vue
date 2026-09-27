@@ -51,7 +51,7 @@
 
 <script>
 import { mapGetters } from 'vuex'
-import { profileImageBaseUrl } from '../resources/constants'
+import { storedImageUrl } from '../resources/constants'
 import { navigationForRole } from '../resources/navigation'
 import NavIcon from './NavIcon'
 
@@ -79,7 +79,7 @@ export default {
     },
     profileImage () {
       if (this.currentUser.profilePicture) {
-        return `${profileImageBaseUrl}/${this.currentUser.profilePicture}`
+        return storedImageUrl(this.currentUser.profilePicture)
       }
       return require('~/assets/imgs/user.svg')
     },

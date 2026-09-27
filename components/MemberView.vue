@@ -141,7 +141,7 @@
 
 <script>
 import { mapGetters } from 'vuex'
-import { profileImageBaseUrl } from '../resources/constants'
+import { storedImageUrl } from '../resources/constants'
 import { ChurchMember } from '../network/Member'
 
 export default {
@@ -251,7 +251,7 @@ export default {
     },
     getProfileImage (image) {
       if (image) {
-        return `${profileImageBaseUrl}/${image}`
+        return storedImageUrl(image)
       }
       return require('~/assets/imgs/user.svg')
     },
