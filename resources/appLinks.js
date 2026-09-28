@@ -9,10 +9,27 @@
 export const APP_STORE_URL = 'https://apps.apple.com/us/app/caci-taifa/id6813027106'
 export const PLAY_STORE_URL = 'https://play.google.com/store/apps/details?id=com.cacitaifa.caci_taifa'
 
+/**
+ * When the app reaches the stores. Until then that store's badge opens the
+ * coming-soon screen instead of a listing; from midnight in Accra (UTC, no
+ * daylight saving) it becomes the real link, with no redeploy.
+ *
+ * Android went live first, on 28 September 2026. The iPhone date is the one
+ * announced; move it here if Apple's review moves it.
+ */
+export const APP_LAUNCH = {
+  at: Date.UTC(2026, 9, 15),
+  day: 'Thursday, 15 October 2026',
+  short: '15\u00a0October'
+}
+
+export const ANDROID_LIVE_AT = Date.UTC(2026, 8, 28)
+
 export const APP_STORES = [
   {
     key: 'ios',
     href: APP_STORE_URL,
+    liveAt: APP_LAUNCH.at,
     sub: 'Download on the',
     name: 'App Store',
     // Apple's mark, drawn rather than fetched so the page owes nothing to a
@@ -22,28 +39,25 @@ export const APP_STORES = [
   {
     key: 'android',
     href: PLAY_STORE_URL,
+    liveAt: ANDROID_LIVE_AT,
     sub: 'Get it on',
     name: 'Google Play',
     path: 'M3.609 1.814L13.792 12 3.61 22.186a2.38 2.38 0 0 1-.61-.715V2.529c.176-.282.388-.528.609-.715zm11.306 11.306l2.35 2.35-12.062 6.892 9.712-9.242zm2.35-2.35l-2.35 2.35L5.203 3.878l12.062 6.892zm1.127 1.127l2.846 1.626c.725.414.725 1.09 0 1.504l-2.846 1.626-2.083-2.378 2.083-2.378z'
   }
 ]
 
-/**
- * When the app reaches the stores. Until then every store badge opens the
- * coming-soon screen instead of a listing; from midnight in Accra (UTC, no
- * daylight saving) the badges become the real links, with no redeploy.
- */
-export const APP_LAUNCH = {
-  at: Date.UTC(2026, 9, 15),
-  day: 'Thursday, 15 October 2026',
-  short: '15\u00a0October'
+/** Whether this store's listing is live. */
+export function isStoreLive (key, now = Date.now()) {
+  const store = APP_STORES.find(item => item.key === key)
+  return !!store && now >= store.liveAt
 }
 
+/** Whether the app is on every store. */
 export function isAppLaunched (now = Date.now()) {
-  return now >= APP_LAUNCH.at
+  return APP_STORES.every(store => now >= store.liveAt)
 }
 
-/** Whole days until launch, counting today as one while any of it is left. */
+/** Whole days until the iPhone launch, counting today as one while any of it is left. */
 export function daysUntilLaunch (now = Date.now()) {
   return Math.max(0, Math.ceil((APP_LAUNCH.at - now) / 86400000))
 }

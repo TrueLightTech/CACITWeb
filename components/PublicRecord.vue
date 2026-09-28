@@ -107,7 +107,7 @@
 
 <script>
 import { payload } from '../network/MobileApp'
-import { PLAY_STORE_URL, isAppLaunched } from '../resources/appLinks'
+import { PLAY_STORE_URL, isStoreLive } from '../resources/appLinks'
 
 const ANDROID_PACKAGE = 'com.cacitaifa.caci_taifa'
 
@@ -162,15 +162,14 @@ export default {
   computed: {
     /**
      * An Android intent link: opens the app on this record when it is
-     * installed, and the fallback when it is not — Google Play once the app
-     * is out, and until then this same page, whose store badges explain.
+     * installed, and Google Play when it is not.
      * A plain link to this address would only reload the page: Android does
      * not hand a link to an app when the browser is already on that site.
      */
     openInAppUrl () {
       const path = (this.$route && this.$route.path) || '/'
       const here = `https://cacitaifa.com${path}`
-      const fallback = isAppLaunched() ? PLAY_STORE_URL : here
+      const fallback = isStoreLive('android') ? PLAY_STORE_URL : here
       return `intent://cacitaifa.com${path}#Intent;scheme=https;package=${ANDROID_PACKAGE};` +
         `S.browser_fallback_url=${encodeURIComponent(fallback)};end`
     },

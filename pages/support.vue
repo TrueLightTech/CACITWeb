@@ -166,7 +166,7 @@
             <details class="faq">
               <summary>Which phones is the app available on?</summary>
               <p>
-                The app is available for iOS (iPhone/iPad running iOS 13.0 or later) from the Apple App Store and for Android devices (running Android 8.0 Oreo or later) from the Google Play Store.
+                The app is on the Google Play Store now for Android devices (running Android 8.0 Oreo or later). The iPhone and iPad version (iOS 13.0 or later) comes to the Apple App Store on 15 October 2026.
               </p>
             </details>
           </div>

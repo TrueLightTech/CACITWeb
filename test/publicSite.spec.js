@@ -1,4 +1,4 @@
-import { isAppLaunched, daysUntilLaunch, APP_LAUNCH } from '../resources/appLinks'
+import { isAppLaunched, isStoreLive, daysUntilLaunch, APP_LAUNCH } from '../resources/appLinks'
 import { sendPublicMessage } from '../resources/publicMessages'
 import { mailtoLink } from '../resources/mailto'
 
@@ -18,6 +18,15 @@ describe('app launch date', () => {
     expect(daysUntilLaunch(at('2026-09-25T09:00:00Z'))).toBe(20)
     expect(daysUntilLaunch(at('2026-10-14T18:00:00Z'))).toBe(1)
     expect(daysUntilLaunch(at('2026-10-20T00:00:00Z'))).toBe(0)
+  })
+
+  it('lets each store go live on its own day: Android first, then iPhone', () => {
+    expect(isStoreLive('android', at('2026-09-27T23:59:59Z'))).toBe(false)
+    expect(isStoreLive('android', at('2026-09-28T00:00:00Z'))).toBe(true)
+    expect(isStoreLive('ios', at('2026-09-28T12:00:00Z'))).toBe(false)
+    expect(isStoreLive('ios', at('2026-10-15T00:00:00Z'))).toBe(true)
+    expect(isAppLaunched(at('2026-09-28T12:00:00Z'))).toBe(false)
+    expect(isStoreLive('windows', at('2026-10-20T00:00:00Z'))).toBe(false)
   })
 
   it('keeps the day and month together wherever the short date wraps', () => {

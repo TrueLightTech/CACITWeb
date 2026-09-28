@@ -17,11 +17,14 @@
         </button>
 
         <div class="acs__copy">
-          <p class="acs__eyebrow">The CACI Taifa app</p>
+          <p class="acs__eyebrow">The CACI Taifa app for iPhone</p>
           <h2 id="acs-title" class="acs__title">Coming {{ launch.short }}.</h2>
           <p id="acs-lead" class="acs__lead">
             Sermons, giving with instant receipts, the hymns and the week’s announcements —
-            on the App Store and Google Play from {{ launch.day }}.
+            on the App Store from {{ launch.day }}.
+          </p>
+          <p class="acs__note">
+            On Android? <a :href="playStoreUrl" target="_blank" rel="noopener">It is on Google Play now.</a>
           </p>
 
           <p class="acs__count" aria-live="polite">
@@ -54,10 +57,11 @@
 </template>
 
 <script>
-import { APP_LAUNCH, daysUntilLaunch } from '../resources/appLinks'
+import { APP_LAUNCH, PLAY_STORE_URL, daysUntilLaunch } from '../resources/appLinks'
 
 /**
- * What a store badge opens until the app is on the stores.
+ * What a store badge opens until the app is on that store — now only the
+ * App Store, since Android went live first.
  *
  * The badges used to link to listings that did not exist yet, so a visitor
  * who tapped one landed on a store error. This says when instead, and lets
@@ -69,7 +73,7 @@ export default {
     open: { type: Boolean, default: false }
   },
   data () {
-    return { launch: APP_LAUNCH, returnTo: null }
+    return { launch: APP_LAUNCH, playStoreUrl: PLAY_STORE_URL, returnTo: null }
   },
   computed: {
     countdown () {
@@ -129,8 +133,8 @@ export default {
         'DTSTAMP:20260925T000000Z',
         'DTSTART;VALUE=DATE:20261015',
         'DTEND;VALUE=DATE:20261016',
-        'SUMMARY:The CACI Taifa app is out',
-        'DESCRIPTION:Download it from the App Store or Google Play: https://cacitaifa.com/#app-download',
+        'SUMMARY:The CACI Taifa app is out on iPhone',
+        'DESCRIPTION:Download it from the App Store: https://cacitaifa.com/#app-download',
         'URL:https://cacitaifa.com/#app-download',
         'END:VEVENT',
         'END:VCALENDAR'
@@ -236,6 +240,13 @@ export default {
   color: rgba(255, 255, 255, 0.78);
   text-wrap: pretty;
 }
+
+.acs__note {
+  margin: 12px 0 0;
+  font-size: 0.9375rem;
+  color: rgba(255, 255, 255, 0.78);
+}
+.acs__note a { color: #ffffff; font-weight: 600; text-underline-offset: 3px; }
 
 .acs__count {
   display: inline-flex;

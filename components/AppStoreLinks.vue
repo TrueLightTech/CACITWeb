@@ -1,8 +1,8 @@
 <template>
   <div class="stores" :class="`stores--${variant}`">
-    <template v-if="launched">
+    <template v-for="store in stores">
       <a
-        v-for="store in stores"
+        v-if="store.live"
         :key="store.key"
         :href="store.href"
         class="stores__badge"
@@ -17,12 +17,10 @@
           <span class="stores__name">{{ store.name }}</span>
         </span>
       </a>
-    </template>
 
-    <!-- Until launch the listings are not live, so a badge says when. -->
-    <template v-else>
+      <!-- A listing that is not live yet says when instead. -->
       <button
-        v-for="store in stores"
+        v-else
         :key="store.key"
         type="button"
         class="stores__badge"
@@ -37,14 +35,14 @@
           <span class="stores__name">{{ store.name }}</span>
         </span>
       </button>
-
-      <AppComingSoon :open="comingSoon" @close="comingSoon = false" />
     </template>
+
+    <AppComingSoon v-if="!allLive" :open="comingSoon" @close="comingSoon = false" />
   </div>
 </template>
 
 <script>
-import { APP_STORES, APP_LAUNCH, isAppLaunched } from '../resources/appLinks'
+import { APP_STORES, APP_LAUNCH, isStoreLive } from '../resources/appLinks'
 import AppComingSoon from './AppComingSoon'
 
 /**
@@ -52,8 +50,8 @@ import AppComingSoon from './AppComingSoon'
  *
  * The home page carried this markup as plain divs — the badges looked like
  * buttons and went nowhere, so the only route to the app was to search for it
- * by name. Before launch they open AppComingSoon; they become links by
- * themselves on the day.
+ * by name. A store that is not live yet opens AppComingSoon; each badge
+ * becomes a link by itself on its store's day.
  */
 export default {
   name: 'AppStoreLinks',
@@ -68,11 +66,13 @@ export default {
   },
   data () {
     return {
-      stores: APP_STORES,
+      stores: APP_STORES.map(store => ({ ...store, live: isStoreLive(store.key) })),
       launch: APP_LAUNCH,
-      launched: isAppLaunched(),
       comingSoon: false
     }
+  },
+  computed: {
+    allLive () { return this.stores.every(store => store.live) }
   }
 }
 </script>
