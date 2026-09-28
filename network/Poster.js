@@ -101,7 +101,7 @@ export function grabPoster (file, options) {
 }
 
 /**
- * Puts an image into R2 the same way the uploader does, and hands back the
+ * Uploads an image the same way the uploader does, and hands back the
  * public address. Sermons and videos store a cover as a URL rather than a
  * media id, so the caller needs the address rather than the asset.
  */
@@ -122,11 +122,21 @@ export async function uploadImage (axios, blob, title) {
     throw new Error('No upload ticket came back')
   }
 
-  await fetch(ticket.uploadUrl, {
-    method: (ticket.uploadMethod || 'put').toUpperCase(),
-    body: blob,
-    headers: { 'Content-Type': blob.type || 'image/jpeg' }
-  }).then(response => {
+  // A "post" ticket (Cloudflare Images) takes multipart form data with the
+  // file in a field named "file"; a "put" ticket (R2) takes the raw bytes.
+  // Sending raw bytes to Images is refused, which silently lost every cover.
+  const method = (ticket.uploadMethod || 'put').toUpperCase()
+  let request
+
+  if (method === 'POST') {
+    const form = new FormData()
+    form.append('file', blob, fileName)
+    request = { method, body: form }
+  } else {
+    request = { method, body: blob, headers: { 'Content-Type': blob.type || 'image/jpeg' } }
+  }
+
+  await fetch(ticket.uploadUrl, request).then(response => {
     if (!response.ok) { throw new Error(`Cloudflare rejected the cover (${response.status})`) }
   })
 
