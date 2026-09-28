@@ -19,7 +19,10 @@ function mount (kind, record, { fail } = {}) {
     propsData: { kind },
     mocks: {
       $axios: { get },
-      $route: { params: { id: record ? record.id : 'missing' } }
+      $route: {
+        params: { id: record ? record.id : 'missing' },
+        path: `/${kind}/${record ? record.id : 'missing'}`
+      }
     },
     // Nuxt auto-registers these at runtime; the test runner does not.
     stubs: { NuxtLink: true, PublicHeader: true, PublicFooter: true, AppStoreLinks: true }
@@ -113,5 +116,37 @@ describe('the kinds that already had a page', () => {
     expect(wrapper.vm.playableUrl).toBe('https://pub.r2.dev/video/sermon.mp4')
     expect(wrapper.vm.audioUrl).toBe('https://pub.r2.dev/audio/sermon.mp3')
     expect(wrapper.text()).toContain('Rev Samuel Anarfi')
+  })
+})
+
+describe('opening the app from a shared page', () => {
+  const realAgent = navigator.userAgent
+  afterEach(() => {
+    Object.defineProperty(navigator, 'userAgent', { value: realAgent, configurable: true })
+  })
+
+  function asPhone (agent) {
+    Object.defineProperty(navigator, 'userAgent', { value: agent, configurable: true })
+  }
+
+  test('an Android phone is offered the app, on this record', async () => {
+    asPhone('Mozilla/5.0 (Linux; Android 14; SM-S928B) AppleWebKit/537.36 Chrome/120 Mobile')
+    const { wrapper } = mount('sermons', { id: 'abc', title: 'Strengthening the Hands' })
+    await wrapper.vm.$nextTick()
+
+    const link = wrapper.find('.pr__open')
+    expect(link.exists()).toBe(true)
+    // An intent link: the app when it is installed, and a fallback when not.
+    expect(link.attributes('href')).toMatch(
+      /^intent:\/\/cacitaifa\.com\/sermons\/abc#Intent;scheme=https;package=com\.cacitaifa\.caci_taifa;S\.browser_fallback_url=.+;end$/
+    )
+  })
+
+  test('anything else is not: an iPhone has Safari\'s own banner', async () => {
+    asPhone('Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 Safari/604.1')
+    const { wrapper } = mount('sermons', { id: 'abc', title: 'Strengthening the Hands' })
+    await wrapper.vm.$nextTick()
+
+    expect(wrapper.find('.pr__open').exists()).toBe(false)
   })
 })

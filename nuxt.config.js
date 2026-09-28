@@ -81,7 +81,12 @@ export default {
   // Rewrites the head for /sermons/:id, /videos/:id, /events/:id and
   // /shorts/:id so a shared link previews as that record rather than as the
   // site. Falls through untouched if the API cannot answer.
+  //
+  // app-links answers the two files a phone reads before it will open one of
+  // those links in the app instead of the browser. It comes first: both live
+  // under /.well-known, which the SPA would otherwise answer with its shell.
   serverMiddleware: [
+    '~/server-middleware/app-links.js',
     '~/server-middleware/share-meta.js'
   ],
 
