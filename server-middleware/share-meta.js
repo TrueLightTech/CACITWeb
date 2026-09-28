@@ -26,6 +26,13 @@ const SITE_URL = (process.env.SITE_URL || 'https://cacitaifa.com').replace(/\/+$
 const API_BASE_URL = (process.env.API_BASE_URL || 'https://cacitapi-production.up.railway.app/api/').replace(/\/+$/, '')
 const FALLBACK_IMAGE = `${SITE_URL}/og-image.jpg`
 
+/**
+ * The app's App Store id, for Safari's own "Open / Get" banner at the top of
+ * a shared page. It has to be in the HTML as it arrives — Safari does not
+ * look again once the page's scripts have run.
+ */
+const APP_STORE_ID = process.env.APP_STORE_ID || '6813027106'
+
 /** A crawler that waits is a crawler that gives up and shows nothing. */
 const API_TIMEOUT_MS = 2500
 
@@ -118,7 +125,9 @@ function buildTags (card) {
     ['name', 'twitter:card', card.hasOwnImage ? 'summary_large_image' : 'summary'],
     ['name', 'twitter:title', card.title],
     ['name', 'twitter:description', card.description],
-    ['name', 'twitter:image', card.image]
+    ['name', 'twitter:image', card.image],
+    // app-argument is this record's own address, which the app routes to.
+    ['name', 'apple-itunes-app', `app-id=${APP_STORE_ID}, app-argument=${card.url}`]
   ]
 
   // data-n-head/data-hid are vue-meta's own bookkeeping. Carrying them means
@@ -141,7 +150,8 @@ function buildTags (card) {
 function rewriteHead (html, card) {
   const keys = [
     'description', 'og:type', 'og:title', 'og:description', 'og:image',
-    'og:url', 'twitter:card', 'twitter:title', 'twitter:description', 'twitter:image'
+    'og:url', 'twitter:card', 'twitter:title', 'twitter:description', 'twitter:image',
+    'apple-itunes-app'
   ]
 
   let out = html.replace(/<title[^>]*>[\s\S]*?<\/title>/i, '')

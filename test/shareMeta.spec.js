@@ -134,6 +134,13 @@ describe('rewriting the served HTML', () => {
     expect(out).not.toContain('Christ Apostolic Church International"')
   })
 
+  it('carries Safari\'s app banner, pointing the app at this record', () => {
+    // Safari reads it from the HTML as served; it never looks again once
+    // the page's scripts have run.
+    expect(tag(html(), 'name', 'apple-itunes-app'))
+      .toBe('app-id=6813027106, app-argument=https://cacitaifa.com/sermons/s-1')
+  })
+
   it('keeps site-wide tags it does not own', () => {
     expect(html()).toContain('og:site_name')
   })

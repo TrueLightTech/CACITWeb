@@ -86,6 +86,14 @@
                   Sermons, videos, church life and giving — on your phone.
                 </p>
               </div>
+              <!--
+                Android only. On a phone with the app this opens it on this
+                record; without it, Google Play. iPhones are offered the same
+                by Safari's own banner, which the server adds to the page.
+              -->
+              <a v-if="isAndroid" class="pr__open" :href="openInAppUrl">
+                Open in the app
+              </a>
               <AppStoreLinks variant="light" />
             </div>
           </footer>
@@ -99,6 +107,9 @@
 
 <script>
 import { payload } from '../network/MobileApp'
+import { PLAY_STORE_URL, isAppLaunched } from '../resources/appLinks'
+
+const ANDROID_PACKAGE = 'com.cacitaifa.caci_taifa'
 
 const MONTHS = [
   'January', 'February', 'March', 'April', 'May', 'June',
@@ -127,7 +138,8 @@ export default {
     return {
       loading: true,
       error: '',
-      record: {}
+      record: {},
+      isAndroid: false
     }
   },
   head () {
@@ -148,6 +160,20 @@ export default {
     }
   },
   computed: {
+    /**
+     * An Android intent link: opens the app on this record when it is
+     * installed, and the fallback when it is not — Google Play once the app
+     * is out, and until then this same page, whose store badges explain.
+     * A plain link to this address would only reload the page: Android does
+     * not hand a link to an app when the browser is already on that site.
+     */
+    openInAppUrl () {
+      const path = (this.$route && this.$route.path) || '/'
+      const here = `https://cacitaifa.com${path}`
+      const fallback = isAppLaunched() ? PLAY_STORE_URL : here
+      return `intent://cacitaifa.com${path}#Intent;scheme=https;package=${ANDROID_PACKAGE};` +
+        `S.browser_fallback_url=${encodeURIComponent(fallback)};end`
+    },
     media () {
       // A short keeps its payload under `content`, and that payload is a
       // media item only for the kinds that play — a picture short's is a
@@ -215,6 +241,7 @@ export default {
     }
   },
   beforeMount () {
+    this.isAndroid = typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent || '')
     this.load()
   },
   methods: {
@@ -368,6 +395,26 @@ export default {
 .pr__audioel { width: 100%; }
 
 .pr__foot { margin-top: 40px; padding-top: 28px; border-top: 1px solid var(--pub-line); }
+
+.pr__open {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0 24px;
+  border-radius: 999px;
+  background: var(--ds-navy);
+  color: #fff;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.pr__open:hover,
+.pr__open:focus {
+  background: var(--ds-navy-hover);
+  color: #fff;
+  text-decoration: none;
+}
 
 .pr__app {
   display: flex;
