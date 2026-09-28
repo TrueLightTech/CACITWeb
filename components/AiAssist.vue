@@ -9,9 +9,30 @@
         Draft with AI
       </span>
       <p class="ds-help ai__lead">
-        Describe it in your own words. You get a filled form to check and edit —
-        nothing is published.
+        {{ leadText }}
       </p>
+    </div>
+
+    <!-- Quick action chips for Word for Today -->
+    <div v-if="resource === 'word'" class="ai__chips">
+      <button
+        type="button"
+        class="ai__chip ai__chip--primary"
+        :disabled="isDrafting"
+        @click="pickVerse('Pick an inspiring, uplifting Bible verse for today with an encouraging reflection')"
+      >
+        ✨ Pick a verse for me
+      </button>
+      <button
+        v-for="topic in wordTopics"
+        :key="topic.label"
+        type="button"
+        class="ai__chip"
+        :disabled="isDrafting"
+        @click="pickVerse(topic.prompt)"
+      >
+        {{ topic.label }}
+      </button>
     </div>
 
     <div class="ai__row">
@@ -29,11 +50,11 @@
       <button
         class="ds-btn ds-btn--secondary ai__go"
         type="button"
-        :disabled="!prompt.trim() || isDrafting"
+        :disabled="isDraftDisabled"
         @click="draft"
       >
         <span v-if="isDrafting" class="ds-btn__spinner"></span>
-        {{ isDrafting ? 'Drafting' : (hasContent ? 'Redraft' : 'Draft') }}
+        {{ buttonLabel }}
       </button>
     </div>
 
@@ -143,12 +164,39 @@ export default {
       error: '',
       note: '',
       searchQuery: '',
-      videos: []
+      videos: [],
+      wordTopics: [
+        { label: 'Peace & Comfort', prompt: 'Pick an inspiring Bible verse on peace and comfort with reflection' },
+        { label: 'Faith & Trust', prompt: 'Pick an inspiring Bible verse on faith and trusting God with reflection' },
+        { label: 'Strength & Courage', prompt: 'Pick an inspiring Bible verse on divine strength and courage with reflection' },
+        { label: 'Gratitude & Praise', prompt: 'Pick an inspiring Bible verse on gratitude, thanksgiving and praise with reflection' },
+        { label: 'Healing & Hope', prompt: 'Pick an inspiring Bible verse on God\'s healing and living hope with reflection' }
+      ]
     }
   },
   computed: {
     placeholder () {
+      if (this.resource === 'word') {
+        return 'Theme (e.g. Peace, Faith, Healing) or passage (e.g. Psalm 23), or leave blank to pick for today'
+      }
       return `Describe the ${this.noun} — a sentence is enough`
+    },
+    leadText () {
+      if (this.resource === 'word') {
+        return 'Let AI pick an inspiring verse, scripture quotation, and reflection for you — or describe a theme or passage below.'
+      }
+      return 'Describe it in your own words. You get a filled form to check and edit — nothing is published.'
+    },
+    isDraftDisabled () {
+      if (this.isDrafting) { return true }
+      if (this.resource === 'word') { return false }
+      return !this.prompt.trim()
+    },
+    buttonLabel () {
+      if (this.isDrafting) { return 'Drafting' }
+      if (this.hasContent) { return 'Redraft' }
+      if (this.resource === 'word' && !this.prompt.trim()) { return '✨ Pick verse with AI' }
+      return 'Draft'
     },
     youtubeSearchUrl () {
       return `https://www.youtube.com/results?search_query=${encodeURIComponent(this.searchQuery)}`
@@ -160,10 +208,23 @@ export default {
     })
   },
   methods: {
+    pickVerse (promptText) {
+      this.prompt = promptText
+      return this.draft()
+    },
     /** Returns the request, so a caller — or a test — can wait for it. */
     draft () {
-      const prompt = this.prompt.trim()
-      if (!prompt || this.isDrafting) { return Promise.resolve() }
+      let prompt = this.prompt.trim()
+      if (this.isDrafting) { return Promise.resolve() }
+
+      // For Word for Today, an empty prompt automatically requests AI to pick an inspiring verse for today
+      if (!prompt) {
+        if (this.resource === 'word') {
+          prompt = 'Pick an inspiring, uplifting Bible verse for today with an encouraging reflection'
+        } else {
+          return Promise.resolve()
+        }
+      }
 
       this.isDrafting = true
       this.error = ''
@@ -223,6 +284,51 @@ export default {
 }
 
 .ai__lead { margin: 0; flex: 1 1 260px; }
+
+.ai__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.ai__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--ds-text-xs, 12px);
+  padding: 5px 12px;
+  border-radius: 9999px;
+  border: 1px solid var(--ds-border);
+  background: var(--ds-surface);
+  color: var(--ds-text);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.ai__chip:hover:not(:disabled) {
+  border-color: var(--ds-primary, #1e40af);
+  color: var(--ds-primary, #1e40af);
+  background: var(--ds-surface-2);
+}
+
+.ai__chip--primary {
+  font-weight: 600;
+  border-color: var(--ds-primary, #1e40af);
+  color: var(--ds-primary, #1e40af);
+  background: rgba(30, 64, 175, 0.08);
+}
+
+.ai__chip--primary:hover:not(:disabled) {
+  background: rgba(30, 64, 175, 0.16);
+}
+
+.ai__chip:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
 
 .ai__row { display: flex; gap: 8px; align-items: flex-start; }
 .ai__prompt { flex: 1; resize: vertical; }
