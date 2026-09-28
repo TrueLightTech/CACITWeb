@@ -21,12 +21,14 @@ const APPLE_APP_ID = process.env.APPLE_APP_ID || 'G9G7Q2687F.com.cacitaifa.caciT
 const ANDROID_PACKAGE = process.env.ANDROID_PACKAGE || 'com.cacitaifa.caci_taifa'
 
 /**
- * The upload key the release bundle is signed with. Google re-signs what it
- * ships with its own app-signing key, so a phone that installed from Play
- * checks against *that* fingerprint: it goes in ANDROID_CERT_FINGERPRINTS
- * (comma-separated, from Play Console → App integrity), which can be set on
- * the server without a deploy.
+ * Google re-signs what Play ships with its own app-signing key, so a phone
+ * that installed from Play checks against that fingerprint (Play Console →
+ * App integrity → App signing). The upload key covers builds installed
+ * straight from the bundle. Fingerprints are public, so both are built in;
+ * ANDROID_CERT_FINGERPRINTS (comma-separated) adds more without a deploy.
  */
+const PLAY_SIGNING_FINGERPRINT =
+  '5E:62:08:36:AC:83:69:8D:D5:DB:4E:75:55:93:05:F5:47:C5:46:BB:E7:84:20:F3:F4:BC:4D:8E:EC:B3:77:7C'
 const UPLOAD_KEY_FINGERPRINT =
   '83:8B:16:18:9E:99:E5:1B:FB:27:29:35:AE:F0:F1:CA:28:E5:A6:29:71:DF:97:E1:12:79:E2:00:88:61:DB:AC'
 
@@ -37,7 +39,7 @@ function androidFingerprints (env = process.env) {
     .split(',')
     .map(value => value.trim().toUpperCase())
     .filter(Boolean)
-  return Array.from(new Set([UPLOAD_KEY_FINGERPRINT, ...extra]))
+  return Array.from(new Set([PLAY_SIGNING_FINGERPRINT, UPLOAD_KEY_FINGERPRINT, ...extra]))
 }
 
 function appleAppSiteAssociation () {
