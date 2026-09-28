@@ -140,7 +140,12 @@ export default {
   computed: {
     /** What a redraft should improve rather than replace. */
     aiCurrent () {
-      return { text: this.form.text, reference: this.form.reference, reflection: this.form.reflection }
+      return {
+        forDate: this.form.forDate,
+        text: this.form.text,
+        reference: this.form.reference,
+        reflection: this.form.reflection
+      }
     },
     today () {
       return new Date().toISOString().slice(0, 10)
@@ -164,10 +169,12 @@ export default {
      */
     applyDraft (fields) {
       const set = (key, value) => { if (value !== undefined && value !== null && value !== '') { this.$set(this.form, key, value) } }
-      set('forDate', fields.forDate)
+      if (!this.form.forDate && fields.forDate) {
+        set('forDate', fields.forDate)
+      }
       set('text', fields.text)
       set('reference', fields.reference)
-      set('translation', fields.translation)
+      set('translation', fields.translation || 'NIV')
       set('reflection', fields.reflection)
     },
     dayOf (value) {

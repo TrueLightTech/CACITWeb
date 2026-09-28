@@ -171,3 +171,73 @@ describe('video suggestions', () => {
     expect(wrapper.text()).toContain('Nothing could be confirmed')
   })
 })
+
+describe('Word for Today verse drafting', () => {
+  const wordDraft = {
+    fields: {
+      text: 'For I know the plans I have for you, declares the Lord.',
+      reference: 'Jeremiah 29:11',
+      translation: 'NIV',
+      reflection: 'God has a purposeful plan for your life and your future.'
+    }
+  }
+
+  it('automatically drafts a verse when prompt is empty for word', async () => {
+    const { wrapper, post } = mount({
+      props: { resource: 'word', noun: 'verse and reflection' },
+      draft: wordDraft
+    })
+    await settle(wrapper)
+
+    expect(wrapper.vm.isDraftDisabled).toBe(false)
+    expect(wrapper.vm.buttonLabel).toBe('✨ Pick verse with AI')
+
+    await wrapper.vm.draft()
+
+    expect(post).toHaveBeenCalledWith('admin/ai/draft', {
+      resource: 'word',
+      prompt: 'Pick an inspiring, uplifting Bible verse for today with an encouraging reflection',
+      current: {}
+    })
+    expect(wrapper.emitted().apply.pop()).toEqual([wordDraft.fields])
+  })
+
+  it('provides quick topic chips for word drafting', async () => {
+    const { wrapper, post } = mount({
+      props: { resource: 'word', noun: 'verse and reflection' },
+      draft: wordDraft
+    })
+    await settle(wrapper)
+
+    const chips = wrapper.findAll('.ai__chip')
+    expect(chips.length).toBeGreaterThanOrEqual(5)
+    expect(chips.at(0).text()).toContain('Pick a verse for me')
+
+    await chips.at(0).trigger('click')
+
+    expect(post).toHaveBeenCalledWith('admin/ai/draft', expect.objectContaining({
+      resource: 'word',
+      prompt: expect.stringContaining('Pick an inspiring, uplifting Bible verse')
+    }))
+  })
+
+  it('drafts with specific topic when theme chip is clicked', async () => {
+    const { wrapper, post } = mount({
+      props: { resource: 'word', noun: 'verse and reflection' },
+      draft: wordDraft
+    })
+    await settle(wrapper)
+
+    const chips = wrapper.findAll('.ai__chip')
+    const peaceChip = chips.wrappers.find(c => c.text().includes('Peace & Comfort'))
+    expect(peaceChip).toBeDefined()
+
+    await peaceChip.trigger('click')
+
+    expect(post).toHaveBeenCalledWith('admin/ai/draft', expect.objectContaining({
+      resource: 'word',
+      prompt: expect.stringContaining('peace and comfort')
+    }))
+  })
+})
+
