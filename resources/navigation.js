@@ -93,14 +93,17 @@ export const navigation = [
       { label: 'Sermons', to: '/admin/app/sermons', icon: 'sermon', roles: MANAGER_ONLY },
       { label: 'Shorts', to: '/admin/app/shorts', icon: 'shorts', roles: MANAGER_ONLY },
       { label: 'Events', to: '/admin/app/events', icon: 'calendar', roles: MANAGER_ONLY },
+      { label: 'Event Questions', to: '/admin/app/questions', icon: 'question', roles: MANAGER_ONLY },
       { label: 'Videos', to: '/admin/app/videos', icon: 'video', roles: MANAGER_ONLY },
       { label: 'Hymnal (Dwom)', to: '/admin/app/hymns', icon: 'hymn', roles: MANAGER_ONLY },
       { label: 'Word for Today', to: '/admin/app/word', icon: 'verse', roles: MANAGER_ONLY },
       { label: 'Live Service', to: '/admin/app/live', icon: 'live', roles: [ROLE_CHURCH_MANAGER] },
       // Pastoral only — see the role note above.
       { label: 'Comments', to: '/admin/app/comments', icon: 'comment', roles: MANAGER_ONLY },
+      { label: 'Reported Posts', to: '/admin/app/reported', icon: 'flag', roles: MANAGER_ONLY },
       { label: 'Requests', to: '/admin/app/requests', icon: 'support', roles: PASTORAL },
-      { label: 'Push Messages', to: '/admin/app/push', icon: 'push', roles: [ROLE_CHURCH_MANAGER] }
+      { label: 'Push Messages', to: '/admin/app/push', icon: 'push', roles: [ROLE_CHURCH_MANAGER] },
+      { label: 'App Updates', to: '/admin/app/release', icon: 'update', roles: [ROLE_CHURCH_MANAGER] }
     ]
   },
   {

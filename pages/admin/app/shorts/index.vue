@@ -1,4 +1,5 @@
 <template>
+  <div>
   <ContentTable
     title="Shorts"
     description="The vertical feed. A short is any short thing — a clip, a voice note, a flyer, slides, an event or a verse."
@@ -10,15 +11,18 @@
     empty-hint="Shorts appear in the app's feed, newest first, with pinned ones at the top."
     :columns="columns"
   />
+  <PinnedShortsOrder />
+  </div>
 </template>
 
 <script>
 import ContentTable from '../../../../components/ContentTable'
+import PinnedShortsOrder from '../../../../components/PinnedShortsOrder'
 import { SHORT_KINDS } from '../../../../network/MobileApp'
 
 export default {
   name: 'AdminAppShorts',
-  components: { ContentTable },
+  components: { ContentTable, PinnedShortsOrder },
   computed: {
     columns () {
       const labels = SHORT_KINDS.reduce((map, kind) => {

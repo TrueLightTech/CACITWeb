@@ -6,7 +6,49 @@
         <p>Served from here, not bundled with the app — a correction reaches members without an app release.</p>
       </div>
       <div class="ds-page-head__actions">
+        <button class="ds-btn ds-btn--secondary" type="button" @click="showImport = !showImport">Import</button>
         <NuxtLink class="ds-btn ds-btn--primary" to="/admin/app/hymns/new">Add hymn</NuxtLink>
+      </div>
+    </div>
+
+    <!--
+      Loads a whole hymnal file at once — the caci_dwom.json the app was built
+      with, whose "data" list holds one { title, body, footer } per hymn. The
+      server splits each body into verses and a chorus.
+    -->
+    <div v-if="showImport" class="ds-card" style="margin-bottom:20px">
+      <div class="ds-card__head"><h2 class="ds-h3">Import hymns from a file</h2></div>
+      <div class="ds-card__body hy__import">
+        <p class="ds-help" style="margin:0">
+          Choose a Dwom JSON file (the app's <code>caci_dwom.json</code>). Each hymn is matched on its number.
+        </p>
+        <input ref="importFile" class="ds-input" type="file" accept=".json,application/json" @change="readImport">
+        <p v-if="importError" class="ds-error">{{ importError }}</p>
+        <p v-if="importEntries.length" class="ds-meta">{{ importEntries.length }} hymns found in {{ importName }}.</p>
+
+        <label class="ds-check" :class="{ 'is-checked': overwrite }">
+          <input v-model="overwrite" type="checkbox">
+          Replace hymns that are already here
+        </label>
+        <p class="ds-help" style="margin:0">
+          Leave this off to add only new hymns — corrections made here are then never undone by an import.
+        </p>
+
+        <div v-if="importResult" class="ds-alert ds-alert--success">
+          <div class="ds-alert__body">
+            <b>Imported.</b> {{ importResult.added }} added, {{ importResult.updated }} updated,
+            {{ importResult.unchanged }} unchanged<span v-if="importResult.skipped">, {{ importResult.skipped }} skipped</span>.
+            <span v-if="importResult.skippedTitles && importResult.skippedTitles.length">
+              Skipped (no hymn number): {{ importResult.skippedTitles.slice(0, 8).join(', ') }}<span v-if="importResult.skippedTitles.length > 8">…</span>
+            </span>
+          </div>
+        </div>
+
+        <div class="ds-formactions" style="margin-top:0">
+          <button class="ds-btn ds-btn--primary" type="button" :disabled="!importEntries.length || isImporting" @click="runImport">
+            {{ isImporting ? 'Importing…' : `Import ${importEntries.length || ''} hymns` }}
+          </button>
+        </div>
       </div>
     </div>
 
@@ -115,7 +157,14 @@ export default {
       paging: { page: 1, totalPages: 0, totalCount: 0 },
       isLoading: false,
       query: '',
-      searchTimer: null
+      searchTimer: null,
+      showImport: false,
+      importEntries: [],
+      importName: '',
+      importError: '',
+      importResult: null,
+      overwrite: false,
+      isImporting: false
     }
   },
   computed: {
@@ -141,6 +190,50 @@ export default {
       this.query = ''
       this.load(1)
     },
+    readImport (event) {
+      const file = event.target.files && event.target.files[0]
+      this.importEntries = []
+      this.importError = ''
+      this.importResult = null
+      if (!file) { return }
+      this.importName = file.name
+
+      const reader = new FileReader()
+      reader.onload = () => {
+        try {
+          const parsed = JSON.parse(reader.result)
+          const list = Array.isArray(parsed) ? parsed : (parsed && (parsed.data || parsed.Data)) || []
+          const entries = list
+            .filter(entry => entry && (entry.title || entry.Title))
+            .map(entry => ({
+              title: entry.title || entry.Title,
+              body: entry.body || entry.Body || '',
+              footer: entry.footer || entry.Footer || null
+            }))
+          if (!entries.length) {
+            this.importError = 'No hymns were found in that file. It needs a list of { title, body } under "data".'
+          }
+          this.importEntries = entries
+        } catch (e) {
+          this.importError = 'That file is not valid JSON.'
+        }
+      }
+      reader.onerror = () => { this.importError = 'That file could not be read.' }
+      reader.readAsText(file)
+    },
+    runImport () {
+      this.isImporting = true
+      this.importResult = null
+      this.$axios.post('admin/hymns/import', { data: this.importEntries, overwrite: this.overwrite }).then(response => {
+        this.isImporting = false
+        this.importResult = (response.data && response.data.data) || {}
+        this.$toast.success('Hymnal imported')
+        this.load(1)
+      }).catch(error => {
+        this.isImporting = false
+        this.$toast.error(errorMessage(error, 'Could not import those hymns.'))
+      })
+    },
     load (page = 1) {
       this.isLoading = true
 
@@ -162,6 +255,7 @@ export default {
 </script>
 
 <style scoped>
+.hy__import { display: grid; gap: 12px; }
 .hy__title { font-weight: 500; color: inherit; text-decoration: none; overflow-wrap: anywhere; }
 .hy__title:hover { text-decoration: underline; }
 .hy__en { display: block; font-size: var(--ds-text-sm); color: var(--ds-text-muted); margin-top: 2px; }

@@ -86,7 +86,10 @@
               <span class="wd__ref">{{ entry.reference }}</span>
               <span class="wd__text">{{ entry.text }}</span>
             </div>
-            <button class="ds-btn ds-btn--ghost ds-btn--sm" type="button" @click="edit(entry)">Edit</button>
+            <span class="wd__entryactions">
+              <button class="ds-btn ds-btn--ghost ds-btn--sm" type="button" @click="edit(entry)">Edit</button>
+              <button class="ds-btn ds-btn--danger-quiet ds-btn--sm" type="button" @click="removing = entry">Remove</button>
+            </span>
           </li>
         </ul>
 
@@ -96,15 +99,26 @@
         </div>
       </section>
     </div>
+
+    <ConfirmDialog
+      :open="!!removing"
+      :busy="isRemoving"
+      title="Remove this verse?"
+      :message="removing ? `${removing.reference} will no longer be shown on ${$moment(removing.forDate).format('D MMMM')}. Members see the most recent earlier verse instead.` : ''"
+      confirm-label="Remove"
+      @cancel="removing = null"
+      @confirm="remove"
+    />
   </div>
 </template>
 
 <script>
 import { rowsOf, errorMessage } from '../../../network/MobileApp'
 import AiAssist from '../../../components/AiAssist'
+import ConfirmDialog from '../../../components/ConfirmDialog'
 
 export default {
-  components: { AiAssist },
+  components: { AiAssist, ConfirmDialog },
   name: 'AdminAppWordForToday',
   data () {
     return {
@@ -112,6 +126,8 @@ export default {
       isLoading: false,
       isSaving: false,
       showErrors: false,
+      removing: null,
+      isRemoving: false,
       form: {
         forDate: '',
         text: '',
@@ -174,6 +190,21 @@ export default {
       this.form = { forDate: this.today, text: '', reference: '', translation: '', reflection: '' }
       this.showErrors = false
     },
+    remove () {
+      const entry = this.removing
+      if (!entry) { return }
+      this.isRemoving = true
+      this.$axios.delete(`admin/word-for-today/${entry.id}`).then(() => {
+        this.isRemoving = false
+        this.removing = null
+        this.$toast.success('Verse removed')
+        this.load()
+      }).catch(error => {
+        this.isRemoving = false
+        this.removing = null
+        this.$toast.error(errorMessage(error, 'Could not remove that verse.'))
+      })
+    },
     load () {
       this.isLoading = true
 
@@ -216,6 +247,7 @@ export default {
 </script>
 
 <style scoped>
+.wd__entryactions { display: flex; gap: 4px; flex-shrink: 0; }
 .wd__layout { display: grid; grid-template-columns: minmax(0, 420px) minmax(0, 1fr); gap: 20px; align-items: start; }
 @media (max-width: 900px) { .wd__layout { grid-template-columns: 1fr; } }
 
