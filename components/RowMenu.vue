@@ -16,7 +16,7 @@
       </svg>
     </button>
 
-    <div v-if="open" class="ds-menu__panel" :class="{ 'ds-menu__panel--up': dropUp }" role="menu">
+    <div v-if="open" class="ds-menu__panel" :style="panelStyle" role="menu">
       <slot :close="close" />
     </div>
   </div>
@@ -30,6 +30,11 @@
  * container and stayed open when the route changed. This one closes on outside
  * click, Escape and navigation, and flips upward near the bottom of the
  * viewport so the last rows of a table are still usable.
+ *
+ * The panel is placed against the viewport, not the row: the table wrapper
+ * clips what overflows it, so on a table of one or two rows a panel hung off
+ * the row was cut off with only its top edge showing. Being fixed, it would
+ * drift from its button when the page moves, so scrolling or resizing closes it.
  */
 export default {
   name: 'RowMenu',
@@ -39,7 +44,7 @@ export default {
   data () {
     return {
       open: false,
-      dropUp: false
+      panelStyle: {}
     }
   },
   watch: {
@@ -50,10 +55,14 @@ export default {
   mounted () {
     document.addEventListener('click', this.onDocumentClick, true)
     document.addEventListener('keydown', this.onKeydown)
+    window.addEventListener('scroll', this.close, true)
+    window.addEventListener('resize', this.close)
   },
   beforeDestroy () {
     document.removeEventListener('click', this.onDocumentClick, true)
     document.removeEventListener('keydown', this.onKeydown)
+    window.removeEventListener('scroll', this.close, true)
+    window.removeEventListener('resize', this.close)
   },
   methods: {
     toggle () {
@@ -62,7 +71,14 @@ export default {
         return
       }
       const box = this.$refs.trigger.getBoundingClientRect()
-      this.dropUp = (window.innerHeight - box.bottom) < 240
+      const dropUp = (window.innerHeight - box.bottom) < 240
+      this.panelStyle = {
+        position: 'fixed',
+        right: `${Math.max(8, window.innerWidth - box.right)}px`,
+        top: dropUp ? 'auto' : `${box.bottom + 4}px`,
+        bottom: dropUp ? `${window.innerHeight - box.top + 4}px` : 'auto',
+        zIndex: 60
+      }
       this.open = true
     },
     close () {
