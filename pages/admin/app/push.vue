@@ -107,8 +107,9 @@
               </option>
             </select>
             <span class="ds-help">
-              What the app shows when a member taps the message. Left as it is,
-              they land on the home screen.
+              What the app shows when a member taps the message.<template
+                v-if="!form.linkKind"
+              > Left as it is, they land on the home screen.</template>
             </span>
           </div>
 
