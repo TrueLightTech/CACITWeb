@@ -82,7 +82,7 @@
             <span class="ds-help">Family groups are the only segment for now.</span>
           </div>
 
-          <div class="ds-field" style="margin-bottom:0">
+          <div class="ds-field">
             <label class="ds-label" for="pushCategory">Category</label>
             <select id="pushCategory" v-model="form.category" class="ds-select">
               <option value="general">General</option>
@@ -92,6 +92,52 @@
               <option value="live">Live service</option>
             </select>
             <span class="ds-help">Groups it in the member's notification list.</span>
+          </div>
+
+          <div class="ds-field" :class="{ 'ph__field--last': !destinationNeedsItem }">
+            <label class="ds-label" for="pushOpens">Where it opens</label>
+            <select
+              id="pushOpens"
+              v-model="form.linkKind"
+              class="ds-select"
+              @change="onDestinationChanged"
+            >
+              <option v-for="option in destinations" :key="option.kind" :value="option.kind">
+                {{ option.label }}
+              </option>
+            </select>
+            <span class="ds-help">
+              What the app shows when a member taps the message.<template
+                v-if="!form.linkKind"
+              > Left as it is, they land on the home screen.</template>
+            </span>
+          </div>
+
+          <div
+            v-if="destinationNeedsItem"
+            class="ds-field ph__field--last"
+            :class="{ 'is-invalid': showErrors && destinationIncomplete }"
+          >
+            <label class="ds-label" for="pushOpensItem">Which one</label>
+            <select
+              id="pushOpensItem"
+              v-model="form.linkId"
+              class="ds-select"
+              :disabled="isLoadingDestination"
+            >
+              <option value="">{{ isLoadingDestination ? 'Loading…' : 'Choose one' }}</option>
+              <option v-for="item in destinationItems" :key="item.id" :value="item.id">
+                {{ item.title || 'Untitled' }}
+              </option>
+            </select>
+            <span v-if="showErrors && destinationIncomplete" class="ds-error">
+              Choose which {{ destinationNoun }} it opens.
+            </span>
+            <span v-else-if="!isLoadingDestination && !destinationItems.length" class="ds-help">
+              Nothing to choose yet — publish {{ destinationNoun === 'announcement' ? 'an' : 'a' }}
+              {{ destinationNoun }} first.
+            </span>
+            <span v-else class="ds-help">The thirty most recent.</span>
           </div>
         </div>
 
@@ -280,7 +326,8 @@
 <script>
 import ConfirmDialog from '../../../components/ConfirmDialog'
 import AiAssist from '../../../components/AiAssist'
-import { payload, errorMessage } from '../../../network/MobileApp'
+import { payload, rowsOf, errorMessage } from '../../../network/MobileApp'
+import { PUSH_DESTINATIONS, destinationFor, deepLinkFor } from '../../../resources/appDestinations'
 
 export default {
   name: 'AdminAppPush',
@@ -298,8 +345,12 @@ export default {
         title: '',
         body: '',
         category: 'general',
-        audienceFamilyId: ''
+        audienceFamilyId: '',
+        linkKind: '',
+        linkId: ''
       },
+      destinationItems: [],
+      isLoadingDestination: false,
       // Broadcast history
       historyItems: [],
       historyTotal: 0,
@@ -319,11 +370,42 @@ export default {
     aiCurrent () {
       return { title: this.form.title, body: this.form.body }
     },
+    destinations () {
+      return PUSH_DESTINATIONS
+    },
+    selectedDestination () {
+      return destinationFor(this.form.linkKind)
+    },
+    destinationNeedsItem () {
+      return !!(this.selectedDestination && this.selectedDestination.endpoint)
+    },
+    destinationNoun () {
+      return (this.selectedDestination && this.selectedDestination.noun) || 'one'
+    },
+    deepLink () {
+      return deepLinkFor(this.form.linkKind, this.form.linkId)
+    },
+    /** A kind was chosen but nothing picked, so the link would point nowhere. */
+    destinationIncomplete () {
+      return this.destinationNeedsItem && !this.deepLink
+    },
+    /** What the destination is called, for the sentence before sending. */
+    destinationLabel () {
+      if (!this.deepLink) { return '' }
+      if (!this.destinationNeedsItem) { return 'the live service' }
+      const chosen = this.destinationItems.find(item => item.id === this.form.linkId)
+      return chosen && chosen.title ? `"${chosen.title}"` : `that ${this.destinationNoun}`
+    },
     confirmMessage () {
       const count = this.audience.memberCount
       const where = this.audience.audienceLabel || 'the whole congregation'
       const people = count === 1 ? '1 member' : `${count} members`
-      return `"${this.form.title}" goes to ${people} in ${where}. A push cannot be taken back once it is sent.`
+      // Said out loud before sending, because it is the one part of the
+      // message nobody can see on the phone preview.
+      const opens = this.destinationLabel
+        ? ` Tapping it opens ${this.destinationLabel}.`
+        : ' Tapping it opens the home screen.'
+      return `"${this.form.title}" goes to ${people} in ${where}.${opens} A push cannot be taken back once it is sent.`
     }
   },
   beforeMount () {
@@ -337,6 +419,34 @@ export default {
       set('title', fields.title)
       set('body', fields.body)
       set('category', fields.category)
+    },
+    onDestinationChanged () {
+      this.form.linkId = ''
+      this.destinationItems = []
+      if (this.destinationNeedsItem) { this.loadDestinationItems() }
+    },
+    /**
+     * The recent sermons, events or announcements to choose between.
+     *
+     * Fetched when the kind is chosen rather than on page load: most
+     * messages point nowhere, and three list calls for every visit to this
+     * page would be three the office waits for and does not use.
+     */
+    loadDestinationItems () {
+      const destination = this.selectedDestination
+      if (!destination || !destination.endpoint) { return }
+
+      this.isLoadingDestination = true
+      this.$axios.get(destination.endpoint, { params: { Page: 1, PageSize: 30 } })
+        .then(response => {
+          this.destinationItems = rowsOf(response)
+          this.isLoadingDestination = false
+        })
+        .catch(error => {
+          this.destinationItems = []
+          this.isLoadingDestination = false
+          this.$toast.error(errorMessage(error, `Could not load ${destination.noun}s.`))
+        })
     },
     loadFamilies () {
       this.$axios.get('churchfamilies')
@@ -377,7 +487,7 @@ export default {
       return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
     },
     review () {
-      if (!this.form.title || !this.form.body) {
+      if (!this.form.title || !this.form.body || this.destinationIncomplete) {
         this.showErrors = true
         return
       }
@@ -391,7 +501,8 @@ export default {
         title: this.form.title.trim(),
         body: this.form.body.trim(),
         category: this.form.category,
-        audienceFamilyId: this.form.audienceFamilyId || null
+        audienceFamilyId: this.form.audienceFamilyId || null,
+        deepLink: this.deepLink
       }).then(response => {
         const result = payload(response) || {}
         this.isSending = false
@@ -399,6 +510,9 @@ export default {
         this.$toast.success(`Sent to ${result.membersNotified || 0} members`)
         this.form.title = ''
         this.form.body = ''
+        this.form.linkKind = ''
+        this.form.linkId = ''
+        this.destinationItems = []
         this.loadHistory()
       }).catch(error => {
         this.isSending = false
@@ -439,6 +553,10 @@ export default {
 </script>
 
 <style scoped>
+/* The field a card ends on, so the form does not sit on a double gap above
+   the Send button. Which field that is changes with the destination. */
+.ph__field--last { margin-bottom: 0; }
+
 .ph__tabs {
   display: flex;
   gap: 8px;
