@@ -107,6 +107,10 @@ export default {
         this.fit(points)
         this.fitted = true
       }
+
+      // A phone chosen before the pins existed (from the phones list, while
+      // the map was still loading) is opened once they do.
+      if (this.focus) { this.open(this.focus) }
     },
     fit (points) {
       if (points.length === 1) {
@@ -131,6 +135,7 @@ export default {
         : ''
       const device = [row.deviceModel || row.platform, row.manufacturer].filter(Boolean).map(esc).join(' · ')
       const battery = row.batteryPercent != null ? ` · battery ${esc(row.batteryPercent)}%` : ''
+      const zone = { on_site: 'At church', nearby: 'Near church', away: 'Not at church' }[row.zone] || ''
       const directions = `https://www.google.com/maps/search/?api=1&query=${row.latitude},${row.longitude}`
 
       return `<div class="locmap__popup">
@@ -138,7 +143,7 @@ export default {
         ${phone}
         <span>${device}${battery}</span><br>
         <span>Seen ${esc(this.ago(row.minutesAgo))}${row.accuracyMeters ? ` · ±${Math.round(row.accuracyMeters)} m` : ''}</span><br>
-        <span>${esc(this.distance(row.distanceFromChurchMeters))} from church</span><br>
+        <span>${zone ? `<strong>${zone}</strong> · ` : ''}${esc(this.distance(row.distanceFromChurchMeters))} from church</span><br>
         <a href="${directions}" target="_blank" rel="noopener">Open in Google Maps</a>
       </div>`
     },

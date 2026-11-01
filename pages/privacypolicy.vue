@@ -113,19 +113,26 @@
               our server, not the app, that works out whether you are at church.
             </li>
             <li>
-              If your phone is <strong>more than about 500 metres from the church</strong>, the location is
-              discarded as soon as it arrives. It is not stored or logged, and nobody at the church can see it.
+              We keep <strong>your phone&rsquo;s latest location, wherever you are</strong> (with its time,
+              accuracy, and your phone&rsquo;s make and model). Each update replaces the last; we do not keep a history
+              of where you have been. It is <strong>deleted immediately</strong> when you turn the setting off, and
+              automatically if your phone has not sent an update for 7 days.
             </li>
             <li>
-              If it is at or near the church, our server keeps only <strong>how far your phone was from the
-              church</strong>, not its coordinates, together with the date and the times it was first and last seen,
-              your install ID, and your phone&rsquo;s make and model.
+              For each day, we also keep whether your phone was on the church premises, nearby (within about 500
+              metres) or away, how far it came from the church, the times it was first and last seen, your install
+              ID, and your phone&rsquo;s make and model.
             </li>
             <li>
               If you are signed in, you are recorded as present at church that day, under your name. If you are not
               signed in, your phone is counted without a name.
             </li>
-            <li>Who can see it: the church manager, and, for members of their own church family, a family manager.</li>
+            <li>
+              Who can see it: attendance — the church manager, and, for members of their own church family, a family
+              manager. Your phone&rsquo;s latest location — only church staff given permission to see the location
+              map (by default the church manager); <strong>every time the map is opened, the name of the person who
+              opened it is recorded.</strong>
+            </li>
           </ul>
 
           <h3>b) &ldquo;Share my location with the church&rdquo; — emergencies</h3>
@@ -140,10 +147,13 @@
             </li>
             <li>
               It is <strong>deleted immediately</strong> when you turn the setting off, and automatically if your phone
-              has not sent an update for 7 days.
+              has not sent an update for 7 days. Both location settings keep the same &ldquo;latest location&rdquo;:
+              while &ldquo;Count me at church&rdquo; is still on, your phone&rsquo;s latest location continues to be
+              kept as described in (a).
             </li>
             <li>
-              Who can see it: the church manager only, on a map in the church office console. If you are signed in,
+              Who can see it: only church staff given permission to see the location map (by default the church
+              manager), in the church office console. If you are signed in,
               it shows your name and mobile number; otherwise it shows only the phone&rsquo;s make and model.
               <strong>Every time the map is opened, the name of the person who opened it is recorded.</strong>
             </li>
@@ -204,7 +214,7 @@
           <h2>8. How long we keep it</h2>
           <ul>
             <li><strong>Account, membership form, posts, comments, requests and app activity</strong>: until you delete your account.</li>
-            <li><strong>Emergency location</strong>: only the latest, deleted when you turn sharing off or after 7 days without an update.</li>
+            <li><strong>Latest location</strong> (from either location setting): only the latest, deleted when you turn the setting off or after 7 days without an update.</li>
             <li><strong>Attendance records</strong>: until you delete your account. Phones counted without a name are kept as anonymous counts.</li>
             <li><strong>Giving records</strong>: kept as the church&rsquo;s financial records, as required for accounting and audit. If you delete your account, your name is removed from them and they show as &ldquo;Deleted member&rdquo;.</li>
             <li><strong>Server logs</strong>: kept briefly for security and troubleshooting.</li>
