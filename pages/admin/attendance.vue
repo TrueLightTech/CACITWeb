@@ -9,12 +9,14 @@
           automatically by the mobile app — one entry per member per day.
         </p>
         <p v-else-if="view === 'devices'">
-          Every phone with the app that came on or near the church premises,
-          whether or not anybody was signed in — one entry per phone per day.
+          Every phone with a location setting on that reported in, signed in or
+          not — on the premises, nearby, or away — one entry per phone per day,
+          with where it is now.
         </p>
         <p v-else>
-          Where each phone last was, for finding people in an emergency. Only
-          phones whose owners turned on location sharing in the app appear here.
+          Where each phone last was, and whether that is at church. Phones appear
+          here when their owners turn on &ldquo;Count me at church&rdquo; or
+          &ldquo;Share my location with the church&rdquo; in the app.
         </p>
       </div>
     </div>
@@ -106,7 +108,7 @@
       <div v-else-if="!mapData.locations.length" class="ds-card">
         <div class="ds-empty">
           <h3 class="ds-h3">No shared locations</h3>
-          <p>No phone has shared its location{{ mapWithin ? ' in this time' : '' }}. Phones appear once their owners turn on location sharing in the app.</p>
+          <p>No phone has reported its location{{ mapWithin ? ' in this time' : '' }}. Phones appear once their owners turn on a location setting in the app.</p>
         </div>
       </div>
 
@@ -117,7 +119,7 @@
               <th>Person</th>
               <th>Phone</th>
               <th>Last seen</th>
-              <th>From church</th>
+              <th>Where</th>
               <th>Battery</th>
               <th class="ds-col-action"></th>
             </tr>
@@ -138,7 +140,10 @@
                 <span class="ds-meta">{{ phoneDetail(row) }}</span>
               </td>
               <td data-label="Last seen">{{ ago(row.minutesAgo) }}</td>
-              <td data-label="From church">{{ km(row.distanceFromChurchMeters) }}</td>
+              <td data-label="Where">
+                <span :class="zoneClass(row.zone)"><span class="ds-status__dot"></span>{{ zoneLabel(row.zone) }}</span>
+                <span class="ds-meta" style="display:block">{{ km(row.distanceFromChurchMeters) }} from church</span>
+              </td>
               <td data-label="Battery">{{ row.batteryPercent != null ? row.batteryPercent + '%' : '—' }}</td>
               <td class="ds-col-action">
                 <button class="ds-btn ds-btn--secondary ds-btn--sm" type="button" @click="showOnMap(row)">Show on map</button>
@@ -200,6 +205,11 @@
           <strong class="ds-metric__value">{{ devices.nearby }}</strong>
           <span class="ds-metric__foot">Within {{ nearbyLabel }} but never on the premises</span>
         </div>
+        <div class="ds-metric">
+          <span class="ds-metric__label"><span class="ds-eyebrow">Away</span></span>
+          <strong class="ds-metric__value">{{ devices.away || 0 }}</strong>
+          <span class="ds-metric__foot">Reported today, but never within {{ nearbyLabel }}</span>
+        </div>
       </div>
 
       <div class="ds-toolbar">
@@ -222,9 +232,10 @@
           <div class="ds-field" style="margin-bottom:0">
             <label class="ds-label" for="attZone">Where</label>
             <select id="attZone" v-model="zone" class="ds-select" @change="load(1)">
-              <option value="">On site and nearby</option>
+              <option value="">Everywhere</option>
               <option value="on_site">On the premises</option>
               <option value="nearby">Nearby only</option>
+              <option value="away">Away</option>
             </select>
           </div>
           <div class="ds-field" style="margin-bottom:0">
@@ -310,7 +321,8 @@
               <th class="ds-col-num">#</th>
               <th>Phone</th>
               <th>Signed in as</th>
-              <th>Where</th>
+              <th>Closest today</th>
+              <th>Now</th>
               <th>Arrived</th>
               <th>Last seen</th>
               <th>Time on site</th>
@@ -329,13 +341,26 @@
                 </NuxtLink>
                 <span v-else class="ds-badge ds-badge--neutral">Not signed in</span>
               </td>
-              <td data-label="Where">
-                <span v-if="row.zone === 'on_site'" class="ds-status ds-status--success">
-                  <span class="ds-status__dot"></span>On site
-                </span>
-                <span v-else class="ds-status ds-status--neutral">
-                  <span class="ds-status__dot"></span>Nearby · {{ row.closestDistanceMeters }} m
-                </span>
+              <td data-label="Closest today">
+                <span :class="zoneClass(row.zone)"><span class="ds-status__dot"></span>{{ zoneLabel(row.zone) }}</span>
+                <span v-if="row.zone !== 'on_site'" class="ds-meta" style="display:block">{{ km(row.closestDistanceMeters) }}</span>
+              </td>
+              <td data-label="Now">
+                <template v-if="row.latestZone">
+                  <span :class="zoneClass(row.latestZone)"><span class="ds-status__dot"></span>{{ zoneLabel(row.latestZone) }}</span>
+                  <span class="ds-meta" style="display:block">
+                    {{ km(row.latestDistanceMeters) }} · {{ sinceLabel(row.latestSeenAt) }}
+                  </span>
+                  <button
+                    v-if="canSeeMap"
+                    class="att__maplink"
+                    type="button"
+                    @click="openOnMap(row.deviceId)"
+                  >
+                    Show on map
+                  </button>
+                </template>
+                <span v-else class="ds-meta">—</span>
               </td>
               <td data-label="Arrived">{{ row.arrivedAt ? time(row.arrivedAt) : '—' }}</td>
               <td data-label="Last seen">{{ time(row.lastSeenAt) }}</td>
@@ -369,8 +394,8 @@ import { payload, errorMessage } from '../../network/MobileApp'
  * of the app that came on or near the premises, signed in or not — its own
  * permission, since a visitor's phone belongs to no family.
  *
- * Emergency map shows where phones whose owners chose to share their
- * location last were. It is its own tab, loaded only when opened, because
+ * Emergency map shows where every phone with a location setting on last
+ * was, and whether that is at church. It is its own tab, loaded only when opened, because
  * every load is written to the audit log against whoever opened it.
  */
 export default {
@@ -409,6 +434,7 @@ export default {
       mapWho: '',
       mapSearch: '',
       mapFocus: '',
+      pendingFocus: '',
       mapTimer: null
     }
   },
@@ -506,6 +532,24 @@ export default {
       if (meters == null) { return '—' }
       return meters >= 1000 ? `${(meters / 1000).toFixed(1)} km` : `${Math.round(meters)} m`
     },
+    zoneLabel (zone) {
+      return { on_site: 'On site', nearby: 'Nearby', away: 'Away' }[zone] || '—'
+    },
+    zoneClass (zone) {
+      const tone = { on_site: 'success', nearby: 'warning', away: 'neutral' }[zone] || 'neutral'
+      return `ds-status ds-status--${tone}`
+    },
+    sinceLabel (value) {
+      if (!value) { return '' }
+      return this.ago(Math.max(0, Math.round((Date.now() - new Date(value).getTime()) / 60000))).toLowerCase()
+    },
+    /** From the phones list: open the (audited) map on this phone. */
+    openOnMap (deviceId) {
+      this.mapWithin = ''
+      this.pendingFocus = deviceId
+      this.switchView('map')
+      window.scrollTo({ top: 0 })
+    },
     showOnMap (row) {
       // Cleared first so choosing the same phone twice still re-centres.
       this.mapFocus = ''
@@ -533,6 +577,11 @@ export default {
         this.mapData = Object.assign({ enabled: true, retentionDays: 7, locations: [] }, data)
         this.mapLoaded = true
         this.mapLoading = false
+        if (this.pendingFocus) {
+          const id = this.pendingFocus
+          this.pendingFocus = ''
+          this.$nextTick(() => { this.mapFocus = id })
+        }
       }).catch(error => {
         this.mapLoading = false
         this.mapError = errorMessage(error, 'Could not load locations.')
@@ -612,4 +661,15 @@ export default {
 
 <style scoped>
 .att__phone { display: block; font-weight: var(--ds-weight-medium); color: var(--ds-text); }
+.att__maplink {
+  margin-top: 4px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ds-navy);
+  font: inherit;
+  font-size: var(--ds-text-xs);
+  text-decoration: underline;
+  cursor: pointer;
+}
 </style>
