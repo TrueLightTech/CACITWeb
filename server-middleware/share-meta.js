@@ -80,12 +80,61 @@ function trim (value, max) {
 }
 
 /**
+ * Sizes we can know without fetching the image. WhatsApp in particular decides
+ * between the large card and a small square from these on a first share, before
+ * it has the image itself. Cloudflare Images variants are not listed: their
+ * shape depends on the upload, and a wrong size is worse than none.
+ */
+function knownImageSize (url) {
+  if (url === FALLBACK_IMAGE) { return { width: 1200, height: 630 } }
+  if (/^https:\/\/img\.youtube\.com\/vi\/[^/]+\/hqdefault\.jpg$/.test(url)) { return { width: 480, height: 360 } }
+  return null
+}
+
+const FILE_TYPES = { mp4: 'video/mp4', webm: 'video/webm', mov: 'video/quicktime' }
+
+/**
+ * Something a crawler can actually play. YouTube's embed is stable; a plain
+ * file is too. Cloudflare Stream is left out: its URLs carry a signed token
+ * that expires within hours, and Facebook and Google keep what they fetch for
+ * far longer than that. HLS manifests are left out because no unfurler plays them.
+ */
+function playable (media) {
+  if (!media || !media.sourceUrl) { return null }
+  const meta = media.metadata || {}
+
+  if (meta.provider === 'youtube' && meta.embedUrl) {
+    return { url: meta.embedUrl, type: 'text/html', embed: true }
+  }
+
+  const ext = (/\.([a-z0-9]+)(?:[?#]|$)/i.exec(media.sourceUrl) || [])[1]
+  const type = ext && FILE_TYPES[ext.toLowerCase()]
+  return type ? { url: media.sourceUrl, type, embed: false } : null
+}
+
+/** The API's empty date is the year 1; that is not an upload date. */
+function realDate (...values) {
+  const value = values.find(v => v && !String(v).startsWith('0001-'))
+  return value || null
+}
+
+function isoDuration (seconds) {
+  const total = Math.round(Number(seconds))
+  if (!total || total < 0) { return null }
+  const h = Math.floor(total / 3600)
+  const m = Math.floor((total % 3600) / 60)
+  const s = total % 60
+  return 'PT' + (h ? `${h}H` : '') + (m ? `${m}M` : '') + (s || (!h && !m) ? `${s}S` : '')
+}
+
+/**
  * The same choices PublicRecord.vue makes, so the crawler's card and the page
  * a person then opens agree with each other.
  */
 function describe (collection, id, record) {
   const content = (record && record.content) || {}
   const media = content.sourceUrl ? content : (record.video || record.media || null)
+  const audio = record.audio && record.audio.sourceUrl ? record.audio : null
 
   const image =
     record.thumbnailUrl ||
@@ -103,15 +152,47 @@ function describe (collection, id, record) {
     content.text ||
     'Christ Apostolic Church International — Taifa Central.'
 
+  const finalImage = image || FALLBACK_IMAGE
+  const isVideo = !!media && (media.type === 'video' || collection === 'videos' || record.kind === 'video')
+
   return {
     title: record.title ? `${record.title} | CACI Taifa` : 'CACI Taifa',
+    name: record.title || '',
     description: trim(description, 300),
     // An event is a page about a thing; the other three are something to watch.
     type: collection === 'events' ? 'article' : 'video.other',
-    image: image || FALLBACK_IMAGE,
+    image: finalImage,
+    imageSize: knownImageSize(finalImage),
+    imageAlt: content.altText || record.title || '',
     hasOwnImage: !!image,
-    url: `${SITE_URL}/${collection}/${id}`
+    url: `${SITE_URL}/${collection}/${id}`,
+    video: isVideo ? playable(media) : null,
+    audio: audio ? { url: audio.sourceUrl, type: 'audio/mpeg' } : null,
+    isVideo,
+    duration: isoDuration(media && media.durationSeconds),
+    uploadDate: realDate(record.publishedAt, record.publishedOn, record.preachedOn)
   }
+}
+
+/**
+ * Google's video rich result: thumbnail, duration and date beside the link in
+ * search. Its three required fields are a name, a thumbnail and an upload
+ * date; without all three Google ignores the block, so it is not sent.
+ */
+function videoObject (card) {
+  if (!card.isVideo || !card.name || !card.hasOwnImage || !card.uploadDate) { return null }
+
+  const data = {
+    '@context': 'https://schema.org',
+    '@type': 'VideoObject',
+    name: card.name,
+    description: card.description,
+    thumbnailUrl: [card.image],
+    uploadDate: card.uploadDate
+  }
+  if (card.duration) { data.duration = card.duration }
+  if (card.video) { data[card.video.embed ? 'embedUrl' : 'contentUrl'] = card.video.url }
+  return data
 }
 
 function buildTags (card) {
@@ -138,8 +219,37 @@ function buildTags (card) {
     `<title data-n-head="ssr">${escapeAttr(card.title)}</title>`,
     ...meta.map(([attr, key, value]) =>
       `<meta data-n-head="ssr" data-hid="${key}" ${attr}="${key}" content="${escapeAttr(value)}">`),
-    `<link data-n-head="ssr" data-hid="canonical" rel="canonical" href="${escapeAttr(card.url)}">`
+    `<link data-n-head="ssr" data-hid="canonical" rel="canonical" href="${escapeAttr(card.url)}">`,
+    // No vue-meta bookkeeping on these: the SPA never sets them, and tags it
+    // thinks it owns but no longer lists get removed once it boots — which
+    // would take them out of the page Google renders.
+    ...extraMeta(card).map(([key, value]) =>
+      `<meta property="${key}" content="${escapeAttr(value)}">`),
+    ...structuredData(card)
   ].join('')
+}
+
+function extraMeta (card) {
+  const tags = []
+  if (card.imageSize) {
+    tags.push(['og:image:width', card.imageSize.width], ['og:image:height', card.imageSize.height])
+  }
+  if (card.imageAlt) { tags.push(['og:image:alt', card.imageAlt]) }
+  if (card.video) {
+    tags.push(['og:video', card.video.url], ['og:video:secure_url', card.video.url], ['og:video:type', card.video.type])
+  }
+  if (card.audio) {
+    tags.push(['og:audio', card.audio.url], ['og:audio:type', card.audio.type])
+  }
+  return tags
+}
+
+function structuredData (card) {
+  const data = videoObject(card)
+  if (!data) { return [] }
+  // JSON is not HTML: "</script>" inside a title would end the block early.
+  const json = JSON.stringify(data).replace(/</g, '\\u003c')
+  return [`<script type="application/ld+json">${json}</script>`]
 }
 
 /**
@@ -151,7 +261,8 @@ function rewriteHead (html, card) {
   const keys = [
     'description', 'og:type', 'og:title', 'og:description', 'og:image',
     'og:url', 'twitter:card', 'twitter:title', 'twitter:description', 'twitter:image',
-    'apple-itunes-app'
+    'apple-itunes-app', 'og:image:width', 'og:image:height', 'og:image:alt',
+    'og:video', 'og:video:secure_url', 'og:video:type', 'og:audio', 'og:audio:type'
   ]
 
   let out = html.replace(/<title[^>]*>[\s\S]*?<\/title>/i, '')
@@ -273,5 +384,6 @@ module.exports = function shareMeta (req, res, next) {
 // Exported for tests.
 module.exports.describe = describe
 module.exports.buildTags = buildTags
+module.exports.videoObject = videoObject
 module.exports.rewriteHead = rewriteHead
 module.exports.SHARE_ROUTE = SHARE_ROUTE
