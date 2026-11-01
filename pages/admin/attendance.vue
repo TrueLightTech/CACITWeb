@@ -8,9 +8,13 @@
           Members whose phone reported them on the church premises. Counted
           automatically by the mobile app — one entry per member per day.
         </p>
-        <p v-else>
+        <p v-else-if="view === 'devices'">
           Every phone with the app that came on or near the church premises,
           whether or not anybody was signed in — one entry per phone per day.
+        </p>
+        <p v-else>
+          Where each phone last was, for finding people in an emergency. Only
+          phones whose owners turned on location sharing in the app appear here.
         </p>
       </div>
     </div>
@@ -30,9 +34,122 @@
       <button class="ds-tab" :class="{ 'is-active': view === 'devices' }" type="button" @click="switchView('devices')">
         All phones
       </button>
+      <button class="ds-tab" :class="{ 'is-active': view === 'map' }" type="button" @click="switchView('map')">
+        Emergency map
+      </button>
     </div>
 
-    <section class="ds-section" aria-label="Last 14 days">
+    <section v-if="view === 'map'" class="ds-section" aria-label="Emergency map">
+      <div class="ds-alert ds-alert--info" style="margin-bottom:16px">
+        <div class="ds-alert__body">
+          Opening this map is recorded in the audit log with your name.
+          Locations are kept for {{ mapData.retentionDays || 7 }} days after a phone last reports, and are
+          deleted at once when its owner turns sharing off.
+        </div>
+      </div>
+
+      <div v-if="mapLoaded && !mapData.enabled" class="ds-alert ds-alert--warning" style="margin-bottom:16px">
+        <div class="ds-alert__body">Location sharing is switched off on the server.</div>
+      </div>
+
+      <div class="ds-toolbar">
+        <div class="ds-field" style="margin-bottom:0">
+          <label class="ds-label" for="mapWithin">Last seen</label>
+          <select id="mapWithin" v-model="mapWithin" class="ds-select" @change="loadMap">
+            <option value="1">In the last hour</option>
+            <option value="6">In the last 6 hours</option>
+            <option value="24">In the last 24 hours</option>
+            <option value="">Any time</option>
+          </select>
+        </div>
+        <div class="ds-field" style="margin-bottom:0">
+          <label class="ds-label" for="mapWho">Who</label>
+          <select id="mapWho" v-model="mapWho" class="ds-select" @change="loadMap">
+            <option value="">Everyone</option>
+            <option value="member">Signed-in members</option>
+            <option value="guest">Not signed in</option>
+          </select>
+        </div>
+        <div class="ds-field" style="margin-bottom:0;min-width:220px">
+          <label class="ds-label" for="mapSearch">Search</label>
+          <input id="mapSearch" v-model="mapSearch" class="ds-input" type="search" placeholder="Name, phone number or model" @input="onMapSearch">
+        </div>
+        <div class="ds-field" style="margin-bottom:0;align-self:flex-end">
+          <button class="ds-btn ds-btn--secondary" type="button" :disabled="mapLoading" @click="loadMap">Refresh</button>
+        </div>
+      </div>
+
+      <p v-if="mapError" class="ds-error">{{ mapError }}</p>
+
+      <div ref="mapCard" class="ds-card" style="margin-top:16px">
+        <div class="ds-card__body">
+          <client-only>
+            <LocationMap
+              :locations="mapData.locations"
+              :church="mapChurch"
+              :focus="mapFocus"
+            />
+            <span slot="placeholder" class="ds-skeleton" style="height:480px;width:100%;display:block"></span>
+          </client-only>
+        </div>
+      </div>
+
+      <div class="ds-section__head" style="margin-top:24px">
+        <h2 class="ds-h2">{{ mapData.locations.length }} {{ mapData.locations.length === 1 ? 'phone' : 'phones' }}</h2>
+        <span class="ds-meta">Most recent first — choose one to find it on the map</span>
+      </div>
+
+      <div v-if="mapLoading" style="display:grid;gap:8px">
+        <span v-for="n in 3" :key="n" class="ds-skeleton" style="height:48px;width:100%"></span>
+      </div>
+
+      <div v-else-if="!mapData.locations.length" class="ds-card">
+        <div class="ds-empty">
+          <h3 class="ds-h3">No shared locations</h3>
+          <p>No phone has shared its location{{ mapWithin ? ' in this time' : '' }}. Phones appear once their owners turn on location sharing in the app.</p>
+        </div>
+      </div>
+
+      <div v-else class="ds-tablewrap">
+        <table class="ds-table">
+          <thead>
+            <tr>
+              <th>Person</th>
+              <th>Phone</th>
+              <th>Last seen</th>
+              <th>From church</th>
+              <th>Battery</th>
+              <th class="ds-col-action"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="row in mapData.locations" :key="row.deviceId">
+              <td data-label="Person">
+                <template v-if="!row.isGuest">
+                  <NuxtLink class="ds-table__primary" :to="`/admin/members/${row.userId}/view`">{{ row.name || 'A member' }}</NuxtLink>
+                  <span v-if="row.phoneNumber" class="ds-meta" style="display:block">
+                    <a :href="`tel:+${row.phoneNumber}`">+{{ row.phoneNumber }}</a>
+                  </span>
+                </template>
+                <span v-else class="ds-badge ds-badge--neutral">Not signed in</span>
+              </td>
+              <td data-label="Phone">
+                <span class="att__phone">{{ phoneName(row) }}</span>
+                <span class="ds-meta">{{ phoneDetail(row) }}</span>
+              </td>
+              <td data-label="Last seen">{{ ago(row.minutesAgo) }}</td>
+              <td data-label="From church">{{ km(row.distanceFromChurchMeters) }}</td>
+              <td data-label="Battery">{{ row.batteryPercent != null ? row.batteryPercent + '%' : '—' }}</td>
+              <td class="ds-col-action">
+                <button class="ds-btn ds-btn--secondary ds-btn--sm" type="button" @click="showOnMap(row)">Show on map</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section v-if="view !== 'map'" class="ds-section" aria-label="Last 14 days">
       <div class="ds-section__head">
         <h2 class="ds-h2">Last 14 days</h2>
         <span class="ds-meta">
@@ -56,7 +173,7 @@
       </div>
     </section>
 
-    <section class="ds-section" aria-label="Register">
+    <section v-if="view !== 'map'" class="ds-section" aria-label="Register">
       <div class="ds-section__head">
         <div>
           <h2 class="ds-h2">{{ dateLabel }}</h2>
@@ -242,6 +359,7 @@
 <script>
 import { mapGetters } from 'vuex'
 import AttendanceTrend from '../../components/AttendanceTrend'
+import LocationMap from '../../components/LocationMap'
 import { payload, errorMessage } from '../../network/MobileApp'
 import { ROLE_CHURCH_MANAGER } from '../../resources/navigation'
 
@@ -252,15 +370,19 @@ import { ROLE_CHURCH_MANAGER } from '../../resources/navigation'
  * family by the API. All phones counts every install of the app that came
  * on or near the premises, signed in or not — church manager only, since a
  * visitor's phone belongs to no family.
+ *
+ * Emergency map shows where phones whose owners chose to share their
+ * location last were. It is its own tab, loaded only when opened, because
+ * every load is written to the audit log against whoever opened it.
  */
 export default {
   name: 'AttendancePage',
-  components: { AttendanceTrend },
+  components: { AttendanceTrend, LocationMap },
   data () {
     const today = this.$moment().format('YYYY-MM-DD')
     return {
       today,
-      view: this.$route.query.view === 'devices' ? 'devices' : 'members',
+      view: ['devices', 'map'].indexOf(this.$route.query.view) !== -1 ? this.$route.query.view : 'members',
       date: this.$route.query.date || today,
       familyId: '',
       zone: '',
@@ -280,7 +402,16 @@ export default {
       pageSize: 50,
       loading: true,
       error: '',
-      searchTimer: null
+      searchTimer: null,
+      mapData: { enabled: true, retentionDays: 7, locations: [] },
+      mapLoaded: false,
+      mapLoading: false,
+      mapError: '',
+      mapWithin: '24',
+      mapWho: '',
+      mapSearch: '',
+      mapFocus: '',
+      mapTimer: null
     }
   },
   computed: {
@@ -297,6 +428,15 @@ export default {
     filtered () {
       return !!(this.zone || this.who || this.platformFilter || this.search)
     },
+    mapChurch () {
+      return this.mapData.churchLatitude || this.mapData.churchLongitude
+        ? {
+            latitude: this.mapData.churchLatitude,
+            longitude: this.mapData.churchLongitude,
+            radiusMeters: this.mapData.churchRadiusMeters
+          }
+        : null
+    },
     nearbyLabel () {
       return this.nearbyMeters >= 1000 ? `${this.nearbyMeters / 1000} km` : `${this.nearbyMeters} m`
     }
@@ -305,11 +445,12 @@ export default {
     if (!this.isManager) { this.view = 'members' }
     this.loadSummary()
     this.loadSite()
-    this.load(1)
+    if (this.view === 'map') { this.loadMap() } else { this.load(1) }
     if (this.isManager) { this.loadFamilies() }
   },
   beforeDestroy () {
     clearTimeout(this.searchTimer)
+    clearTimeout(this.mapTimer)
   },
   methods: {
     time (value) {
@@ -341,7 +482,49 @@ export default {
       this.view = view
       this.search = ''
       this.$router.replace({ query: Object.assign({}, this.$route.query, { view }) })
-      this.load(1)
+      if (view === 'map') { this.loadMap() } else { this.load(1) }
+    },
+    ago (minutes) {
+      if (minutes < 1) { return 'Just now' }
+      if (minutes < 60) { return `${minutes} min ago` }
+      if (minutes < 1440) { return `${Math.floor(minutes / 60)} h ago` }
+      return `${Math.floor(minutes / 1440)} d ago`
+    },
+    km (meters) {
+      if (meters == null) { return '—' }
+      return meters >= 1000 ? `${(meters / 1000).toFixed(1)} km` : `${Math.round(meters)} m`
+    },
+    showOnMap (row) {
+      // Cleared first so choosing the same phone twice still re-centres.
+      this.mapFocus = ''
+      this.$nextTick(() => {
+        this.mapFocus = row.deviceId
+        if (this.$refs.mapCard) { this.$refs.mapCard.scrollIntoView({ behavior: 'smooth', block: 'start' }) }
+      })
+    },
+    onMapSearch () {
+      clearTimeout(this.mapTimer)
+      this.mapTimer = setTimeout(() => this.loadMap(), 400)
+    },
+    loadMap () {
+      this.mapLoading = true
+      this.mapError = ''
+
+      this.$axios.get('admin/locations', {
+        params: {
+          WithinHours: this.mapWithin || undefined,
+          Who: this.mapWho || undefined,
+          Search: this.mapSearch || undefined
+        }
+      }).then(response => {
+        const data = payload(response) || {}
+        this.mapData = Object.assign({ enabled: true, retentionDays: 7, locations: [] }, data)
+        this.mapLoaded = true
+        this.mapLoading = false
+      }).catch(error => {
+        this.mapLoading = false
+        this.mapError = errorMessage(error, 'Could not load locations.')
+      })
     },
     pickDate (key) {
       this.date = key

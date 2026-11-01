@@ -22,7 +22,7 @@
             <li>Open the <strong>CACI Taifa</strong> app on your iPhone or Android phone, and sign in if you need to.</li>
             <li>Tap <strong>Settings</strong> or <strong>Profile</strong> (the gear icon).</li>
             <li>Choose <strong>Account Settings</strong>, then <strong>Delete Account</strong>.</li>
-            <li>Read the notice and tap <strong>Confirm Deletion</strong>. Your account is deactivated straight away and scheduled for permanent removal.</li>
+            <li>Read the notice and tap <strong>Confirm Deletion</strong>. Your account and personal data are deleted straight away.</li>
           </ol>
         </section>
 
@@ -109,10 +109,12 @@
             <div class="data__col">
               <h3 class="pub-h3">Permanently deleted</h3>
               <ul>
-                <li>Your member login credentials (phone number, hashed password, security tokens).</li>
-                <li>Your profile details (full name, email, residential address, date of birth, photo).</li>
-                <li>Device notification tokens (you will no longer receive push notifications).</li>
-                <li>Confidential prayer requests and personal counseling messages.</li>
+                <li>Your login (phone number and hashed password) and profile (name, email, date of birth, photo).</li>
+                <li>Your membership form, including family, next-of-kin and baptism details.</li>
+                <li>Your posts, photos and videos; your comments are blanked so replies still make sense.</li>
+                <li>Pastoral requests, messages to the church office, and event responses and questions.</li>
+                <li>Bookmarks, watch history, notifications, blocks and device notification tokens.</li>
+                <li>Attendance records and any location you shared for emergencies. Phones counted at church stay only as anonymous counts.</li>
               </ul>
             </div>
 
@@ -120,7 +122,7 @@
               <h3 class="pub-h3">Kept, and why</h3>
               <ul>
                 <li>
-                  <strong>Financial &amp; Contribution Records:</strong> Past records of tithes, offerings, and welfare payments are retained in an anonymized, audited format solely to comply with statutory accounting and financial audit regulations for non-profit and religious entities in Ghana.
+                  <strong>Financial &amp; Contribution Records:</strong> Past records of tithes, offerings and welfare are kept, so the church can account for them. Your name is removed from them, and they show as &ldquo;Deleted member&rdquo; with the amount, date and church family.
                 </li>
                 <li>
                   These financial records are strictly protected, detached from your active login, and never used for marketing.
