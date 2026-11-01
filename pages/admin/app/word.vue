@@ -386,8 +386,13 @@ export default {
       this.$axios.post('admin/word-for-today/fill').then(response => {
         const data = (response.data && response.data.data) || {}
         this.isFilling = false
-        if (data.drafted) {
-          this.$toast.success(`Drafted ${data.drafted} verse${data.drafted === 1 ? '' : 's'}. Read them before they go out.`)
+        const done = []
+        if (data.drafted) { done.push(`drafted ${data.drafted} verse${data.drafted === 1 ? '' : 's'}`) }
+        if (data.redrafted) { done.push(`replaced ${data.redrafted} repeat${data.redrafted === 1 ? '' : 's'}`) }
+        if (done.length) {
+          const said = done.join(' and ')
+          this.$toast.success(`${said.charAt(0).toUpperCase()}${said.slice(1)}. Read them before they go out.`)
+          if (data.note) { this.$toast.error(data.note) }
         } else if (data.note) {
           this.$toast.error(data.note)
         } else {
