@@ -55,7 +55,10 @@ export const navigation = [
         to: '/admin/members/registrations',
         icon: 'manage',
         roles: [ROLE_CHURCH_MANAGER]
-      }
+      },
+      // Counted from the app's location check-ins. A family manager sees
+      // their own family only; the API enforces it.
+      { label: 'Attendance', to: '/admin/attendance', icon: 'pin', roles: STAFF }
     ]
   },
   {
