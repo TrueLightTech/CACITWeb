@@ -9,7 +9,7 @@
         type="button"
         role="listitem"
         :disabled="!clickable"
-        :aria-label="`${dayLabel(day.date)}: ${day.count} present`"
+        :aria-label="`${dayLabel(day.date)}: ${day.count} ${unit}`"
         @mouseenter="hovered = day.key"
         @mouseleave="hovered = ''"
         @focus="hovered = day.key"
@@ -17,7 +17,7 @@
         @click="$emit('select', day.key)"
       >
         <span v-if="hovered === day.key" class="trend__tip">
-          <b>{{ day.count }}</b> present
+          <b>{{ day.count }}</b> {{ unit }}
           <span>{{ dayLabel(day.date) }}</span>
         </span>
         <span class="trend__bar" :style="{ height: barHeight(day.count) }"></span>
@@ -43,6 +43,10 @@ export default {
     /** yyyy-MM-dd of the highlighted day. */
     selected: { type: String, default: '' },
     clickable: { type: Boolean, default: false },
+    /** Which count in each day to draw: `count` (members) or `devicesOnSite` (phones). */
+    field: { type: String, default: 'count' },
+    /** Words after the number in the tooltip. */
+    unit: { type: String, default: 'present' },
     label: { type: String, default: 'Attendance by day' }
   },
   data () {
@@ -53,7 +57,7 @@ export default {
       return this.series.map(day => ({
         date: day.date,
         key: this.$moment.utc(day.date).format('YYYY-MM-DD'),
-        count: day.count || 0
+        count: day[this.field] || 0
       }))
     },
     max () {
