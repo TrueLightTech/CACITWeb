@@ -3,7 +3,13 @@
     <div class="ds-page-head">
       <div class="ds-page-head__copy">
         <h1 class="ds-h1">Word for Today</h1>
-        <p>One verse a day on the app's home screen. Schedule them ahead — a week at a time works well. Each goes live at its time and notifies every phone.</p>
+        <p>One verse a day on the app's home screen. Each goes live at its time and notifies every phone. Days nobody fills are drafted by AI a week ahead — read them, edit, move or cancel any you don't want.</p>
+      </div>
+      <div class="ds-page-head__actions">
+        <button class="ds-btn ds-btn--secondary" type="button" :disabled="isFilling" @click="fill">
+          <span v-if="isFilling" class="ds-btn__spinner"></span>
+          {{ isFilling ? 'Drafting' : 'Fill the week with AI' }}
+        </button>
       </div>
     </div>
 
@@ -81,7 +87,7 @@
 
       <section class="ds-card wd__list">
         <div class="ds-card__head">
-          <h2 class="ds-h3">Scheduled</h2>
+          <h2 class="ds-h3">Coming up</h2>
         </div>
 
         <div v-if="isLoading" class="ds-card__body" style="display:grid;gap:12px">
@@ -89,42 +95,92 @@
         </div>
 
         <ul v-else-if="entries.length" class="wd__entries">
-          <li v-for="entry in entries" :key="entry.forDate" class="wd__entry" :class="{ 'is-today': isToday(entry.forDate) }">
+          <li
+            v-for="entry in entries"
+            :key="entry.id"
+            class="wd__entry"
+            :class="{ 'is-today': isToday(entry.forDate), 'is-cancelled': entry.status === 'cancelled' }"
+          >
             <div class="wd__entrywhen">
-              <span class="wd__day">{{ $moment(entry.forDate).format('D MMM') }}</span>
-              <span class="wd__weekday">{{ isToday(entry.forDate) ? 'Today' : $moment(entry.forDate).format('ddd') }}</span>
+              <span class="wd__day">{{ $moment.utc(entry.forDate).format('D MMM') }}</span>
+              <span class="wd__weekday">{{ isToday(entry.forDate) ? 'Today' : $moment.utc(entry.forDate).format('ddd') }}</span>
             </div>
             <div class="wd__entrycopy">
               <span class="wd__ref">
                 {{ entry.reference }}
                 <span v-if="entry.status === 'published'" class="ds-badge ds-badge--success">Live</span>
-                <span v-else class="ds-badge ds-badge--info">{{ $moment.utc(entry.publishAt).format('HH:mm') }}{{ entry.sendPush ? ' · push' : '' }}</span>
+                <span v-else-if="entry.status === 'cancelled'" class="ds-badge ds-badge--neutral">Cancelled</span>
+                <template v-else>
+                  <span class="ds-badge ds-badge--info">{{ $moment.utc(entry.publishAt).format('HH:mm') }}{{ entry.sendPush ? ' · push' : '' }}</span>
+                  <span v-if="entry.source === 'ai'" class="ds-badge ds-badge--warning" title="Drafted by AI. Saving it marks it as checked.">AI draft</span>
+                </template>
               </span>
               <span class="wd__text">{{ entry.text }}</span>
             </div>
-            <span class="wd__entryactions">
-              <button class="ds-btn ds-btn--ghost ds-btn--sm" type="button" @click="edit(entry)">Edit</button>
-              <button class="ds-btn ds-btn--danger-quiet ds-btn--sm" type="button" @click="removing = entry">Remove</button>
-            </span>
+            <RowMenu :label="`Actions for ${entry.reference}`">
+              <template #default="{ close }">
+                <button v-if="entry.status !== 'cancelled'" class="ds-menu__item" type="button" @click="edit(entry); close()">
+                  {{ entry.source === 'ai' && entry.status === 'scheduled' ? 'Review and edit' : 'Edit' }}
+                </button>
+                <template v-if="entry.status === 'scheduled'">
+                  <button class="ds-menu__item" type="button" @click="openMove(entry); close()">Reschedule</button>
+                  <button class="ds-menu__item" type="button" @click="redraft(entry); close()">Draft a different verse with AI</button>
+                  <button class="ds-menu__item ds-menu__item--danger" type="button" @click="cancelling = entry; close()">Cancel this day</button>
+                </template>
+                <button v-if="entry.status === 'cancelled'" class="ds-menu__item" type="button" @click="restore(entry); close()">Restore verse</button>
+              </template>
+            </RowMenu>
           </li>
         </ul>
 
         <div v-else class="ds-empty">
-          <h3 class="ds-h3">Nothing scheduled</h3>
-          <p>Members see the most recent verse until a new one is set for the day.</p>
+          <h3 class="ds-h3">Nothing coming up</h3>
+          <p>Members see the most recent verse until a new one goes live. Use “Fill the week with AI”, or schedule one yourself.</p>
         </div>
       </section>
     </div>
 
     <ConfirmDialog
-      :open="!!removing"
-      :busy="isRemoving"
-      title="Remove this verse?"
-      :message="removing ? `${removing.reference} will no longer be shown on ${$moment(removing.forDate).format('D MMMM')}. Members see the most recent earlier verse instead.` : ''"
-      confirm-label="Remove"
-      @cancel="removing = null"
-      @confirm="remove"
+      :open="!!cancelling"
+      :busy="isCancelling"
+      title="Cancel this day?"
+      :message="cancelling ? `No verse will go out on ${$moment.utc(cancelling.forDate).format('D MMMM')}, and the AI will not fill it. Members keep seeing the previous verse. You can restore it until the day.` : ''"
+      confirm-label="Cancel day"
+      cancel-label="Keep it"
+      destructive
+      @cancel="cancelling = null"
+      @confirm="cancelDay"
     />
+
+    <div v-if="moving" class="ds-overlay" @click.self="moving = null">
+      <form class="ds-modal" role="dialog" aria-modal="true" aria-labelledby="wdMoveTitle" @submit.prevent="move">
+        <div class="ds-modal__head">
+          <div>
+            <h2 id="wdMoveTitle" class="ds-h3">Reschedule {{ moving.reference }}</h2>
+            <p>The day it moves to must be free or cancelled. The day it leaves will be drafted again by AI unless you cancel it.</p>
+          </div>
+        </div>
+        <div class="ds-modal__body">
+          <div class="ds-formgrid">
+            <div class="ds-field" style="margin-bottom:0">
+              <label class="ds-label" for="wdMoveDate">Day</label>
+              <input id="wdMoveDate" v-model="moveForm.forDate" class="ds-input" type="date" :min="today" required>
+            </div>
+            <div class="ds-field" style="margin-bottom:0">
+              <label class="ds-label" for="wdMoveTime">Goes live at</label>
+              <input id="wdMoveTime" v-model="moveForm.publishTime" class="ds-input" type="time" required>
+            </div>
+          </div>
+        </div>
+        <div class="ds-modal__foot">
+          <button class="ds-btn ds-btn--ghost" type="button" @click="moving = null">Cancel</button>
+          <button class="ds-btn ds-btn--primary" type="submit" :disabled="isMoving">
+            <span v-if="isMoving" class="ds-btn__spinner"></span>
+            Reschedule
+          </button>
+        </div>
+      </form>
+    </div>
   </div>
 </template>
 
@@ -132,12 +188,13 @@
 import { rowsOf, errorMessage } from '../../../network/MobileApp'
 import AiAssist from '../../../components/AiAssist'
 import ConfirmDialog from '../../../components/ConfirmDialog'
+import RowMenu from '../../../components/RowMenu'
 
 /** Matches the API's MobileAppConfig.WordForTodayPublishTime. Accra is on UTC. */
 const DEFAULT_TIME = '06:00'
 
 export default {
-  components: { AiAssist, ConfirmDialog },
+  components: { AiAssist, ConfirmDialog, RowMenu },
   name: 'AdminAppWordForToday',
   data () {
     return {
@@ -145,8 +202,12 @@ export default {
       isLoading: false,
       isSaving: false,
       showErrors: false,
-      removing: null,
-      isRemoving: false,
+      cancelling: null,
+      isCancelling: false,
+      moving: null,
+      isMoving: false,
+      moveForm: { forDate: '', publishTime: DEFAULT_TIME },
+      isFilling: false,
       form: {
         forDate: '',
         text: '',
@@ -175,7 +236,7 @@ export default {
       return this.entries.find(entry => this.dayOf(entry.forDate) === this.form.forDate)
     },
     editingExisting () {
-      return !!this.existing
+      return !!this.existing && this.existing.status !== 'cancelled'
     },
     alreadyLive () {
       return !!this.existing && this.existing.status === 'published'
@@ -226,25 +287,77 @@ export default {
       this.form = { forDate: this.today, text: '', reference: '', translation: '', reflection: '', publishTime: DEFAULT_TIME, sendPush: true }
       this.showErrors = false
     },
-    remove () {
-      const entry = this.removing
-      if (!entry) { return }
-      this.isRemoving = true
-      this.$axios.delete(`admin/word-for-today/${entry.id}`).then(() => {
-        this.isRemoving = false
-        this.removing = null
-        this.$toast.success('Verse removed')
+    /** Every row action answers with the updated verse or an error; reload either way. */
+    act (request, success, failure) {
+      return request.then(() => {
+        this.$toast.success(success)
         this.load()
       }).catch(error => {
-        this.isRemoving = false
-        this.removing = null
-        this.$toast.error(errorMessage(error, 'Could not remove that verse.'))
+        this.$toast.error(errorMessage(error, failure))
+        this.load()
+      })
+    },
+    cancelDay () {
+      const entry = this.cancelling
+      if (!entry) { return }
+      this.isCancelling = true
+      this.act(this.$axios.post(`admin/word-for-today/${entry.id}/cancel`), 'Day cancelled', 'Could not cancel that day.')
+        .then(() => { this.isCancelling = false; this.cancelling = null })
+    },
+    restore (entry) {
+      this.act(this.$axios.post(`admin/word-for-today/${entry.id}/restore`), 'Verse restored', 'Could not restore that verse.')
+    },
+    redraft (entry) {
+      this.$toast.info('Drafting a different verse…')
+      this.act(this.$axios.post(`admin/word-for-today/${entry.id}/redraft`), 'New verse drafted', 'Could not draft a new verse.')
+    },
+    openMove (entry) {
+      this.moving = entry
+      this.moveForm = {
+        forDate: this.dayOf(entry.forDate),
+        publishTime: this.$moment.utc(entry.publishAt).format('HH:mm')
+      }
+    },
+    move () {
+      const entry = this.moving
+      if (!entry) { return }
+      this.isMoving = true
+      this.$axios.post(`admin/word-for-today/${entry.id}/reschedule`, {
+        forDate: new Date(`${this.moveForm.forDate}T00:00:00Z`).toISOString(),
+        publishTime: this.moveForm.publishTime
+      }).then(() => {
+        this.isMoving = false
+        this.moving = null
+        this.$toast.success('Verse rescheduled')
+        this.load()
+      }).catch(error => {
+        // Left open, so a clash with a taken day can be fixed in place.
+        this.isMoving = false
+        this.$toast.error(errorMessage(error, 'Could not reschedule that verse.'))
+      })
+    },
+    fill () {
+      this.isFilling = true
+      this.$axios.post('admin/word-for-today/fill').then(response => {
+        const data = (response.data && response.data.data) || {}
+        this.isFilling = false
+        if (data.drafted) {
+          this.$toast.success(`Drafted ${data.drafted} verse${data.drafted === 1 ? '' : 's'}. Read them before they go out.`)
+        } else if (data.note) {
+          this.$toast.error(data.note)
+        } else {
+          this.$toast.success('Every day this week is already decided.')
+        }
+        this.load()
+      }).catch(error => {
+        this.isFilling = false
+        this.$toast.error(errorMessage(error, 'Could not draft the week.'))
       })
     },
     load () {
       this.isLoading = true
 
-      this.$axios.get('admin/word-for-today', { params: { Page: 1, PageSize: 30 } }).then(response => {
+      this.$axios.get('admin/word-for-today', { params: { Upcoming: true, Page: 1, PageSize: 60 } }).then(response => {
         this.entries = rowsOf(response)
         this.isLoading = false
       }).catch(error => {
@@ -285,7 +398,8 @@ export default {
 </script>
 
 <style scoped>
-.wd__entryactions { display: flex; gap: 4px; flex-shrink: 0; }
+.wd__entry.is-cancelled .wd__text { text-decoration: line-through; }
+.wd__entry.is-cancelled .wd__entrycopy { opacity: .6; }
 .wd__layout { display: grid; grid-template-columns: minmax(0, 420px) minmax(0, 1fr); gap: 20px; align-items: start; }
 @media (max-width: 900px) { .wd__layout { grid-template-columns: 1fr; } }
 
