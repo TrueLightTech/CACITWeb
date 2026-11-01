@@ -107,14 +107,19 @@
           <h3>a) &ldquo;Count me at church&rdquo; — attendance</h3>
           <ul>
             <li>
-              The app tells us when your phone arrives at, or is near, the church premises in Taifa. It does this
-              using a boundary around the church set on your phone, and the phone&rsquo;s low-power
-              &ldquo;significant location change&rdquo; service.
+              While this is on, the app sends your phone&rsquo;s location to our server when your phone moves
+              (using the phone&rsquo;s low-power &ldquo;significant location change&rdquo; service and a boundary
+              around the church), and when you open the app. <strong>This happens wherever you are</strong>; it is
+              our server, not the app, that works out whether you are at church.
             </li>
             <li>
-              Our server keeps only <strong>how far your phone was from the church</strong>, not its coordinates,
-              together with the date and the times it was first and last seen, your install ID, and your phone&rsquo;s
-              make and model. A location further than about 500 metres from the church is discarded without being stored.
+              If your phone is <strong>more than about 500 metres from the church</strong>, the location is
+              discarded as soon as it arrives. It is not stored or logged, and nobody at the church can see it.
+            </li>
+            <li>
+              If it is at or near the church, our server keeps only <strong>how far your phone was from the
+              church</strong>, not its coordinates, together with the date and the times it was first and last seen,
+              your install ID, and your phone&rsquo;s make and model.
             </li>
             <li>
               If you are signed in, you are recorded as present at church that day, under your name. If you are not
