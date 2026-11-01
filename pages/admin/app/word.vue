@@ -3,7 +3,7 @@
     <div class="ds-page-head">
       <div class="ds-page-head__copy">
         <h1 class="ds-h1">Word for Today</h1>
-        <p>One verse a day on the app's home screen. Schedule them ahead — a week at a time works well.</p>
+        <p>One verse a day on the app's home screen. Schedule them ahead — a week at a time works well. Each goes live at its time and notifies every phone.</p>
       </div>
     </div>
 
@@ -32,6 +32,13 @@
             <span v-if="showErrors && !form.forDate" class="ds-error">Choose the day.</span>
           </div>
 
+          <div class="ds-field">
+            <label class="ds-label" for="wordTime">Goes live at</label>
+            <input id="wordTime" v-model="form.publishTime" class="ds-input" type="time" :disabled="alreadyLive">
+            <span v-if="alreadyLive" class="ds-help">Already live. Saving corrects the words without notifying again.</span>
+            <span v-else class="ds-help">Accra time. A time already passed today goes live within a minute.</span>
+          </div>
+
           <div class="ds-field" :class="{ 'is-invalid': showErrors && !form.text }">
             <label class="ds-label" for="wordText">The verse</label>
             <textarea id="wordText" v-model="form.text" class="ds-textarea" rows="3"></textarea>
@@ -56,6 +63,11 @@
             <textarea id="wordReflection" v-model="form.reflection" class="ds-textarea" rows="4"></textarea>
             <span class="ds-help">Optional. A line or two under the verse.</span>
           </div>
+
+          <label v-if="!alreadyLive" class="ds-check" style="margin-top:16px">
+            <input v-model="form.sendPush" type="checkbox">
+            <span>Send a push notification when it goes live</span>
+          </label>
         </div>
 
         <div class="ds-card__foot" style="display:flex;gap:8px;justify-content:flex-end">
@@ -83,7 +95,11 @@
               <span class="wd__weekday">{{ isToday(entry.forDate) ? 'Today' : $moment(entry.forDate).format('ddd') }}</span>
             </div>
             <div class="wd__entrycopy">
-              <span class="wd__ref">{{ entry.reference }}</span>
+              <span class="wd__ref">
+                {{ entry.reference }}
+                <span v-if="entry.status === 'published'" class="ds-badge ds-badge--success">Live</span>
+                <span v-else class="ds-badge ds-badge--info">{{ $moment.utc(entry.publishAt).format('HH:mm') }}{{ entry.sendPush ? ' · push' : '' }}</span>
+              </span>
               <span class="wd__text">{{ entry.text }}</span>
             </div>
             <span class="wd__entryactions">
@@ -117,6 +133,9 @@ import { rowsOf, errorMessage } from '../../../network/MobileApp'
 import AiAssist from '../../../components/AiAssist'
 import ConfirmDialog from '../../../components/ConfirmDialog'
 
+/** Matches the API's MobileAppConfig.WordForTodayPublishTime. Accra is on UTC. */
+const DEFAULT_TIME = '06:00'
+
 export default {
   components: { AiAssist, ConfirmDialog },
   name: 'AdminAppWordForToday',
@@ -133,7 +152,9 @@ export default {
         text: '',
         reference: '',
         translation: '',
-        reflection: ''
+        reflection: '',
+        publishTime: DEFAULT_TIME,
+        sendPush: true
       }
     }
   },
@@ -150,8 +171,14 @@ export default {
     today () {
       return new Date().toISOString().slice(0, 10)
     },
+    existing () {
+      return this.entries.find(entry => this.dayOf(entry.forDate) === this.form.forDate)
+    },
     editingExisting () {
-      return this.entries.some(entry => this.dayOf(entry.forDate) === this.form.forDate)
+      return !!this.existing
+    },
+    alreadyLive () {
+      return !!this.existing && this.existing.status === 'published'
     },
     isDirty () {
       return !!(this.form.text || this.form.reference || this.form.reflection)
@@ -189,12 +216,14 @@ export default {
         text: entry.text || '',
         reference: entry.reference || '',
         translation: entry.translation || '',
-        reflection: entry.reflection || ''
+        reflection: entry.reflection || '',
+        publishTime: entry.publishAt ? this.$moment.utc(entry.publishAt).format('HH:mm') : DEFAULT_TIME,
+        sendPush: entry.sendPush !== false
       }
       window.scrollTo({ top: 0, behavior: 'smooth' })
     },
     reset () {
-      this.form = { forDate: this.today, text: '', reference: '', translation: '', reflection: '' }
+      this.form = { forDate: this.today, text: '', reference: '', translation: '', reflection: '', publishTime: DEFAULT_TIME, sendPush: true }
       this.showErrors = false
     },
     remove () {
@@ -238,7 +267,9 @@ export default {
         text: this.form.text.trim(),
         reference: this.form.reference.trim(),
         translation: this.form.translation || null,
-        reflection: this.form.reflection || null
+        reflection: this.form.reflection || null,
+        publishTime: this.form.publishTime || null,
+        sendPush: this.form.sendPush
       }).then(() => {
         this.$toast.success('Verse scheduled')
         this.isSaving = false
@@ -277,7 +308,7 @@ export default {
 .wd__weekday { font-size: var(--ds-text-sm); color: var(--ds-text-muted); }
 
 .wd__entrycopy { display: grid; gap: 2px; min-width: 0; }
-.wd__ref { font-weight: 500; font-size: var(--ds-text-sm); }
+.wd__ref { font-weight: 500; font-size: var(--ds-text-sm); display: flex; gap: 8px; align-items: center; }
 .wd__text {
   color: var(--ds-text-muted);
   font-size: var(--ds-text-sm);
