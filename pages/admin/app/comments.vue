@@ -93,7 +93,7 @@
               @click="show(comment)"
             >Restore</button>
             <button
-              v-if="isChurchManager"
+              v-if="canDelete"
               class="ds-btn ds-btn--ghost ds-btn--sm cm__delete"
               type="button"
               :disabled="busyId === comment.id"
@@ -133,10 +133,8 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
 import ConfirmDialog from '../../../components/ConfirmDialog'
 import { rowsOf, pagingOf, payload, errorMessage, COMMENT_STATUS_LABELS, COMMENT_STATUS_BADGE } from '../../../network/MobileApp'
-import { ROLE_CHURCH_MANAGER } from '../../../resources/navigation'
 
 /**
  * Comment moderation.
@@ -144,7 +142,7 @@ import { ROLE_CHURCH_MANAGER } from '../../../resources/navigation'
  * Opens on what members have flagged, because that is the only part that is
  * time-sensitive — everything else can wait. Hiding is the ordinary action and
  * is reversible; deleting is permanent, takes the replies with it, and is
- * therefore Church Manager only and behind a confirmation.
+ * therefore behind a confirmation.
  */
 export default {
   name: 'comments',
@@ -164,10 +162,8 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(['loggedInUser']),
-    isChurchManager () {
-      return this.loggedInUser && this.loggedInUser.data &&
-        this.loggedInUser.data.roleId === ROLE_CHURCH_MANAGER
+    canDelete () {
+      return this.$can('engagement.moderate')
     },
     tiles () {
       return [

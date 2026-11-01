@@ -128,8 +128,6 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
-import { ROLE_CHURCH_MANAGER } from '../resources/navigation'
 import RowMenu from './RowMenu'
 import ConfirmDialog from './ConfirmDialog'
 
@@ -154,6 +152,8 @@ export default {
     /** Church groups create at `churchgroups/me`, so this is separate. */
     createEndpoint: { type: String, default: '' },
     idPrefix: { type: String, required: true },
+    /** The permission that lets someone add, edit and delete these rows. */
+    permission: { type: String, required: true },
     isActive: { type: Boolean, default: false }
   },
   data () {
@@ -172,10 +172,8 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(['isAuthenticated', 'loggedInUser']),
     canEdit () {
-      return this.loggedInUser && this.loggedInUser.data &&
-        this.loggedInUser.data.roleId === ROLE_CHURCH_MANAGER
+      return this.$can(this.permission)
     },
     rows () {
       return Array.isArray(this.items) ? this.items : []

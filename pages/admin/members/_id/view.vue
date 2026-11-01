@@ -28,140 +28,160 @@
         </div>
 
         <div class="ds-recordhead__actions">
-          <NuxtLink class="ds-btn ds-btn--secondary" :to="`/admin/members/${member.id}/tithe`">
+          <NuxtLink v-if="memberCan('finance.tithe.view')" class="ds-btn ds-btn--secondary" :to="`/admin/members/${member.id}/tithe`">
             Record tithe
           </NuxtLink>
-          <NuxtLink class="ds-btn ds-btn--primary" :to="`/admin/members/${member.id}`">
+          <NuxtLink v-if="memberCan('members.edit')" class="ds-btn ds-btn--primary" :to="`/admin/members/${member.id}`">
             Edit member
           </NuxtLink>
 
-          <RowMenu v-if="isChurchManager" label="More actions for this member">
+          <RowMenu v-if="hasMoreActions" label="More actions for this member">
             <template #default="{ close }">
-              <NuxtLink class="ds-menu__item" :to="`/admin/members/${member.id}/membership-form`" @click.native="close">
+              <NuxtLink
+                v-if="memberCan('members.personal.view')"
+                class="ds-menu__item"
+                :to="`/admin/members/${member.id}/membership-form`"
+                @click.native="close"
+              >
                 Membership form
               </NuxtLink>
-              <NuxtLink class="ds-menu__item" :to="`/admin/members/${member.id}/welfare`" @click.native="close">
+              <NuxtLink
+                v-if="memberCan('finance.welfare.view')"
+                class="ds-menu__item"
+                :to="`/admin/members/${member.id}/welfare`"
+                @click.native="close"
+              >
                 Welfare
               </NuxtLink>
-              <NuxtLink class="ds-menu__item" :to="`/admin/members/${member.id}/role`" @click.native="close">
-                Assign role
+              <NuxtLink
+                v-if="$can('access.manage')"
+                class="ds-menu__item"
+                :to="`/admin/access/people/${member.id}`"
+                @click.native="close"
+              >
+                Access and role
               </NuxtLink>
-              <span class="ds-menu__sep"></span>
-              <button class="ds-menu__item ds-menu__item--danger" type="button" @click="confirmOpen = true; close()">
-                Delete member
-              </button>
+              <template v-if="memberCan('members.delete')">
+                <span class="ds-menu__sep"></span>
+                <button class="ds-menu__item ds-menu__item--danger" type="button" @click="confirmOpen = true; close()">
+                  Delete member
+                </button>
+              </template>
             </template>
           </RowMenu>
         </div>
       </div>
     </div>
 
-    <!-- Membership form detail -->
-    <div class="ds-section__head">
-      <h2 class="ds-h2">Membership details</h2>
-      <NuxtLink
-        v-if="isChurchManager"
-        class="ds-btn ds-btn--secondary ds-btn--sm"
-        :to="`/admin/members/${member.id}/membership-form`"
-      >
-        Edit membership form
-      </NuxtLink>
-    </div>
-
-    <div class="ds-card">
-      <div class="ds-card__body">
-        <!-- Tab state lives in the URL, so these views can be linked and the
-             back button works. -->
-        <div class="ds-tabs" role="tablist">
-          <button
-            v-for="tab in tabs"
-            :key="tab.key"
-            class="ds-tab"
-            :class="{ 'is-active': activeTab === tab.key }"
-            type="button"
-            role="tab"
-            :aria-selected="activeTab === tab.key ? 'true' : 'false'"
-            @click="selectTab(tab.key)"
-          >
-            {{ tab.label }}
-          </button>
-        </div>
-
-        <div v-if="isLoading" style="display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(210px,1fr))">
-          <div v-for="n in 8" :key="n" style="display:grid;gap:8px">
-            <span class="ds-skeleton" style="height:10px;width:50%"></span>
-            <span class="ds-skeleton" style="height:14px;width:75%"></span>
-          </div>
-        </div>
-
-        <template v-else>
-          <!-- Personal -->
-          <dl v-if="activeTab === 'personal'" class="ds-deflist">
-            <div v-for="row in personalRows" :key="row.label">
-              <dt>{{ row.label }}</dt>
-              <dd :class="{ 'is-empty': !row.value }">{{ row.value }}</dd>
-            </div>
-          </dl>
-
-          <!-- Family -->
-          <div v-else-if="activeTab === 'family'">
-            <h3 class="ds-h3" style="margin-bottom:16px">Spouse</h3>
-            <dl class="ds-deflist">
-              <div v-for="row in spouseRows" :key="row.label">
-                <dt>{{ row.label }}</dt>
-                <dd :class="{ 'is-empty': !row.value }">{{ row.value }}</dd>
-              </div>
-            </dl>
-
-            <h3 class="ds-h3" style="margin:28px 0 16px">Children</h3>
-            <div v-if="children.length" class="ds-tablewrap">
-              <div class="ds-tablescroll">
-                <table class="ds-table ds-table--cards">
-                  <thead>
-                    <tr><th>Name</th><th>Date of birth</th><th>Phone</th></tr>
-                  </thead>
-                  <tbody>
-                    <tr v-for="(child, index) in children" :key="index">
-                      <td data-label="Name">{{ child.nameOfChild || '—' }}</td>
-                      <td data-label="Date of birth">{{ fmtDate(child.childDateOfBirth) }}</td>
-                      <td data-label="Phone" class="ds-muted">{{ child.telephoneNumber || '—' }}</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-            <p v-else class="ds-muted" style="margin:0">No children recorded.</p>
-          </div>
-
-          <!-- Parental -->
-          <div v-else>
-            <h3 class="ds-h3" style="margin-bottom:16px">Father</h3>
-            <dl class="ds-deflist">
-              <div v-for="row in fatherRows" :key="row.label">
-                <dt>{{ row.label }}</dt>
-                <dd :class="{ 'is-empty': !row.value }">{{ row.value }}</dd>
-              </div>
-            </dl>
-
-            <h3 class="ds-h3" style="margin:28px 0 16px">Mother</h3>
-            <dl class="ds-deflist">
-              <div v-for="row in motherRows" :key="row.label">
-                <dt>{{ row.label }}</dt>
-                <dd :class="{ 'is-empty': !row.value }">{{ row.value }}</dd>
-              </div>
-            </dl>
-
-            <h3 class="ds-h3" style="margin:28px 0 16px">Next of kin</h3>
-            <dl class="ds-deflist">
-              <div v-for="row in nextOfKinRows" :key="row.label">
-                <dt>{{ row.label }}</dt>
-                <dd :class="{ 'is-empty': !row.value }">{{ row.value }}</dd>
-              </div>
-            </dl>
-          </div>
-        </template>
+    <!-- Membership form detail. Addresses, family and next of kin are their
+         own permission, so the whole section is left out without it. -->
+    <template v-if="canViewPersonal">
+      <div class="ds-section__head">
+        <h2 class="ds-h2">Membership details</h2>
+        <NuxtLink
+          v-if="memberCan('members.personal.edit')"
+          class="ds-btn ds-btn--secondary ds-btn--sm"
+          :to="`/admin/members/${member.id}/membership-form`"
+        >
+          Edit membership form
+        </NuxtLink>
       </div>
-    </div>
+
+      <div class="ds-card">
+        <div class="ds-card__body">
+          <!-- Tab state lives in the URL, so these views can be linked and the
+               back button works. -->
+          <div class="ds-tabs" role="tablist">
+            <button
+              v-for="tab in tabs"
+              :key="tab.key"
+              class="ds-tab"
+              :class="{ 'is-active': activeTab === tab.key }"
+              type="button"
+              role="tab"
+              :aria-selected="activeTab === tab.key ? 'true' : 'false'"
+              @click="selectTab(tab.key)"
+            >
+              {{ tab.label }}
+            </button>
+          </div>
+
+          <div v-if="isLoading" style="display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(210px,1fr))">
+            <div v-for="n in 8" :key="n" style="display:grid;gap:8px">
+              <span class="ds-skeleton" style="height:10px;width:50%"></span>
+              <span class="ds-skeleton" style="height:14px;width:75%"></span>
+            </div>
+          </div>
+
+          <template v-else>
+            <!-- Personal -->
+            <dl v-if="activeTab === 'personal'" class="ds-deflist">
+              <div v-for="row in personalRows" :key="row.label">
+                <dt>{{ row.label }}</dt>
+                <dd :class="{ 'is-empty': !row.value }">{{ row.value }}</dd>
+              </div>
+            </dl>
+
+            <!-- Family -->
+            <div v-else-if="activeTab === 'family'">
+              <h3 class="ds-h3" style="margin-bottom:16px">Spouse</h3>
+              <dl class="ds-deflist">
+                <div v-for="row in spouseRows" :key="row.label">
+                  <dt>{{ row.label }}</dt>
+                  <dd :class="{ 'is-empty': !row.value }">{{ row.value }}</dd>
+                </div>
+              </dl>
+
+              <h3 class="ds-h3" style="margin:28px 0 16px">Children</h3>
+              <div v-if="children.length" class="ds-tablewrap">
+                <div class="ds-tablescroll">
+                  <table class="ds-table ds-table--cards">
+                    <thead>
+                      <tr><th>Name</th><th>Date of birth</th><th>Phone</th></tr>
+                    </thead>
+                    <tbody>
+                      <tr v-for="(child, index) in children" :key="index">
+                        <td data-label="Name">{{ child.nameOfChild || '—' }}</td>
+                        <td data-label="Date of birth">{{ fmtDate(child.childDateOfBirth) }}</td>
+                        <td data-label="Phone" class="ds-muted">{{ child.telephoneNumber || '—' }}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              <p v-else class="ds-muted" style="margin:0">No children recorded.</p>
+            </div>
+
+            <!-- Parental -->
+            <div v-else>
+              <h3 class="ds-h3" style="margin-bottom:16px">Father</h3>
+              <dl class="ds-deflist">
+                <div v-for="row in fatherRows" :key="row.label">
+                  <dt>{{ row.label }}</dt>
+                  <dd :class="{ 'is-empty': !row.value }">{{ row.value }}</dd>
+                </div>
+              </dl>
+
+              <h3 class="ds-h3" style="margin:28px 0 16px">Mother</h3>
+              <dl class="ds-deflist">
+                <div v-for="row in motherRows" :key="row.label">
+                  <dt>{{ row.label }}</dt>
+                  <dd :class="{ 'is-empty': !row.value }">{{ row.value }}</dd>
+                </div>
+              </dl>
+
+              <h3 class="ds-h3" style="margin:28px 0 16px">Next of kin</h3>
+              <dl class="ds-deflist">
+                <div v-for="row in nextOfKinRows" :key="row.label">
+                  <dt>{{ row.label }}</dt>
+                  <dd :class="{ 'is-empty': !row.value }">{{ row.value }}</dd>
+                </div>
+              </dl>
+            </div>
+          </template>
+        </div>
+      </div>
+    </template>
 
     <ConfirmDialog
       :open="confirmOpen"
@@ -176,10 +196,8 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
 import { storedImageUrl } from '../../../../resources/constants'
 import { ChurchMember, MembershipFormOne, MembershipFormThree, MembershipFormTwo } from '../../../../network/Member'
-import { ROLE_CHURCH_MANAGER } from '../../../../resources/navigation'
 import RowMenu from '../../../../components/RowMenu'
 import ConfirmDialog from '../../../../components/ConfirmDialog'
 
@@ -206,11 +224,12 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(['isAuthenticated', 'loggedInUser']),
-    isChurchManager () {
-      return this.loggedInUser &&
-        this.loggedInUser.data &&
-        this.loggedInUser.data.roleId === ROLE_CHURCH_MANAGER
+    canViewPersonal () {
+      return !this.pageRefresh && this.memberCan('members.personal.view')
+    },
+    hasMoreActions () {
+      return ['members.personal.view', 'finance.welfare.view', 'members.delete'].some(code => this.memberCan(code)) ||
+        this.$can('access.manage')
     },
     activeTab () {
       const requested = String(this.$route.query.tab || '')
@@ -290,9 +309,12 @@ export default {
   },
   beforeMount () {
     this.getMember(this.$route.params.id)
-    this.getMembershipDetails(this.$route.params.id)
   },
   methods: {
+    /** Scoped permissions are checked against this member's family. */
+    memberCan (code) {
+      return this.$can(code, this.member.churchFamilyId)
+    },
     selectTab (key) {
       if (this.activeTab === key) { return }
       this.$router.replace({ query: Object.assign({}, this.$route.query, { tab: key }) })
@@ -318,6 +340,10 @@ export default {
         this.member = Object.assign({}, ChurchMember, response.data.data)
         this.member.profilePicture = this.getProfileImage(response.data.data.profilePicture)
         this.pageRefresh = false
+        // Only once the family is known can the scoped check be made.
+        if (this.memberCan('members.personal.view')) {
+          this.getMembershipDetails(id)
+        }
       }).catch(() => {
         this.member = Object.assign({}, ChurchMember)
         this.member.profilePicture = this.getProfileImage('')

@@ -21,7 +21,7 @@ const SEGMENT_LABELS = {
   new: 'New',
   edit: 'Edit',
   view: 'Details',
-  role: 'Assign role',
+  people: 'Person',
   tithe: 'Record tithe',
   welfare: 'Welfare',
   'membership-form': 'Membership form'

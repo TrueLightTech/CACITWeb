@@ -128,8 +128,10 @@ export default {
     // retry: {retries: 5},
     headers: {
       common: {
-        'Accept': 'application/json, text/plain, */*',
-        'Authorization': 'Basic Y3ZiZGZqeWU1dHdmZHM6NTY3ODY3MzZ0d2VoZGdkZmdzZGY='
+        // No default Authorization: a Basic credential used to ship here, in
+        // every visitor's browser. The API no longer accepts Basic; signed-in
+        // requests carry the bearer token from the auth module.
+        'Accept': 'application/json, text/plain, */*'
       },
       delete: {},
       get: {},
@@ -157,6 +159,8 @@ export default {
     middleware: ['auth', 'role-guard']
   },
   auth: {
+    // Runs after $auth has restored the session, so it can load access/me.
+    plugins: ['~/plugins/access.js'],
     redirect: {
       login: '/login',
       logout: '/login',

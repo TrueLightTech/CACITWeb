@@ -1,6 +1,7 @@
 <template>
   <div>
   <ContentTable
+    permission="content.shorts.manage"
     title="Shorts"
     description="The vertical feed. A short is any short thing — a clip, a voice note, a flyer, slides, an event or a verse."
     singular="short"

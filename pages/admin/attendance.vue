@@ -27,14 +27,14 @@
       </div>
     </div>
 
-    <div v-if="isManager" class="ds-tabs">
+    <div v-if="canSeeDevices || canSeeMap" class="ds-tabs">
       <button class="ds-tab" :class="{ 'is-active': view === 'members' }" type="button" @click="switchView('members')">
         Members
       </button>
-      <button class="ds-tab" :class="{ 'is-active': view === 'devices' }" type="button" @click="switchView('devices')">
+      <button v-if="canSeeDevices" class="ds-tab" :class="{ 'is-active': view === 'devices' }" type="button" @click="switchView('devices')">
         All phones
       </button>
-      <button class="ds-tab" :class="{ 'is-active': view === 'map' }" type="button" @click="switchView('map')">
+      <button v-if="canSeeMap" class="ds-tab" :class="{ 'is-active': view === 'map' }" type="button" @click="switchView('map')">
         Emergency map
       </button>
     </div>
@@ -209,11 +209,11 @@
         </div>
 
         <template v-if="view === 'members'">
-          <div v-if="isManager" class="ds-field" style="margin-bottom:0;min-width:200px">
+          <div v-if="showFamilyFilter" class="ds-field" style="margin-bottom:0;min-width:200px">
             <label class="ds-label" for="attFamily">Church family</label>
             <select id="attFamily" v-model="familyId" class="ds-select" @change="load(1)">
-              <option value="">All families</option>
-              <option v-for="family in families" :key="family.id" :value="family.id">{{ family.name }}</option>
+              <option value="">{{ attendanceFamilyIds ? 'All my families' : 'All families' }}</option>
+              <option v-for="family in visibleFamilies" :key="family.id" :value="family.id">{{ family.name }}</option>
             </select>
           </div>
         </template>
@@ -357,19 +357,17 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
 import AttendanceTrend from '../../components/AttendanceTrend'
 import LocationMap from '../../components/LocationMap'
 import { payload, errorMessage } from '../../network/MobileApp'
-import { ROLE_CHURCH_MANAGER } from '../../resources/navigation'
 
 /**
  * Who came to church, from the app's location check-ins.
  *
- * Two views. Members is the register, limited to a family manager's own
- * family by the API. All phones counts every install of the app that came
- * on or near the premises, signed in or not — church manager only, since a
- * visitor's phone belongs to no family.
+ * Two views. Members is the register, limited by the API to the families
+ * the viewer's attendance permission covers. All phones counts every install
+ * of the app that came on or near the premises, signed in or not — its own
+ * permission, since a visitor's phone belongs to no family.
  *
  * Emergency map shows where phones whose owners chose to share their
  * location last were. It is its own tab, loaded only when opened, because
@@ -415,10 +413,22 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(['loggedInUser']),
-    isManager () {
-      const user = this.loggedInUser && this.loggedInUser.data ? this.loggedInUser.data : {}
-      return user.roleId === ROLE_CHURCH_MANAGER
+    canSeeDevices () {
+      return this.$can('attendance.devices.view')
+    },
+    canSeeMap () {
+      return this.$can('location.map.view')
+    },
+    /** Families the register is limited to, or null for the whole church. */
+    attendanceFamilyIds () {
+      return this.$canChurch('attendance.view') ? null : this.$familiesFor('attendance.view')
+    },
+    showFamilyFilter () {
+      return !this.attendanceFamilyIds || this.attendanceFamilyIds.length > 1
+    },
+    visibleFamilies () {
+      const ids = this.attendanceFamilyIds
+      return ids ? this.families.filter(family => ids.indexOf(family.id) !== -1) : this.families
     },
     dateLabel () {
       return this.date === this.today
@@ -442,11 +452,13 @@ export default {
     }
   },
   beforeMount () {
-    if (!this.isManager) { this.view = 'members' }
+    if ((this.view === 'devices' && !this.canSeeDevices) || (this.view === 'map' && !this.canSeeMap)) {
+      this.view = 'members'
+    }
     this.loadSummary()
     this.loadSite()
     if (this.view === 'map') { this.loadMap() } else { this.load(1) }
-    if (this.isManager) { this.loadFamilies() }
+    if (this.showFamilyFilter) { this.loadFamilies() }
   },
   beforeDestroy () {
     clearTimeout(this.searchTimer)

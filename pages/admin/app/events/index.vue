@@ -1,5 +1,6 @@
 <template>
   <ContentTable
+    permission="content.events.manage"
     title="Events"
     description="Upcoming and past are one list, split by date. Members can say they are going and ask questions."
     singular="event"

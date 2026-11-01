@@ -5,7 +5,7 @@
         <h1 class="ds-h1">Offerings</h1>
         <p>Offerings received, by service and offering type.</p>
       </div>
-      <div class="ds-page-head__actions">
+      <div v-if="canRecordOffering" class="ds-page-head__actions">
         <button class="ds-btn ds-btn--primary" type="button" @click="openCreate">
           <svg class="ds-btn__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                stroke-linecap="round" aria-hidden="true">
@@ -95,7 +95,7 @@
               <th>Type</th>
               <th>Assigned to</th>
               <th>Date</th>
-              <th v-if="isChurchManager" class="ds-col-action">Actions</th>
+              <th v-if="canRecordOffering" class="ds-col-action">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -113,7 +113,7 @@
                 {{ cleanString(offering.assignFamilyName, offering.userName) || 'Not assigned' }}
               </td>
               <td data-label="Date" class="ds-muted">{{ fmtDate(offering.createdAt) }}</td>
-              <td v-if="isChurchManager" data-label="Actions" class="ds-col-action">
+              <td v-if="canRecordOffering" data-label="Actions" class="ds-col-action">
                 <RowMenu :label="`Actions for ${offering.name}`">
                   <template #default="{ close }">
                     <button class="ds-menu__item" type="button" @click="openEdit(offering); close()">Edit offering</button>
@@ -137,7 +137,7 @@
               <td>Total shown</td>
               <td class="ds-col-num">{{ formatMoney(rowsTotal) }}</td>
               <td></td><td></td><td></td><td></td>
-              <td v-if="isChurchManager"></td>
+              <td v-if="canRecordOffering"></td>
             </tr>
           </tfoot>
         </table>
@@ -285,10 +285,8 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
 import { ChurchFamilyList, OfferingList, OfferingType, ServiceList } from '../../network/Member'
 import { numberWithCommas } from '../../resources/constants'
-import { ROLE_CHURCH_MANAGER } from '../../resources/navigation'
 import RowMenu from '../../components/RowMenu'
 import ConfirmDialog from '../../components/ConfirmDialog'
 import MemberPicker from '../../components/MemberPicker'
@@ -334,10 +332,8 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(['isAuthenticated', 'loggedInUser']),
-    isChurchManager () {
-      return this.loggedInUser && this.loggedInUser.data &&
-        this.loggedInUser.data.roleId === ROLE_CHURCH_MANAGER
+    canRecordOffering () {
+      return this.$can('finance.offering.record')
     },
     rows () {
       return this.offerings && Array.isArray(this.offerings.results) ? this.offerings.results : []

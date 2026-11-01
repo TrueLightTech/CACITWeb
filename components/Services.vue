@@ -1,5 +1,6 @@
 <template>
   <ReferenceTable
+    permission="org.services.manage"
     title="Church services"
     singular="service"
     plural="Services"

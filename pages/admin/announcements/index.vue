@@ -5,7 +5,7 @@
         <h1 class="ds-h1">Announcements</h1>
         <p>Church updates published to every member's dashboard.</p>
       </div>
-      <div v-if="isChurchManager" class="ds-page-head__actions">
+      <div v-if="canManage" class="ds-page-head__actions">
         <NuxtLink class="ds-btn ds-btn--primary" to="/admin/announcements/new">
           <svg class="ds-btn__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                stroke-linecap="round" aria-hidden="true">
@@ -97,7 +97,7 @@
         <button v-if="isSearching" class="ds-btn ds-btn--secondary ds-btn--sm" type="button" @click="clearSearch">
           Clear search
         </button>
-        <NuxtLink v-else-if="isChurchManager" class="ds-btn ds-btn--primary ds-btn--sm" to="/admin/announcements/new">
+        <NuxtLink v-else-if="canManage" class="ds-btn ds-btn--primary ds-btn--sm" to="/admin/announcements/new">
           New announcement
         </NuxtLink>
       </div>
@@ -127,10 +127,8 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
 import { storedImageUrl } from '../../../resources/constants'
 import { AnnouncementList } from '../../../network/Announcement'
-import { ROLE_CHURCH_MANAGER } from '../../../resources/navigation'
 import { STATUS_LABELS, STATUS_BADGE } from '../../../network/MobileApp'
 
 const PAGE_SIZE = 9
@@ -150,10 +148,8 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(['isAuthenticated', 'loggedInUser']),
-    isChurchManager () {
-      return this.loggedInUser && this.loggedInUser.data &&
-        this.loggedInUser.data.roleId === ROLE_CHURCH_MANAGER
+    canManage () {
+      return this.$can('content.announcements.manage')
     },
     rows () {
       return this.announcements && Array.isArray(this.announcements.results)

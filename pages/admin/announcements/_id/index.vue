@@ -21,7 +21,7 @@
           </p>
         </div>
 
-        <div v-if="isChurchManager" class="ds-page-head__actions">
+        <div v-if="canManage" class="ds-page-head__actions">
           <NuxtLink class="ds-btn ds-btn--secondary" :to="`/admin/announcements/${announcement.id}/edit`">
             Edit
           </NuxtLink>
@@ -52,10 +52,8 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
 import { Announcement } from '../../../../network/Announcement'
 import { storedImageUrl } from '../../../../resources/constants'
-import { ROLE_CHURCH_MANAGER } from '../../../../resources/navigation'
 import ConfirmDialog from '../../../../components/ConfirmDialog'
 
 export default {
@@ -70,10 +68,8 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(['isAuthenticated', 'loggedInUser']),
-    isChurchManager () {
-      return this.loggedInUser && this.loggedInUser.data &&
-        this.loggedInUser.data.roleId === ROLE_CHURCH_MANAGER
+    canManage () {
+      return this.$can('content.announcements.manage')
     }
   },
   beforeMount () {
