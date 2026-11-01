@@ -160,3 +160,122 @@ describe('rewriting the served HTML', () => {
     expect(out).not.toContain('<Retreat>')
   })
 })
+
+describe('richer previews and search results', () => {
+  const ldJson = html => {
+    const m = /<script type="application\/ld\+json">([\s\S]*?)<\/script>/.exec(html)
+    return m ? JSON.parse(m[1]) : null
+  }
+
+  const youtubeVideo = {
+    id: 'v-1',
+    title: 'Gifted to Break the Siege Part 2',
+    description: 'The Chairman continues the message.',
+    publishedOn: '2026-11-01T00:00:00Z',
+    thumbnailUrl: 'https://img.youtube.com/vi/eKDNl6m1aFk/hqdefault.jpg',
+    createdAt: '0001-01-01T00:00:00',
+    media: {
+      type: 'video',
+      sourceUrl: 'https://www.youtube.com/watch?v=eKDNl6m1aFk',
+      thumbnailUrl: 'https://img.youtube.com/vi/eKDNl6m1aFk/hqdefault.jpg',
+      durationSeconds: 3725,
+      metadata: { provider: 'youtube', embedUrl: 'https://www.youtube-nocookie.com/embed/eKDNl6m1aFk?rel=0' }
+    }
+  }
+
+  const streamShort = {
+    id: 's-9',
+    kind: 'video',
+    title: 'A Man Kept By God',
+    caption: 'Kept.',
+    publishedAt: '2026-11-01T17:50:22Z',
+    content: {
+      type: 'video',
+      sourceUrl: 'https://customer-x.cloudflarestream.com/eyJtoken/manifest/video.m3u8',
+      thumbnailUrl: 'https://customer-x.cloudflarestream.com/uid/thumbnails/thumbnail.jpg',
+      durationSeconds: 81,
+      metadata: { provider: 'stream' }
+    }
+  }
+
+  const audioSermon = {
+    id: 'a-1',
+    title: 'Elevation by Divine Power',
+    summary: 'God lifts a person up.',
+    thumbnailUrl: 'https://imagedelivery.net/x/y/public',
+    video: null,
+    audio: { type: 'audio', sourceUrl: 'https://pub.r2.dev/audio/a.mp3', durationSeconds: 2885 }
+  }
+
+  it('gives a YouTube video a playable og:video and its known thumbnail size', () => {
+    const out = rewriteHead(SHELL, card('videos', 'v-1', youtubeVideo))
+    expect(tag(out, 'property', 'og:video')).toBe('https://www.youtube-nocookie.com/embed/eKDNl6m1aFk?rel=0')
+    expect(tag(out, 'property', 'og:video:type')).toBe('text/html')
+    expect(tag(out, 'property', 'og:image:width')).toBe('480')
+    expect(tag(out, 'property', 'og:image:height')).toBe('360')
+  })
+
+  it('describes a video to Google as a VideoObject', () => {
+    const data = ldJson(rewriteHead(SHELL, card('videos', 'v-1', youtubeVideo)))
+    expect(data).toMatchObject({
+      '@type': 'VideoObject',
+      name: 'Gifted to Break the Siege Part 2',
+      thumbnailUrl: ['https://img.youtube.com/vi/eKDNl6m1aFk/hqdefault.jpg'],
+      uploadDate: '2026-11-01T00:00:00Z',
+      duration: 'PT1H2M5S',
+      embedUrl: 'https://www.youtube-nocookie.com/embed/eKDNl6m1aFk?rel=0'
+    })
+  })
+
+  it('never hands out an expiring Stream link, but still marks the short up', () => {
+    const out = rewriteHead(SHELL, card('shorts', 's-9', streamShort))
+    expect(out).not.toContain('og:video')
+    expect(out).not.toContain('m3u8')
+    const data = ldJson(out)
+    expect(data.duration).toBe('PT1M21S')
+    expect(data.embedUrl).toBeUndefined()
+    expect(data.contentUrl).toBeUndefined()
+  })
+
+  it('gives a plain video file as contentUrl', () => {
+    const c = card('sermons', 's-1', {
+      id: 's-1', title: 'T', thumbnailUrl: 'https://pub.r2.dev/i.jpg', preachedOn: '2026-10-20T16:50:00Z',
+      video: { type: 'video', sourceUrl: 'https://pub.r2.dev/video/sermon.mp4' }
+    })
+    expect(c.video).toEqual({ url: 'https://pub.r2.dev/video/sermon.mp4', type: 'video/mp4', embed: false })
+    expect(shareMeta.videoObject(c).contentUrl).toBe('https://pub.r2.dev/video/sermon.mp4')
+  })
+
+  it('gives an audio sermon og:audio and no VideoObject', () => {
+    const out = rewriteHead(SHELL, card('sermons', 'a-1', audioSermon))
+    expect(tag(out, 'property', 'og:audio')).toBe('https://pub.r2.dev/audio/a.mp3')
+    expect(out).not.toContain('og:video')
+    expect(ldJson(out)).toBeNull()
+  })
+
+  it('sends no VideoObject without an upload date, which Google requires', () => {
+    const { publishedOn, ...undated } = youtubeVideo
+    expect(shareMeta.videoObject(card('videos', 'v-1', { ...undated, createdAt: '0001-01-01T00:00:00' }))).toBeNull()
+  })
+
+  it('sends no VideoObject for an image short', () => {
+    const c = card('shorts', 's-1', {
+      id: 's-1', kind: 'image', title: 'YOUTH WEEK', publishedAt: '2026-10-27T09:35:18Z',
+      content: { imageUrl: 'https://imagedelivery.net/x/y/public', altText: 'A youth week flyer' }
+    })
+    expect(shareMeta.videoObject(c)).toBeNull()
+    expect(tag(rewriteHead(SHELL, c), 'property', 'og:image:alt')).toBe('A youth week flyer')
+  })
+
+  it('sizes the church fallback card', () => {
+    const out = rewriteHead(SHELL, card('events', 'e-1', { id: 'e-1', title: 'Compound Cleaning' }))
+    expect(tag(out, 'property', 'og:image:width')).toBe('1200')
+    expect(tag(out, 'property', 'og:image:height')).toBe('630')
+  })
+
+  it('cannot be broken out of by a title containing </script>', () => {
+    const out = rewriteHead(SHELL, card('videos', 'v-1', { ...youtubeVideo, title: 'x</script><script>alert(1)</script>' }))
+    expect(out).not.toContain('</script><script>alert(1)')
+    expect(ldJson(out).name).toBe('x</script><script>alert(1)</script>')
+  })
+})

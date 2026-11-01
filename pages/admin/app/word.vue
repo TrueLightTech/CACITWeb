@@ -70,6 +70,21 @@
             <span class="ds-help">Optional. A line or two under the verse.</span>
           </div>
 
+          <div class="ds-field" style="margin-top:16px;margin-bottom:0">
+            <span class="ds-label">Picture</span>
+            <div class="wd__picture">
+              <img v-if="form.imageUrl" :src="form.imageUrl" alt="" class="wd__pictureimg">
+              <div class="wd__pictureactions">
+                <label class="ds-btn ds-btn--secondary ds-btn--sm" for="wordPicture">
+                  {{ isUploading ? 'Uploading…' : (form.imageUrl ? 'Replace' : 'Upload a picture') }}
+                  <input id="wordPicture" ref="picture" class="wd__file" type="file" accept="image/*" :disabled="isUploading" @change="uploadPicture">
+                </label>
+                <button v-if="form.imageUrl" class="ds-btn ds-btn--ghost ds-btn--sm" type="button" @click="form.imageUrl = ''">Remove</button>
+              </div>
+            </div>
+            <span class="ds-help">Optional. Without one, the verse gets a picture from the pool below.</span>
+          </div>
+
           <label v-if="!alreadyLive" class="ds-check" style="margin-top:16px">
             <input v-model="form.sendPush" type="checkbox">
             <span>Send a push notification when it goes live</span>
@@ -101,6 +116,15 @@
             class="wd__entry"
             :class="{ 'is-today': isToday(entry.forDate), 'is-cancelled': entry.status === 'cancelled' }"
           >
+            <img
+              v-if="entry.imageUrl"
+              :src="entry.imageUrl"
+              alt=""
+              class="wd__thumb"
+              loading="lazy"
+              :title="entry.imageIsAutomatic ? 'From the picture pool' : ''"
+            >
+            <span v-else class="wd__thumb wd__thumb--empty"></span>
             <div class="wd__entrywhen">
               <span class="wd__day">{{ $moment.utc(entry.forDate).format('D MMM') }}</span>
               <span class="wd__weekday">{{ isToday(entry.forDate) ? 'Today' : $moment.utc(entry.forDate).format('ddd') }}</span>
@@ -139,6 +163,8 @@
         </div>
       </section>
     </div>
+
+    <WordPicturePool />
 
     <ConfirmDialog
       :open="!!cancelling"
@@ -189,12 +215,14 @@ import { rowsOf, errorMessage } from '../../../network/MobileApp'
 import AiAssist from '../../../components/AiAssist'
 import ConfirmDialog from '../../../components/ConfirmDialog'
 import RowMenu from '../../../components/RowMenu'
+import WordPicturePool from '../../../components/WordPicturePool'
+import { uploadImage } from '../../../network/Poster'
 
 /** Matches the API's MobileAppConfig.WordForTodayPublishTime. Accra is on UTC. */
 const DEFAULT_TIME = '06:00'
 
 export default {
-  components: { AiAssist, ConfirmDialog, RowMenu },
+  components: { AiAssist, ConfirmDialog, RowMenu, WordPicturePool },
   name: 'AdminAppWordForToday',
   data () {
     return {
@@ -208,6 +236,7 @@ export default {
       isMoving: false,
       moveForm: { forDate: '', publishTime: DEFAULT_TIME },
       isFilling: false,
+      isUploading: false,
       form: {
         forDate: '',
         text: '',
@@ -215,7 +244,8 @@ export default {
         translation: '',
         reflection: '',
         publishTime: DEFAULT_TIME,
-        sendPush: true
+        sendPush: true,
+        imageUrl: ''
       }
     }
   },
@@ -279,12 +309,14 @@ export default {
         translation: entry.translation || '',
         reflection: entry.reflection || '',
         publishTime: entry.publishAt ? this.$moment.utc(entry.publishAt).format('HH:mm') : DEFAULT_TIME,
-        sendPush: entry.sendPush !== false
+        sendPush: entry.sendPush !== false,
+        // A pool preview is not the verse's own picture; leave it to the pool.
+        imageUrl: entry.imageIsAutomatic ? '' : (entry.imageUrl || '')
       }
       window.scrollTo({ top: 0, behavior: 'smooth' })
     },
     reset () {
-      this.form = { forDate: this.today, text: '', reference: '', translation: '', reflection: '', publishTime: DEFAULT_TIME, sendPush: true }
+      this.form = { forDate: this.today, text: '', reference: '', translation: '', reflection: '', publishTime: DEFAULT_TIME, sendPush: true, imageUrl: '' }
       this.showErrors = false
     },
     /** Every row action answers with the updated verse or an error; reload either way. */
@@ -336,13 +368,31 @@ export default {
         this.$toast.error(errorMessage(error, 'Could not reschedule that verse.'))
       })
     },
+    async uploadPicture (event) {
+      const file = event.target.files && event.target.files[0]
+      if (!file) { return }
+      this.isUploading = true
+      try {
+        this.form.imageUrl = await uploadImage(this.$axios, file, this.form.reference || 'Word for Today')
+      } catch (e) {
+        this.$toast.error('That picture did not upload. Try again, or use a smaller file.')
+      } finally {
+        this.isUploading = false
+        if (this.$refs.picture) { this.$refs.picture.value = '' }
+      }
+    },
     fill () {
       this.isFilling = true
       this.$axios.post('admin/word-for-today/fill').then(response => {
         const data = (response.data && response.data.data) || {}
         this.isFilling = false
-        if (data.drafted) {
-          this.$toast.success(`Drafted ${data.drafted} verse${data.drafted === 1 ? '' : 's'}. Read them before they go out.`)
+        const done = []
+        if (data.drafted) { done.push(`drafted ${data.drafted} verse${data.drafted === 1 ? '' : 's'}`) }
+        if (data.redrafted) { done.push(`replaced ${data.redrafted} repeat${data.redrafted === 1 ? '' : 's'}`) }
+        if (done.length) {
+          const said = done.join(' and ')
+          this.$toast.success(`${said.charAt(0).toUpperCase()}${said.slice(1)}. Read them before they go out.`)
+          if (data.note) { this.$toast.error(data.note) }
         } else if (data.note) {
           this.$toast.error(data.note)
         } else {
@@ -382,7 +432,8 @@ export default {
         translation: this.form.translation || null,
         reflection: this.form.reflection || null,
         publishTime: this.form.publishTime || null,
-        sendPush: this.form.sendPush
+        sendPush: this.form.sendPush,
+        imageUrl: this.form.imageUrl || ''
       }).then(() => {
         this.$toast.success('Verse scheduled')
         this.isSaving = false
@@ -408,13 +459,18 @@ export default {
 .wd__entries { list-style: none; margin: 0; padding: 0; }
 .wd__entry {
   display: grid;
-  grid-template-columns: 64px minmax(0, 1fr) auto;
+  grid-template-columns: 56px 64px minmax(0, 1fr) auto;
   gap: 14px;
   align-items: center;
   padding: 12px 16px;
   border-bottom: 1px solid var(--ds-border);
 }
 .wd__entry:last-child { border-bottom: 0; }
+.wd__thumb { width: 56px; height: 40px; border-radius: 6px; object-fit: cover; background: var(--ds-surface-2); }
+.wd__picture { display: flex; gap: 12px; align-items: center; }
+.wd__pictureimg { width: 120px; aspect-ratio: 3 / 2; object-fit: cover; border-radius: 8px; }
+.wd__pictureactions { display: flex; gap: 6px; flex-wrap: wrap; }
+.wd__file { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
 .wd__entry.is-today { background: var(--ds-surface-2); }
 
 .wd__entrywhen { display: grid; gap: 1px; }
