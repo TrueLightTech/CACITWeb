@@ -1,5 +1,6 @@
 <template>
   <ReferenceTable
+    permission="org.families.manage"
     title="Church families"
     singular="church family"
     plural="Church families"

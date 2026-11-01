@@ -5,7 +5,7 @@
         <h1 class="ds-h1">Members</h1>
         <p>{{ summaryLine }}</p>
       </div>
-      <div class="ds-page-head__actions">
+      <div v-if="$can('members.create')" class="ds-page-head__actions">
         <NuxtLink class="ds-btn ds-btn--primary" to="/admin/members/new">
           <svg class="ds-btn__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                stroke-linecap="round" aria-hidden="true">
@@ -18,7 +18,9 @@
 
     <div v-else class="ds-section__head">
       <h2 class="ds-h2">Members</h2>
-      <NuxtLink class="ds-btn ds-btn--primary ds-btn--sm" to="/admin/members/new">Add member</NuxtLink>
+      <NuxtLink v-if="$can('members.create')" class="ds-btn ds-btn--primary ds-btn--sm" to="/admin/members/new">
+        Add member
+      </NuxtLink>
     </div>
 
     <div class="ds-tablewrap">
@@ -146,22 +148,47 @@
                     <NuxtLink class="ds-menu__item" :to="`/admin/members/${member.id}/view`" @click.native="close">
                       View details
                     </NuxtLink>
-                    <NuxtLink class="ds-menu__item" :to="`/admin/members/${member.id}`" @click.native="close">
+                    <NuxtLink
+                      v-if="memberCan('members.edit', member)"
+                      class="ds-menu__item"
+                      :to="`/admin/members/${member.id}`"
+                      @click.native="close"
+                    >
                       Edit member
                     </NuxtLink>
-                    <NuxtLink class="ds-menu__item" :to="`/admin/members/${member.id}/tithe`" @click.native="close">
+                    <NuxtLink
+                      v-if="memberCan('finance.tithe.view', member)"
+                      class="ds-menu__item"
+                      :to="`/admin/members/${member.id}/tithe`"
+                      @click.native="close"
+                    >
                       Record tithe
                     </NuxtLink>
-                    <template v-if="isChurchManager">
-                      <NuxtLink class="ds-menu__item" :to="`/admin/members/${member.id}/welfare`" @click.native="close">
-                        Welfare
-                      </NuxtLink>
-                      <NuxtLink class="ds-menu__item" :to="`/admin/members/${member.id}/membership-form`" @click.native="close">
-                        Membership form
-                      </NuxtLink>
-                      <NuxtLink class="ds-menu__item" :to="`/admin/members/${member.id}/role`" @click.native="close">
-                        Assign role
-                      </NuxtLink>
+                    <NuxtLink
+                      v-if="memberCan('finance.welfare.view', member)"
+                      class="ds-menu__item"
+                      :to="`/admin/members/${member.id}/welfare`"
+                      @click.native="close"
+                    >
+                      Welfare
+                    </NuxtLink>
+                    <NuxtLink
+                      v-if="memberCan('members.personal.view', member)"
+                      class="ds-menu__item"
+                      :to="`/admin/members/${member.id}/membership-form`"
+                      @click.native="close"
+                    >
+                      Membership form
+                    </NuxtLink>
+                    <NuxtLink
+                      v-if="$can('access.manage')"
+                      class="ds-menu__item"
+                      :to="`/admin/access/people/${member.id}`"
+                      @click.native="close"
+                    >
+                      Access and role
+                    </NuxtLink>
+                    <template v-if="memberCan('members.delete', member)">
                       <span class="ds-menu__sep"></span>
                       <button
                         class="ds-menu__item ds-menu__item--danger"
@@ -224,10 +251,8 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
 import { MemberList } from '../network/Member'
 import { storedImageUrl } from '../resources/constants'
-import { ROLE_CHURCH_MANAGER, ROLE_FAMILY_MANAGER } from '../resources/navigation'
 import RowMenu from './RowMenu'
 import ConfirmDialog from './ConfirmDialog'
 
@@ -261,15 +286,13 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(['isAuthenticated', 'loggedInUser']),
-    currentUser () {
-      return this.loggedInUser && this.loggedInUser.data ? this.loggedInUser.data : {}
-    },
-    isChurchManager () {
-      return this.currentUser.roleId === ROLE_CHURCH_MANAGER
-    },
-    isFamilyManager () {
-      return this.currentUser.roleId === ROLE_FAMILY_MANAGER
+    /**
+     * Families this person may see members of, or null for the whole church.
+     * The API scopes the list itself; this only keeps the request and the
+     * wording honest.
+     */
+    scopedFamilyIds () {
+      return this.$canChurch('members.view') ? null : this.$familiesFor('members.view')
     },
     hasResults () {
       return !!(this.members && this.members.results && this.members.results.length)
@@ -284,8 +307,10 @@ export default {
       return `${this.totalCount} members`
     },
     summaryLine () {
-      if (this.isFamilyManager) {
-        return 'Everyone assigned to your church family.'
+      if (this.scopedFamilyIds) {
+        return this.scopedFamilyIds.length > 1
+          ? 'Everyone in the church families you look after.'
+          : 'Everyone assigned to your church family.'
       }
       return 'Everyone on the church register.'
     },
@@ -332,6 +357,18 @@ export default {
     clearTimeout(this.searchTimer)
   },
   methods: {
+    /** Scoped permissions are checked against the member's own family. */
+    memberCan (code, member) {
+      return this.$can(code, member.churchFamilyId)
+    },
+
+    familyFilter () {
+      // Only a single family can be passed; with several, the API's own
+      // scoping decides what comes back.
+      const ids = this.scopedFamilyIds
+      return ids && ids.length === 1 ? `&FamilyId=${ids[0]}` : ''
+    },
+
     getProfileImage (image) {
       if (image) {
         return storedImageUrl(image)
@@ -385,13 +422,7 @@ export default {
       this.isLoading = true
       this.hasError = false
 
-      // Family managers see only their own church family — unchanged.
-      let familyFilter = ''
-      if (this.currentUser.roleId === ROLE_FAMILY_MANAGER) {
-        familyFilter = `&FamilyId=${this.currentUser.churchFamilyId}`
-      }
-
-      this.$axios.get(`churchmembers?Page=${page}&PageSize=${pageSize}${familyFilter}`)
+      this.$axios.get(`churchmembers?Page=${page}&PageSize=${pageSize}${this.familyFilter()}`)
         .then(response => {
           this.applyResponse(response)
           this.isLoading = false
@@ -411,7 +442,8 @@ export default {
       this.isLoading = true
       this.hasError = false
 
-      this.$axios.get(`churchmembers?${filterBy}&Page=1&PageSize=${PAGE_SIZE}`)
+      // The family filter is kept on a search too; it used to be dropped here.
+      this.$axios.get(`churchmembers?${filterBy}&Page=1&PageSize=${PAGE_SIZE}${this.familyFilter()}`)
         .then(response => {
           this.applyResponse(response)
           this.currentPage = 1

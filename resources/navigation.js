@@ -1,145 +1,161 @@
+import { allows } from './access'
+
 /**
  * Application navigation.
  *
- * One definition, filtered by role — replacing the three copy-pasted menu
- * components in `components/roleNavs/`, which had to be edited three times for
- * any change.
+ * One definition, filtered by what the signed-in person may do. Each entry
+ * names the permission its screen's endpoints check — `permission` for one
+ * code, `anyOf` when any of several will do. An entry with neither is open to
+ * everyone signed in: the dashboard, your own tithe and welfare, your profile.
  *
- * Role ids are strings, exactly as the API returns them on
- * `loggedInUser.data.roleId`. The visibility rules below reproduce the existing
- * gating one for one:
+ * The route guard reads the same table (plus `routeRules` below), so a screen
+ * cannot be listed in the menu and then refused, or the reverse.
  *
- *   Church Manager  — everything
- *   Family Manager  — everything except Offerings and Accounting
- *   Regular Member  — Dashboard, Tithe, Welfare, Report an Issue, My Profile
- *
- * Every `to` points at a route that already exists in `pages/`. Members,
- * Church Families and the settings screens are reached through Manage until
- * they get their own routes in a later module.
+ * Every `to` points at a route that already exists in `pages/`.
  */
-
-export const ROLE_CHURCH_MANAGER = '1'
-export const ROLE_FAMILY_MANAGER = '2'
-export const ROLE_MEMBER = '3'
-
-/**
- * Pastoral Team. Added rather than widening the staff group, because a
- * counselling request should not be readable by every family manager — the
- * mobile app tells members only the pastoral team can see it, and the API now
- * gates those endpoints on this role alone.
- */
-export const ROLE_PASTORAL = '4'
-
-const EVERYONE = [ROLE_CHURCH_MANAGER, ROLE_FAMILY_MANAGER, ROLE_MEMBER, ROLE_PASTORAL]
-const STAFF = [ROLE_CHURCH_MANAGER, ROLE_FAMILY_MANAGER]
-const PASTORAL = [ROLE_PASTORAL, ROLE_CHURCH_MANAGER]
-const MANAGER_ONLY = [ROLE_CHURCH_MANAGER]
-
-export { STAFF, PASTORAL }
 
 export const navigation = [
   {
     title: 'Overview',
     items: [
-      { label: 'Dashboard', to: '/admin/dashboard', icon: 'dashboard', roles: EVERYONE }
+      { label: 'Dashboard', to: '/admin/dashboard', icon: 'dashboard' }
     ]
   },
   {
     title: 'People',
     items: [
-      { label: 'Members', to: '/admin/members', icon: 'manage', roles: STAFF },
-      // Church Manager only: who joins the congregation is a different
+      { label: 'Members', to: '/admin/members', icon: 'manage', permission: 'members.view' },
+      // Its own permission: who joins the congregation is a different
       // decision from who is already in it.
       {
         label: 'Registrations',
         to: '/admin/members/registrations',
         icon: 'manage',
-        roles: [ROLE_CHURCH_MANAGER]
+        permission: 'members.approve'
       },
-      // Counted from the app's location check-ins. A family manager sees
-      // their own family only; the API enforces it.
-      { label: 'Attendance', to: '/admin/attendance', icon: 'pin', roles: STAFF }
+      // Counted from the app's location check-ins. Someone scoped to a family
+      // sees that family only; the API enforces it.
+      { label: 'Attendance', to: '/admin/attendance', icon: 'pin', permission: 'attendance.view' }
     ]
   },
   {
     title: 'Giving',
     items: [
-      { label: 'Offerings', to: '/admin/offering', icon: 'offering', roles: [ROLE_CHURCH_MANAGER] },
-      { label: 'Tithe', to: '/admin/tithe', icon: 'tithe', roles: EVERYONE },
-      { label: 'Welfare', to: '/admin/welfare', icon: 'welfare', roles: EVERYONE }
+      { label: 'Offerings', to: '/admin/offering', icon: 'offering', permission: 'finance.offering.view' },
+      // Your own giving: open to everyone.
+      { label: 'Tithe', to: '/admin/tithe', icon: 'tithe' },
+      { label: 'Welfare', to: '/admin/welfare', icon: 'welfare' }
     ]
   },
   {
     title: 'Reports',
     items: [
-      // Both screens already exist and are linked from the dashboard's primary
-      // action; they were simply never in the menu.
-      { label: 'Accounting', to: '/admin/accounting', icon: 'reports', roles: [ROLE_CHURCH_MANAGER] },
-      { label: 'Tithe Records', to: '/admin/records', icon: 'records', roles: [ROLE_FAMILY_MANAGER] }
+      { label: 'Accounting', to: '/admin/accounting', icon: 'reports', permission: 'finance.reports.view' },
+      // Tithe totals per member of a family.
+      { label: 'Tithe Records', to: '/admin/records', icon: 'records', permission: 'finance.tithe.view' }
     ]
   },
   {
     title: 'Church',
     items: [
-      { label: 'Announcements', to: '/admin/announcements', icon: 'announcement', roles: STAFF }
+      { label: 'Announcements', to: '/admin/announcements', icon: 'announcement', permission: 'content.announcements.manage' }
     ]
   },
   {
-    // The whole mobile app console is the church manager's. Family group
-    // managers run their family's giving and members; they do not publish to
-    // the app. Requests is the one exception: it is pastoral work, and the
-    // pastoral policy already excludes family managers.
+    // Each screen of the mobile app console has its own permission, so
+    // someone can be trusted with sermons without also sending pushes to the
+    // whole church.
     title: 'Mobile App',
     items: [
-      { label: 'App Overview', to: '/admin/app', icon: 'dashboard', roles: MANAGER_ONLY },
-      { label: 'Home Screen', to: '/admin/app/hero', icon: 'home', roles: MANAGER_ONLY },
-      { label: 'Sermons', to: '/admin/app/sermons', icon: 'sermon', roles: MANAGER_ONLY },
-      { label: 'Shorts', to: '/admin/app/shorts', icon: 'shorts', roles: MANAGER_ONLY },
-      { label: 'Events', to: '/admin/app/events', icon: 'calendar', roles: MANAGER_ONLY },
-      { label: 'Event Questions', to: '/admin/app/questions', icon: 'question', roles: MANAGER_ONLY },
-      { label: 'Videos', to: '/admin/app/videos', icon: 'video', roles: MANAGER_ONLY },
-      { label: 'Hymnal (Dwom)', to: '/admin/app/hymns', icon: 'hymn', roles: MANAGER_ONLY },
-      { label: 'Word for Today', to: '/admin/app/word', icon: 'verse', roles: MANAGER_ONLY },
-      { label: 'Live Service', to: '/admin/app/live', icon: 'live', roles: [ROLE_CHURCH_MANAGER] },
-      // Pastoral only — see the role note above.
-      { label: 'Comments', to: '/admin/app/comments', icon: 'comment', roles: MANAGER_ONLY },
-      { label: 'Reported Posts', to: '/admin/app/reported', icon: 'flag', roles: MANAGER_ONLY },
-      { label: 'Requests', to: '/admin/app/requests', icon: 'support', roles: PASTORAL },
-      { label: 'Push Messages', to: '/admin/app/push', icon: 'push', roles: [ROLE_CHURCH_MANAGER] },
-      { label: 'App Updates', to: '/admin/app/release', icon: 'update', roles: [ROLE_CHURCH_MANAGER] }
+      { label: 'App Overview', to: '/admin/app', icon: 'dashboard', permission: 'app.overview.view' },
+      { label: 'Home Screen', to: '/admin/app/hero', icon: 'home', permission: 'content.home.manage' },
+      { label: 'Sermons', to: '/admin/app/sermons', icon: 'sermon', permission: 'content.sermons.manage' },
+      { label: 'Shorts', to: '/admin/app/shorts', icon: 'shorts', permission: 'content.shorts.manage' },
+      { label: 'Events', to: '/admin/app/events', icon: 'calendar', permission: 'content.events.manage' },
+      { label: 'Event Questions', to: '/admin/app/questions', icon: 'question', permission: 'content.events.manage' },
+      { label: 'Videos', to: '/admin/app/videos', icon: 'video', permission: 'content.videos.manage' },
+      { label: 'Hymnal (Dwom)', to: '/admin/app/hymns', icon: 'hymn', permission: 'content.hymns.manage' },
+      { label: 'Word for Today', to: '/admin/app/word', icon: 'verse', permission: 'content.home.manage' },
+      { label: 'Live Service', to: '/admin/app/live', icon: 'live', permission: 'content.live.manage' },
+      { label: 'Comments', to: '/admin/app/comments', icon: 'comment', permission: 'engagement.moderate' },
+      { label: 'Reported Posts', to: '/admin/app/reported', icon: 'flag', permission: 'engagement.moderate' },
+      // Pastoral work: a counselling request is not for every family manager.
+      { label: 'Requests', to: '/admin/app/requests', icon: 'support', permission: 'pastoral.requests.manage' },
+      { label: 'Push Messages', to: '/admin/app/push', icon: 'push', permission: 'comms.push.send' },
+      { label: 'App Updates', to: '/admin/app/release', icon: 'update', permission: 'app.release.manage' }
     ]
   },
   {
     title: 'Administration',
     items: [
-      { label: 'Manage', to: '/admin/manage', icon: 'manage', roles: STAFF }
+      // Each tab of Manage has its own permission; any one opens the screen.
+      {
+        label: 'Manage',
+        to: '/admin/manage',
+        icon: 'manage',
+        anyOf: [
+          'issues.manage',
+          'org.families.manage',
+          'org.groups.manage',
+          'org.services.manage',
+          'finance.settings.manage'
+        ]
+      }
+    ]
+  },
+  {
+    title: 'Access Control',
+    items: [
+      { label: 'People with access', to: '/admin/access', icon: 'shield', permission: 'access.manage' },
+      { label: 'Roles', to: '/admin/access/roles', icon: 'manage', permission: 'access.manage' },
+      { label: 'Access history', to: '/admin/access/history', icon: 'records', permission: 'access.manage' }
     ]
   },
   {
     title: 'Support',
     items: [
-      { label: 'Report an Issue', to: '/admin/report', icon: 'support', roles: EVERYONE }
+      { label: 'Report an Issue', to: '/admin/report', icon: 'support' }
     ]
   },
   {
     title: 'Account',
     items: [
-      { label: 'My Profile', to: '/admin/account', icon: 'profile', roles: EVERYONE }
+      { label: 'My Profile', to: '/admin/account', icon: 'profile' }
     ]
   }
 ]
 
 /**
- * Groups visible to a role, with empty groups removed so a member never sees
- * an "Administration" heading with nothing under it.
+ * Screens below a menu entry that need more than the entry does. Not shown in
+ * the menu; read by the route guard only. `:name` matches any one segment,
+ * and `exact` stops a rule from also governing the paths below it.
+ *
+ * Opening a member needs only the member list; their membership form, giving
+ * and the screens that change them each need their own permission.
  */
-export function navigationForRole (roleId) {
-  const role = roleId === undefined || roleId === null ? '' : String(roleId)
+export const routeRules = [
+  { to: '/admin/members/new', permission: 'members.create' },
+  { to: '/admin/members/:id', permission: 'members.edit', exact: true },
+  { to: '/admin/members/:id/view', permission: 'members.view' },
+  { to: '/admin/members/:id/membership-form', permission: 'members.personal.view' },
+  { to: '/admin/members/:id/tithe', permission: 'finance.tithe.view' },
+  { to: '/admin/members/:id/welfare', permission: 'finance.welfare.view' },
+  { to: '/admin/members/:id/role', permission: 'access.manage' },
+  // The dashboard links every member to an announcement; managing them is
+  // still Announcements' permission.
+  { to: '/admin/announcements/:id', exact: true },
+  { to: '/admin/announcements/new', permission: 'content.announcements.manage' }
+]
 
+/**
+ * Groups visible to this person, with empty groups removed so a member never
+ * sees an "Administration" heading with nothing under it.
+ */
+export function navigationFor (access) {
   return navigation
     .map(group => ({
       title: group.title,
-      items: group.items.filter(item => item.roles.indexOf(role) !== -1)
+      items: group.items.filter(item => allows(access, item))
     }))
     .filter(group => group.items.length > 0)
 }

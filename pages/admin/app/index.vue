@@ -34,7 +34,7 @@
             <template v-else>No service scheduled.</template>
           </p>
         </div>
-        <div v-if="isChurchManager" class="ao__liveactions">
+        <div v-if="canGoLive" class="ao__liveactions">
           <NuxtLink
             class="ds-btn"
             :class="live.isLive ? 'ds-btn--danger' : 'ds-btn--primary'"
@@ -189,10 +189,8 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
 import NavIcon from '../../../components/NavIcon'
 import { payload, errorMessage } from '../../../network/MobileApp'
-import { ROLE_CHURCH_MANAGER } from '../../../resources/navigation'
 
 /**
  * The page the office lands on: what can I do to the app, and what state is it
@@ -213,20 +211,18 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(['loggedInUser']),
-    isChurchManager () {
-      return this.loggedInUser && this.loggedInUser.data &&
-        this.loggedInUser.data.roleId === ROLE_CHURCH_MANAGER
+    canGoLive () {
+      return this.$can('content.live.manage')
     },
     publishActions () {
       return [
-        { to: '/admin/app/sermons/new', icon: 'sermon', label: 'New sermon', hint: 'Video, audio or both' },
-        { to: '/admin/app/shorts/new', icon: 'shorts', label: 'New short', hint: 'A clip, flyer or verse' },
-        { to: '/admin/app/events/new', icon: 'calendar', label: 'New event', hint: 'Dates and attendance' },
-        { to: '/admin/announcements/new', icon: 'announcement', label: 'New announcement', hint: 'Goes to every member' },
-        { to: '/admin/app/videos/new', icon: 'video', label: 'New video', hint: 'Choir, testimonies, church life' },
-        { to: '/admin/app/push', icon: 'push', label: 'Send a message', hint: 'Push to the congregation' }
-      ]
+        { to: '/admin/app/sermons/new', icon: 'sermon', label: 'New sermon', hint: 'Video, audio or both', permission: 'content.sermons.manage' },
+        { to: '/admin/app/shorts/new', icon: 'shorts', label: 'New short', hint: 'A clip, flyer or verse', permission: 'content.shorts.manage' },
+        { to: '/admin/app/events/new', icon: 'calendar', label: 'New event', hint: 'Dates and attendance', permission: 'content.events.manage' },
+        { to: '/admin/announcements/new', icon: 'announcement', label: 'New announcement', hint: 'Goes to every member', permission: 'content.announcements.manage' },
+        { to: '/admin/app/videos/new', icon: 'video', label: 'New video', hint: 'Choir, testimonies, church life', permission: 'content.videos.manage' },
+        { to: '/admin/app/push', icon: 'push', label: 'Send a message', hint: 'Push to the congregation', permission: 'comms.push.send' }
+      ].filter(action => this.$can(action.permission))
     },
     metrics () {
       const stats = this.stats || {}

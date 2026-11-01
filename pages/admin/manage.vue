@@ -29,46 +29,38 @@
     <ChurchFamily v-else-if="activeSection === 'families'" :is-active="activeSection === 'families'" />
     <ChurchGroup v-else-if="activeSection === 'groups'" :is-active="activeSection === 'groups'" />
     <Services v-else-if="activeSection === 'services'" :is-active="activeSection === 'services'" />
-    <OfferingType v-else :is-active="activeSection === 'offering-types'" />
+    <OfferingType v-else-if="activeSection === 'offering-types'" :is-active="activeSection === 'offering-types'" />
   </div>
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
-import { ROLE_CHURCH_MANAGER } from '../../resources/navigation'
 import Issues from '../../components/Issues'
 import ChurchFamily from '../../components/ChurchFamily'
 import ChurchGroup from '../../components/ChurchGroup'
 import Services from '../../components/Services'
 import OfferingType from '../../components/OfferingType'
 
+/** Each tab is shown to whoever holds the permission its endpoints check. */
 const SECTIONS = [
-  { key: 'issues', label: 'Reported issues', managerOnly: true },
-  { key: 'families', label: 'Church families', managerOnly: false },
-  { key: 'groups', label: 'Church groups', managerOnly: true },
-  { key: 'services', label: 'Services', managerOnly: true },
-  { key: 'offering-types', label: 'Offering types', managerOnly: true }
+  { key: 'issues', label: 'Reported issues', permission: 'issues.manage' },
+  { key: 'families', label: 'Church families', permission: 'org.families.manage' },
+  { key: 'groups', label: 'Church groups', permission: 'org.groups.manage' },
+  { key: 'services', label: 'Services', permission: 'org.services.manage' },
+  { key: 'offering-types', label: 'Offering types', permission: 'finance.settings.manage' }
 ]
 
 export default {
   name: 'manage',
   components: { Issues, ChurchFamily, ChurchGroup, Services, OfferingType },
   computed: {
-    ...mapGetters(['isAuthenticated', 'loggedInUser']),
-    isChurchManager () {
-      return this.loggedInUser && this.loggedInUser.data &&
-        this.loggedInUser.data.roleId === ROLE_CHURCH_MANAGER
-    },
-    /** Reproduces the previous gating: only the church manager saw the
-        Reported Issues tab and the Settings dropdown. */
     visibleSections () {
-      return SECTIONS.filter(section => !section.managerOnly || this.isChurchManager)
+      return SECTIONS.filter(section => this.$can(section.permission))
     },
     activeSection () {
       const requested = String(this.$route.query.section || '')
       const allowed = this.visibleSections.some(section => section.key === requested)
       if (allowed) { return requested }
-      return this.visibleSections.length ? this.visibleSections[0].key : 'families'
+      return this.visibleSections.length ? this.visibleSections[0].key : ''
     }
   },
   methods: {

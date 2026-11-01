@@ -52,7 +52,7 @@
 <script>
 import { mapGetters } from 'vuex'
 import { storedImageUrl } from '../resources/constants'
-import { navigationForRole } from '../resources/navigation'
+import { navigationFor } from '../resources/navigation'
 import NavIcon from './NavIcon'
 
 export default {
@@ -60,11 +60,6 @@ export default {
   components: { NavIcon },
   props: {
     open: { type: Boolean, default: false }
-  },
-  data () {
-    return {
-      roles: []
-    }
   },
   computed: {
     ...mapGetters(['isAuthenticated', 'loggedInUser']),
@@ -75,7 +70,7 @@ export default {
       return this.currentUser.name || 'My account'
     },
     groups () {
-      return navigationForRole(this.currentUser.roleId)
+      return navigationFor(this.$store.state.access.me)
     },
     profileImage () {
       if (this.currentUser.profilePicture) {
@@ -84,21 +79,10 @@ export default {
       return require('~/assets/imgs/user.svg')
     },
     roleLabel () {
-      const match = this.roles.filter(role => role.id === this.currentUser.roleId)
-      return match.length === 0 ? 'Member' : match[0].name
+      return this.$store.getters['access/roleName'] || 'Member'
     }
   },
-  mounted () {
-    this.getRoles()
-  },
   methods: {
-    getRoles () {
-      this.$axios.get('roles').then(response => {
-        this.roles = response.data.data
-      }).catch(() => {
-        // The role name is a label only — a failure here must not block navigation.
-      })
-    },
     async logout () {
       this.$emit('navigate')
       await this.$auth.logout()

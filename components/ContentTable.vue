@@ -130,11 +130,11 @@
                       Archive {{ singular }}
                     </button>
                     <!--
-                      Church Manager only, and below archive, because archiving
-                      is the answer almost every time this menu is opened.
+                      Below archive, because archiving is the answer almost
+                      every time this menu is opened.
                     -->
                     <button
-                      v-if="isChurchManager"
+                      v-if="canPurge"
                       class="ds-menu__item ds-menu__item--danger"
                       type="button"
                       @click="askPurge(row); close()"
@@ -215,8 +215,6 @@
 <script>
 import RowMenu from './RowMenu'
 import ConfirmDialog from './ConfirmDialog'
-import { mapGetters } from 'vuex'
-import { ROLE_CHURCH_MANAGER } from '../resources/navigation'
 import { rowsOf, pagingOf, errorMessage, STATUS_LABELS, STATUS_BADGE } from '../network/MobileApp'
 
 const SEARCH_DEBOUNCE_MS = 350
@@ -248,7 +246,13 @@ export default {
     /** [{ key, label, value(row) }] */
     columns: { type: Array, default: () => [] },
     searchPlaceholder: { type: String, default: 'Search' },
-    emptyHint: { type: String, default: '' }
+    emptyHint: { type: String, default: '' },
+    /**
+     * The permission that manages this resource. There is no separate code
+     * for permanent deletion; the API decides, so the menu offers it to
+     * whoever manages the content.
+     */
+    permission: { type: String, required: true }
   },
   data () {
     return {
@@ -267,7 +271,6 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(['loggedInUser']),
     statusTabs () {
       return [
         { value: '', label: 'All' },
@@ -296,9 +299,8 @@ export default {
     statusWord () {
       return (STATUS_LABELS[this.status] || '').toLowerCase()
     },
-    isChurchManager () {
-      return this.loggedInUser && this.loggedInUser.data &&
-        this.loggedInUser.data.roleId === ROLE_CHURCH_MANAGER
+    canPurge () {
+      return this.$can(this.permission)
     },
     /**
      * Names what goes, rather than asking "are you sure?".

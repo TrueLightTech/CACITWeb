@@ -13,8 +13,8 @@
       </div>
     </div>
 
-    <!-- Manager totals -->
-    <section v-if="isManager" class="ds-section" aria-label="Today's totals">
+    <!-- Church totals -->
+    <section v-if="canSeeChurchTotals" class="ds-section" aria-label="Today's totals">
       <div class="ds-section__head">
         <h2 class="ds-h2">Today</h2>
         <span class="ds-meta">{{ todayLabel }}</span>
@@ -30,7 +30,7 @@
           <span class="ds-metric__foot">Offerings and tithes together</span>
         </NuxtLink>
 
-        <NuxtLink class="ds-metric" to="/admin/offering">
+        <NuxtLink v-if="$can('finance.offering.view')" class="ds-metric" to="/admin/offering">
           <span class="ds-metric__label"><span class="ds-eyebrow">Offering</span></span>
           <strong v-if="!isAccountingLoading" class="ds-metric__value">
             <small>GHS</small>{{ formatMoney(accountTotals.offeringSum) }}
@@ -48,7 +48,7 @@
           <span class="ds-metric__foot">Received today</span>
         </NuxtLink>
 
-        <NuxtLink class="ds-metric" to="/admin/manage">
+        <NuxtLink v-if="$can('issues.manage')" class="ds-metric" to="/admin/manage">
           <span class="ds-metric__label">
             <span class="ds-eyebrow">Open issues</span>
             <span v-if="!isIssueLoading && unResolvedIssuesCount > 0" class="ds-badge ds-badge--warning">
@@ -62,8 +62,8 @@
       </div>
     </section>
 
-    <!-- Manager membership -->
-    <section v-if="isManager" class="ds-section" aria-label="Membership">
+    <!-- Church-wide membership -->
+    <section v-if="canSeeChurchMembers" class="ds-section" aria-label="Membership">
       <div class="ds-section__head">
         <h2 class="ds-h2">Membership</h2>
         <NuxtLink to="/admin/members" class="ds-btn ds-btn--secondary ds-btn--sm">View members</NuxtLink>
@@ -100,15 +100,17 @@
       </div>
     </section>
 
-    <!-- Family manager totals -->
-    <section v-else-if="isFamilyManager" class="ds-section" aria-label="Your family group">
+    <!-- Family-scoped totals -->
+    <section v-else-if="showFamilySection" class="ds-section" aria-label="Your family group">
       <div class="ds-section__head">
         <h2 class="ds-h2">Your church family</h2>
-        <NuxtLink to="/admin/records" class="ds-btn ds-btn--secondary ds-btn--sm">View tithe records</NuxtLink>
+        <NuxtLink v-if="canSeeFamilyTithe" to="/admin/records" class="ds-btn ds-btn--secondary ds-btn--sm">
+          View tithe records
+        </NuxtLink>
       </div>
 
       <div class="ds-metrics">
-        <NuxtLink class="ds-metric" to="/admin/records">
+        <NuxtLink v-if="canSeeFamilyTithe" class="ds-metric" to="/admin/records">
           <span class="ds-metric__label"><span class="ds-eyebrow">Family tithe</span></span>
           <strong v-if="!isAccountingLoading" class="ds-metric__value">
             <small>GHS</small>{{ formatMoney(accountTotals.titheSum) }}
@@ -117,7 +119,7 @@
           <span class="ds-metric__foot">Total received from your family group</span>
         </NuxtLink>
 
-        <NuxtLink class="ds-metric" to="/admin/members">
+        <NuxtLink v-if="$can('members.view')" class="ds-metric" to="/admin/members">
           <span class="ds-metric__label"><span class="ds-eyebrow">Members</span></span>
           <strong v-if="!isMembersLoading" class="ds-metric__value">{{ totalMembersCount }}</strong>
           <span v-else class="ds-skeleton" style="height:28px;width:40%"></span>
@@ -150,18 +152,18 @@
       </div>
     </section>
 
-    <!-- Giving and attendance, for staff -->
-    <section v-if="isManager || isFamilyManager" class="ds-section" aria-label="Top contributors and attendance">
+    <!-- Giving and attendance -->
+    <section v-if="canSeeContributors || canSeeAttendance" class="ds-section" aria-label="Top contributors and attendance">
       <div class="dash-split">
-        <div>
+        <div v-if="canSeeContributors">
           <div class="ds-section__head">
             <h2 class="ds-h2">Top contributors</h2>
-            <span class="ds-meta">{{ isManager ? 'Across the church' : 'In your church family' }}</span>
+            <span class="ds-meta">{{ $canChurch('finance.contributors.view') ? 'Across the church' : 'In your church family' }}</span>
           </div>
-          <TopContributors :allow-offering="isManager" />
+          <TopContributors :allow-offering="canRankOffering" />
         </div>
 
-        <div>
+        <div v-if="canSeeAttendance">
           <div class="ds-section__head">
             <h2 class="ds-h2">Attendance</h2>
             <NuxtLink to="/admin/attendance" class="ds-btn ds-btn--secondary ds-btn--sm">View register</NuxtLink>
@@ -178,7 +180,7 @@
                   Not counting yet — the church location has not been set.
                 </template>
                 <template v-else>
-                  Members checked in by the mobile app on the church premises{{ isFamilyManager ? ', your family only' : '' }}.
+                  Members checked in by the mobile app on the church premises{{ $canChurch('attendance.view') ? '' : ', your family only' }}.
                 </template>
               </p>
               <NuxtLink
@@ -208,7 +210,7 @@
           <h2 class="ds-h2">Announcements</h2>
           <span v-if="!isLoading && totalCount" class="ds-meta">{{ totalCount }} in total</span>
         </div>
-        <NuxtLink v-if="isManager" to="/admin/announcements" class="ds-btn ds-btn--secondary ds-btn--sm">
+        <NuxtLink v-if="canManageAnnouncements" to="/admin/announcements" class="ds-btn ds-btn--secondary ds-btn--sm">
           Manage
         </NuxtLink>
       </div>
@@ -256,7 +258,7 @@
           </span>
           <h3 class="ds-h3">No announcements yet</h3>
           <p>Church updates will appear here once they are published.</p>
-          <NuxtLink v-if="isManager" to="/admin/announcements/new" class="ds-btn ds-btn--primary ds-btn--sm">
+          <NuxtLink v-if="canManageAnnouncements" to="/admin/announcements/new" class="ds-btn ds-btn--primary ds-btn--sm">
             Add announcement
           </NuxtLink>
         </div>
@@ -282,7 +284,6 @@ import { mapGetters } from 'vuex'
 import { AnnouncementList } from '../../network/Announcement'
 import { numberWithCommas, storedImageUrl } from '../../resources/constants'
 import { ChurchFamilyList, DashboardAccountingTotal } from '../../network/Member'
-import { ROLE_CHURCH_MANAGER, ROLE_FAMILY_MANAGER } from '../../resources/navigation'
 import TopContributors from '../../components/TopContributors'
 import AttendanceTrend from '../../components/AttendanceTrend'
 
@@ -314,48 +315,74 @@ export default {
     currentUser () {
       return this.loggedInUser && this.loggedInUser.data ? this.loggedInUser.data : {}
     },
-    currentRoleId () {
-      return this.currentUser.roleId || ''
-    },
     dashboardUserName () {
       return this.currentUser.name || 'there'
     },
-    isManager () {
-      return this.currentRoleId === ROLE_CHURCH_MANAGER
+    /*
+     * What this dashboard shows is decided by what the person may do, not by
+     * the name of their role: someone given "See top contributors" sees that
+     * card and nothing else extra.
+     */
+    canSeeChurchTotals () {
+      return this.$can('finance.reports.view')
     },
-    isFamilyManager () {
-      return this.currentRoleId === ROLE_FAMILY_MANAGER
+    canSeeChurchMembers () {
+      return this.$canChurch('members.view')
+    },
+    /** Family tithe total, for someone who sees tithe but not church reports. */
+    canSeeFamilyTithe () {
+      return !this.canSeeChurchTotals && !!this.titheFamilyId
+    },
+    titheFamilyId () {
+      if (!this.$can('finance.tithe.view')) { return '' }
+      return this.$familiesFor('finance.tithe.view')[0] || this.currentUser.churchFamilyId || ''
+    },
+    showFamilySection () {
+      return this.canSeeFamilyTithe || this.$can('members.view')
+    },
+    canSeeContributors () {
+      return this.$can('finance.contributors.view')
+    },
+    canRankOffering () {
+      return this.$canChurch('finance.contributors.view') && this.$can('finance.offering.view')
+    },
+    canSeeAttendance () {
+      return this.$can('attendance.view')
+    },
+    canManageAnnouncements () {
+      return this.$can('content.announcements.manage')
+    },
+    isStaff () {
+      return this.canSeeChurchTotals || this.showFamilySection || this.canSeeContributors || this.canSeeAttendance
     },
     /** The totals below are for today only — say so rather than leaving it implicit. */
     todayLabel () {
       return this.$moment().format('dddd, D MMMM YYYY')
     },
     dashboardRoleLabel () {
-      if (this.isManager) { return 'Church manager' }
-      if (this.isFamilyManager) { return 'Family group manager' }
-      return 'Member'
+      return this.$store.getters['access/roleName'] || 'Member'
     },
     dashboardTitle () {
-      if (this.isManager) { return 'Financial overview' }
+      if (this.canSeeChurchTotals) { return 'Financial overview' }
       return `Welcome back, ${this.dashboardUserName}`
     },
     dashboardSubtitle () {
-      if (this.isManager) {
+      if (this.canSeeChurchTotals) {
         return "Today's giving, membership and church updates in one view."
       }
-      if (this.isFamilyManager) {
+      if (this.isStaff) {
         return 'Your family records, tithe summary and announcements.'
       }
       return 'Your giving records and church updates.'
     },
     primaryActionPath () {
-      return this.isManager ? '/admin/accounting' : '/admin/records'
+      return this.canSeeChurchTotals ? '/admin/accounting' : '/admin/records'
     },
     primaryActionLabel () {
-      return this.isManager ? 'Open accounting' : 'Open records'
+      return this.canSeeChurchTotals ? 'Open accounting' : 'Open records'
     },
     hasPrimaryAction () {
-      return this.isManager || this.isFamilyManager
+      return this.canSeeChurchTotals || this.$can('finance.tithe.view')
     },
     familyOptions () {
       return this.families && this.families.data ? this.families.data : []
@@ -370,17 +397,15 @@ export default {
   beforeMount () {
     this.fetchAnnouncement()
 
-    if (this.isManager) {
-      this.getUnresolvedIssuesCount()
-      this.fetchFamilies()
-      this.getMembersCount()
+    if (this.canSeeChurchTotals) {
       this.getAccounting()
-      this.getAttendance()
-    } else if (this.isFamilyManager) {
-      this.getMembersCount()
+    } else if (this.canSeeFamilyTithe) {
       this.getAccountingForFamilyManager()
-      this.getAttendance()
     }
+    if (this.$can('issues.manage')) { this.getUnresolvedIssuesCount() }
+    if (this.canSeeChurchMembers) { this.fetchFamilies() }
+    if (this.$can('members.view')) { this.getMembersCount() }
+    if (this.canSeeAttendance) { this.getAttendance() }
   },
   methods: {
     formatMoney (value) {
@@ -397,8 +422,8 @@ export default {
     },
     getMembersCount (family = '') {
       let famId = ''
-      if (this.isFamilyManager) {
-        famId = this.currentUser.churchFamilyId
+      if (!this.canSeeChurchMembers) {
+        famId = this.$familiesFor('members.view')[0] || this.currentUser.churchFamilyId || ''
       }
 
       if (family && family.id) {
@@ -445,7 +470,7 @@ export default {
     },
     getAccountingForFamilyManager () {
       this.isAccountingLoading = true
-      this.$axios.get(`accounting/tithe-total?ChurchFamilyId=${this.currentUser.churchFamilyId}`).then(response => {
+      this.$axios.get(`accounting/tithe-total?ChurchFamilyId=${this.titheFamilyId}`).then(response => {
         this.accountTotals = Object.assign({}, DashboardAccountingTotal, response.data.data)
         this.isAccountingLoading = false
       }).catch(() => {

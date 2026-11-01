@@ -1,5 +1,6 @@
 <template>
   <ContentTable
+    permission="content.videos.manage"
     title="Videos"
     description="Choir, testimonies and church life. Sermons live in their own section."
     singular="video"

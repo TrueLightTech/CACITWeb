@@ -80,7 +80,7 @@
               <th>From</th>
               <th>Issue</th>
               <th>Status</th>
-              <th v-if="isChurchManager" class="ds-col-action">Actions</th>
+              <th v-if="canManageIssues" class="ds-col-action">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -116,7 +116,7 @@
                   <span class="ds-status__dot"></span>{{ isResolved ? 'Resolved' : 'Unresolved' }}
                 </span>
               </td>
-              <td v-if="isChurchManager" data-label="Actions" class="ds-col-action">
+              <td v-if="canManageIssues" data-label="Actions" class="ds-col-action">
                 <RowMenu :label="`Actions for issue from ${issue.userName}`">
                   <template #default="{ close }">
                     <button v-if="!isResolved" class="ds-menu__item" type="button" @click="updateState(issue); close()">
@@ -168,7 +168,6 @@
 <script>
 import { mapGetters } from 'vuex'
 import { IssuesList } from '../network/Member'
-import { ROLE_CHURCH_MANAGER } from '../resources/navigation'
 import RowMenu from './RowMenu'
 import ConfirmDialog from './ConfirmDialog'
 
@@ -196,9 +195,8 @@ export default {
   },
   computed: {
     ...mapGetters(['isAuthenticated', 'loggedInUser']),
-    isChurchManager () {
-      return this.loggedInUser && this.loggedInUser.data &&
-        this.loggedInUser.data.roleId === ROLE_CHURCH_MANAGER
+    canManageIssues () {
+      return this.$can('issues.manage')
     },
     rows () {
       return this.issues && Array.isArray(this.issues.results) ? this.issues.results : []

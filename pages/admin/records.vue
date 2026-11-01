@@ -125,10 +125,14 @@ export default {
         return start.format('dddd, D MMMM YYYY')
       }
       return `${start.format('D MMM YYYY')} — ${end.format('D MMM YYYY')}`
+    },
+    /** The family a scoped tithe permission names, else the viewer's own. */
+    recordsFamilyId () {
+      return this.$familiesFor('finance.tithe.view')[0] || this.loggedInUser.data.churchFamilyId
     }
   },
   mounted () {
-    this.fetchTitheMembers(this.loggedInUser.data.churchFamilyId)
+    this.fetchTitheMembers(this.recordsFamilyId)
   },
   methods: {
     formatMoney (value) {
@@ -137,7 +141,7 @@ export default {
     datePickerCallback (date) {
       this.totalsDateRange.startDate = moment(date.startDate).format('YYYY-MM-DD')
       this.totalsDateRange.endDate = moment(date.endDate).format('YYYY-MM-DD')
-      this.fetchTitheMembers(this.loggedInUser.data.churchFamilyId)
+      this.fetchTitheMembers(this.recordsFamilyId)
     },
     fetchTitheMembers (familyId) {
       this.isLoadingIndividualTithe = true

@@ -121,7 +121,11 @@
               </p>
               <span class="ds-help">
                 <template v-if="isAccount === true">Your role is set by a church manager.</template>
-                <template v-else>Changed from the member's Assign role screen.</template>
+                <template v-else-if="update.id && $can('access.manage')">
+                  Changed from this person's
+                  <NuxtLink :to="`/admin/access/people/${update.id}`">access page</NuxtLink>.
+                </template>
+                <template v-else>Changed under Access Control.</template>
               </span>
             </div>
           </div>

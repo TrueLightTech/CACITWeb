@@ -1,5 +1,6 @@
 <template>
   <ReferenceTable
+    permission="finance.settings.manage"
     title="Offering types"
     singular="offering type"
     plural="Offering types"

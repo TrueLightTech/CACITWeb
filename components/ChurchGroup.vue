@@ -1,5 +1,6 @@
 <template>
   <ReferenceTable
+    permission="org.groups.manage"
     title="Church groups"
     singular="church group"
     plural="Church groups"

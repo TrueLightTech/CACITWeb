@@ -1,5 +1,6 @@
 <template>
   <ContentTable
+    permission="content.sermons.manage"
     title="Sermons"
     description="Everything members hear in the app. Series grouping drives the filter chips on their sermons screen."
     singular="sermon"
