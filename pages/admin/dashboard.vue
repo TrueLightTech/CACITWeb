@@ -150,6 +150,48 @@
       </div>
     </section>
 
+    <!-- Giving and attendance, for staff -->
+    <section v-if="isManager || isFamilyManager" class="ds-section" aria-label="Top contributors and attendance">
+      <div class="dash-split">
+        <div>
+          <div class="ds-section__head">
+            <h2 class="ds-h2">Top contributors</h2>
+            <span class="ds-meta">{{ isManager ? 'Across the church' : 'In your church family' }}</span>
+          </div>
+          <TopContributors :allow-offering="isManager" />
+        </div>
+
+        <div>
+          <div class="ds-section__head">
+            <h2 class="ds-h2">Attendance</h2>
+            <NuxtLink to="/admin/attendance" class="ds-btn ds-btn--secondary ds-btn--sm">View register</NuxtLink>
+          </div>
+          <div class="ds-card">
+            <div class="ds-card__body">
+              <span class="ds-eyebrow">Present today</span>
+              <strong v-if="!isAttendanceLoading" class="ds-metric__value" style="display:block;margin:8px 0 4px">
+                {{ attendance.todayCount }}
+              </strong>
+              <span v-else class="ds-skeleton" style="height:28px;width:80px;display:block;margin:8px 0 4px"></span>
+              <p class="ds-muted" style="margin:0 0 16px;font-size:var(--ds-text-sm)">
+                <template v-if="attendance.isConfigured === false">
+                  Not counting yet — the church location has not been set.
+                </template>
+                <template v-else>
+                  Checked in by the mobile app on the church premises{{ isFamilyManager ? ', your family only' : '' }}.
+                </template>
+              </p>
+              <AttendanceTrend
+                v-if="!isAttendanceLoading"
+                :series="attendance.days"
+                label="Members present per day, last 7 days"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- Announcements -->
     <section class="ds-section" aria-label="Announcements">
       <div class="ds-section__head">
@@ -232,9 +274,12 @@ import { AnnouncementList } from '../../network/Announcement'
 import { numberWithCommas, storedImageUrl } from '../../resources/constants'
 import { ChurchFamilyList, DashboardAccountingTotal } from '../../network/Member'
 import { ROLE_CHURCH_MANAGER, ROLE_FAMILY_MANAGER } from '../../resources/navigation'
+import TopContributors from '../../components/TopContributors'
+import AttendanceTrend from '../../components/AttendanceTrend'
 
 export default {
   name: 'dashboard',
+  components: { TopContributors, AttendanceTrend },
   data () {
     return {
       unResolvedIssuesCount: 0,
@@ -249,6 +294,8 @@ export default {
       isAccountingLoading: false,
       isChurchFamiliesLoading: false,
       isMembersLoading: false,
+      isAttendanceLoading: false,
+      attendance: { todayCount: 0, isConfigured: true, days: [] },
       announcements: AnnouncementList,
       accountTotals: DashboardAccountingTotal
     }
@@ -319,9 +366,11 @@ export default {
       this.fetchFamilies()
       this.getMembersCount()
       this.getAccounting()
+      this.getAttendance()
     } else if (this.isFamilyManager) {
       this.getMembersCount()
       this.getAccountingForFamilyManager()
+      this.getAttendance()
     }
   },
   methods: {
@@ -394,6 +443,15 @@ export default {
         this.isAccountingLoading = false
       })
     },
+    getAttendance () {
+      this.isAttendanceLoading = true
+      this.$axios.get('admin/attendance/summary?days=7').then(response => {
+        this.attendance = Object.assign({ todayCount: 0, isConfigured: true, days: [] }, response.data.data)
+        this.isAttendanceLoading = false
+      }).catch(() => {
+        this.isAttendanceLoading = false
+      })
+    },
     fetchAnnouncement (page = 1, pageSize = 5) {
       this.currentPage = page
       this.isLoading = true
@@ -433,6 +491,17 @@ export default {
 </script>
 
 <style scoped>
+.dash-split {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  gap: 24px;
+  align-items: start;
+}
+
+@media (max-width: 960px) {
+  .dash-split { grid-template-columns: minmax(0, 1fr); }
+}
+
 .announcement-list {
   list-style: none;
   margin: 0;
