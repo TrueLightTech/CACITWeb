@@ -159,3 +159,28 @@ export function navigationFor (access) {
     }))
     .filter(group => group.items.length > 0)
 }
+
+/**
+ * The one sidebar item to highlight for `path`: the item whose address is the
+ * longest whole-segment prefix of it.
+ *
+ * The router's own active class matches every prefix, so on
+ * /admin/access/roles both "Roles" and "People with access" (/admin/access)
+ * lit up, and every app screen also lit "App Overview" (/admin/app).
+ */
+export function activeNavTarget (groups, path) {
+  const current = (path || '').replace(/\/+$/, '') || '/'
+  let best = null
+
+  for (const group of groups || []) {
+    for (const item of group.items) {
+      const to = item.to.replace(/\/+$/, '')
+      const matches = current === to || current.startsWith(to + '/')
+      if (matches && (!best || to.length > best.length)) {
+        best = to
+      }
+    }
+  }
+
+  return best
+}

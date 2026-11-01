@@ -15,8 +15,10 @@
           <li v-for="item in group.items" :key="item.to">
             <NuxtLink
               class="ds-navlink"
+              :class="{ 'is-active': item.to === activeTo }"
               :to="item.to"
-              active-class="is-active"
+              active-class=""
+              exact-active-class=""
               @click.native="$emit('navigate')"
             >
               <NavIcon :name="item.icon" />
@@ -52,7 +54,7 @@
 <script>
 import { mapGetters } from 'vuex'
 import { storedImageUrl } from '../resources/constants'
-import { navigationFor } from '../resources/navigation'
+import { activeNavTarget, navigationFor } from '../resources/navigation'
 import NavIcon from './NavIcon'
 
 export default {
@@ -71,6 +73,9 @@ export default {
     },
     groups () {
       return navigationFor(this.$store.state.access.me)
+    },
+    activeTo () {
+      return activeNavTarget(this.groups, this.$route.path)
     },
     profileImage () {
       if (this.currentUser.profilePicture) {
