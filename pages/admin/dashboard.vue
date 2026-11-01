@@ -178,9 +178,18 @@
                   Not counting yet — the church location has not been set.
                 </template>
                 <template v-else>
-                  Checked in by the mobile app on the church premises{{ isFamilyManager ? ', your family only' : '' }}.
+                  Members checked in by the mobile app on the church premises{{ isFamilyManager ? ', your family only' : '' }}.
                 </template>
               </p>
+              <NuxtLink
+                v-if="attendance.devices && attendance.isConfigured !== false"
+                to="/admin/attendance?view=devices"
+                class="dash-phones"
+              >
+                <span><b>{{ attendance.devices.onSite }}</b> phones on site</span>
+                <span><b>{{ attendance.devices.guestsOnSite }}</b> not signed in</span>
+                <span><b>{{ attendance.devices.nearby }}</b> nearby</span>
+              </NuxtLink>
               <AttendanceTrend
                 v-if="!isAttendanceLoading"
                 :series="attendance.days"
@@ -501,6 +510,22 @@ export default {
 @media (max-width: 960px) {
   .dash-split { grid-template-columns: minmax(0, 1fr); }
 }
+
+.dash-phones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  margin: 0 0 16px;
+  padding: 10px 12px;
+  border-radius: var(--ds-radius-md);
+  background: var(--ds-surface-2);
+  color: var(--ds-text-2);
+  font-size: var(--ds-text-sm);
+  text-decoration: none;
+}
+
+.dash-phones b { color: var(--ds-text); font-variant-numeric: tabular-nums; }
+.dash-phones:hover { background: var(--ds-surface-3); }
 
 .announcement-list {
   list-style: none;
